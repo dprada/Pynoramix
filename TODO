@@ -1,0 +1,15 @@
+- Include the network module
+- Include the water module
+- Check the displacement vector and the involvent coefficient (ENM)
+- Think about the concept 'parent'
+- Make two different functions: make_selection (mirror) and make_set_from_selection (no mirror)
+- Correct the syntaxis of Selection, do it closer to the terms already present in the program.
+- Add the posibility to create a new molecule (hard copy, not a pointer) with selection. 
+- Use pickle to save the normal modes analysis.
+- The function to build the enm movie needs to check if the file exists.
+- Optimize the reading of a binary file (pyn_cl_coors)
+- To select the hydrogens: (HW1 and HW2) or there is another option (H?, H*?)
+- The function neighbs should include the option 'frame'.
+- Case to study: The system named A has a selection name sub_A. If the coordinates of A have changed (i.e.: new frames attached or a rotation of A)... the coordinates of sub_A are updated?
+- Case to sudy: The neighbors belonging to selection sub_B of the selection sub_A are computed. The indexes of atoms neighbors[0] are internal indexes of sub_B. Is it right?
+ 
