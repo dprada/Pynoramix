@@ -1,0 +1,36 @@
+.. Pynoramix documentation master file, created by
+   sphinx-quickstart on Sun Jun 17 19:50:28 2012.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to Pynoramix's documentation!
+=====================================
+
+Contents:
+
+.. toctree::
+   :maxdepth: 2
+
+   getting_started.rst
+   molecular_systems.rst
+   tutorial_molecular_systems.rst
+   networks.rst
+   tutorial_networks.rst
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+-----------------------------
+
+Examples to write the doc
+=========================
+
+.. toctree::
+   :maxdepth: 2
+
+   getting_started_ex.rst
+   example_edition_ex.rst
