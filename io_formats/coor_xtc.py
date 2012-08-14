@@ -17,7 +17,7 @@ exdrNOMEM, exdrENDOFFILE, exdrNR = range(13)
 
 
 try: 
-    xdr=cdll.LoadLibrary("libxdrfile.so")
+    xdr=cdll.LoadLibrary("./libxdrfile.so")
 except:
     raise IOError("libxdrfile.so can't be loaded")
 
