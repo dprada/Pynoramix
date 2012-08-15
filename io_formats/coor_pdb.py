@@ -11,7 +11,7 @@ from numpy import array
 
 def open_traj(file_name):
     FFF=open(file_name,'r')
-    return FFF,0,0
+    return FFF,0,0,0
 
 def read_all(file_unit,iopos=None):
 
