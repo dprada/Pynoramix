@@ -1,7 +1,7 @@
 ##############################
 ######## Internal variables:
 
-path_lib_xdr = "/home/diego/Projects/GitHub/Pyno_Back/xdrfiles"
+path_lib_xdr = "/home/diego/Projects/GitHub/Pyno_Back/io_format/"
 
 
 ###############################
