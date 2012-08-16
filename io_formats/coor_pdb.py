@@ -17,22 +17,25 @@ def read_all(file_unit,iopos=None):
 
     model_inds=[]
     file_unit.seek(0)
-    for line in file_unit:
+    while True:
+        line=file_unit.readline()
         if line.startswith('MODEL'):
-            pos=file_unit.tell()
-            model_inds.append(int(line.split()[1]),pos)
-
+            model_inds.append([int(line.split()[1]),file_unit.tell()])
+        if len(line)==0:
+            break
 
     #pos=file_unit.tell()
     #file_unit.seek(pos)
 
     if len(model_inds)==0: model_inds.append([1,0])
 
+    file_unit.seek(0)
     temp=[]
     for ref_mod in model_inds:
         frame=cl_frame()
         file_unit.seek(ref_mod[1])
-        for line in file_unit:
+        while True:
+            line=file_unit.readline()
             ii=line.split()
             if ii[0]=='CRYST1':
                 frame.box[0][0]=float(ii[1])
