@@ -605,10 +605,10 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
     def coors2frame (self,traj=0,frame=0):
 
-        self.info_traj_frame=[traj,frame]
-        self.box=self.traj[traj].frame[frame].box
-        for ii in range(self.num_atoms):
-            self.atom[ii].coors=self.traj[traj].frame[frame].coors[ii,:]
+        #self.info_traj_frame=[traj,frame]
+        #self.box=self.traj[traj].frame[frame].box
+        #for ii in range(self.num_atoms):
+        #    self.atom[ii].coors=self.traj[traj].frame[frame].coors[ii,:]
 
         pass
 

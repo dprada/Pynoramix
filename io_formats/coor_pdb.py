@@ -10,8 +10,8 @@ from numpy import array
 # write_frame
 
 def open_traj(file_name):
-    FFF=open(file_name,'r')
-    return FFF,0,0
+    FFF=open(file_name,'rt')
+    return FFF,0,0,0
 
 def read_all(file_unit,iopos=None):
 
@@ -20,32 +20,42 @@ def read_all(file_unit,iopos=None):
     for line in file_unit:
         if line.startswith('MODEL'):
             pos=file_unit.tell()
-            model_inds.append(int(line.split()[1]),pos)
+            model_inds.append([int(line.split()[1]),pos])
+            print line
 
+    file_unit.seek(model_inds[0][1],0)
+    print file_unit.readline()
+    file_unit.seek(model_inds[0][1],0)
+    print file_unit.readline()
 
     #pos=file_unit.tell()
     #file_unit.seek(pos)
 
-    if len(model_inds)==0: model_inds.append([1,0])
-
-    temp=[]
-    for ref_mod in model_inds:
-        frame=cl_frame()
-        file_unit.seek(ref_mod[1])
-        for line in file_unit:
-            ii=line.split()
-            if ii[0]=='CRYST1':
-                frame.box[0][0]=float(ii[1])
-                frame.box[1][1]=float(ii[2])                   
-                frame.box[2][2]=float(ii[3])  
-            if (ii[0] in ['ATOM','HETATM']):
-                aux=(float(line[30:38]),float(line[38:46]),float(line[46:54]))
-                frame.coors.append(aux)
-            if ii[0] in ['MODEL','END']:
-                break
-
-        frame.coors=array(frame.coors,order='Fortran')
-        temp.append(frame)
+    #if len(model_inds)==0: model_inds.append([1,0])
+    # 
+    #temp=[]
+    #for ref_mod in model_inds:
+    #    frame=cl_frame()
+    #    file_unit.seek(ref_mod[1])
+    #    hhh=0
+    #    for line in file_unit:
+    #        ii=line.split()
+    #        if ii[0]=='CRYST1':
+    #            frame.box[0][0]=float(ii[1])
+    #            frame.box[1][1]=float(ii[2])                   
+    #            frame.box[2][2]=float(ii[3])  
+    #        if (ii[0] in ['ATOM','HETATM']):
+    #            aux=(float(line[30:38]),float(line[38:46]),float(line[46:54]))
+    #            hhh+=1
+    #            if (hhh==1):
+    #                print ii
+    #            frame.coors.append(aux)
+    #        if ii[0] in ['MODEL','END']:
+    #            break
+    # 
+    #    frame.coors=array(frame.coors,order='Fortran')
+    #    print ref_mod[0],len(frame.coors)
+    #    temp.append(frame)
 
     return temp,0
 
