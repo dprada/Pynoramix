@@ -22,8 +22,7 @@ class cl_traj():
             self.upload_frame(frame,begin,end,increment,units)
 
         if verbose:
-            print '# file: ',self.name
-            print '# ',self.num_frames,' frames loaded.'
+            print '#',self.num_frames,'frames/models loaded.'
 
     def restart(self):
         self.io_status=None

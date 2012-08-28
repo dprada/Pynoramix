@@ -89,6 +89,9 @@ atom={
 '2HZ'  : 'atHZ2'  ,    # pymol.pdb
 'HZ3'  : 'atHZ3'  ,
 '3HZ'  : 'atHZ3'  ,    # pymol.pdb
+'HT1'  : 'atH1'   ,    # for terminal
+'HT2'  : 'atH2'   ,    # for terminal
+'HT3'  : 'atH3'   ,    # for terminal
 'C'    : 'atC'    ,
 'CA'   : 'atCA'   ,
 'CB'   : 'atCB'   ,
@@ -117,8 +120,6 @@ atom={
 'NH2'  : 'atNH2'  ,
 'NZ'   : 'atNZ'   ,
 'O'    : 'atO'    ,
-'O1'   : 'atO1'   ,
-#'O2'   : 'atO2'   ,
 'OD1'  : 'atOD1'  ,
 'OD2'  : 'atOD2'  ,
 'OE1'  : 'atOE1'  ,
@@ -151,7 +152,8 @@ atom={
 
 ## Ions
 'NA'    :  'itNA' ,
-'K'     :  'itK'
+'K'     :  'itK'  ,
+'CL'    :  'itCL' ,
 }
 
 
@@ -256,5 +258,6 @@ atom_nature={
 
 ## Ions
 'itNA'  : 'NA'  , 
-'itK'   : 'K' 
+'itK'   : 'K'   ,
+'itCL'  : 'CL'
 }

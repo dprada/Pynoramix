@@ -184,7 +184,8 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         self.dimensionality=0           # dimensionality (num_atoms*3)
 
         # > Coordinates and Trajectory
-        self.info_traj_frame=[]
+        self.which_traj=None
+        self.which_frame=None
         self.box=[]
         self.traj=[]
         self.dist_matrix=[]             # distance matrix (This should go to cl_coors?)
@@ -471,7 +472,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         print '#',self.num_waters,' waters'
         print '#',self.num_ions,' ions'
         for ii in range(len(self.traj)):
-            print '#',self.traj[ii].num_frames,' frames/models in traj '+str(ii)+''
+            print '#',self.traj[ii].num_frames,' frames/models in traj',str(ii)
 
     # To handle files
 
@@ -602,24 +603,30 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
     # To handle coordinates
 
-    def info_coors(self):
-        print 'traj '+str(self.info_traj_frame[0])+', frame '+str(self.info_traj_frame[1])
+    def info_trajs(self):
+        if len(self.traj):
+            for aa in range(len(self.traj)):
+                print '#',self.traj[aa].num_frames,'frames/models in traj',aa
+        else:
+            print '# No coordinates'
         pass
 
     def coors2frame (self,traj=0,frame=0):
 
-        #self.info_traj_frame=[traj,frame]
-        #self.box=self.traj[traj].frame[frame].box
-        #for ii in range(self.num_atoms):
-        #    self.atom[ii].coors=self.traj[traj].frame[frame].coors[ii,:]
+        self.which_traj=traj
+        self.which_frame=frame
+        self.box=self.traj[traj].frame[frame].box
+        for ii in range(self.num_atoms):
+            self.atom[ii].coors=self.traj[traj].frame[frame].coors[ii,:]
 
         pass
 
-    def load_traj (self,file_input=None,frame='next',begin=None,end=None,increment=1,units=None,verbose=True):
+    def load_traj (self,file_input=None,frame='ALL',begin=None,end=None,increment=1,units=None,verbose=True):
 
         temp_traj=cl_traj(file_input,frame,begin,end,increment,units,verbose)
         self.traj.append(temp_traj)
-        self.coors2frame()
+        if len(self.traj)==0:
+            self.coors2frame()
 
     def delete_traj (self,index='ALL'):
 
@@ -628,17 +635,16 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             del(self.box);self.box=[]
             for ii in range(self.num_atoms):
                 del(self.atom[ii].coors); self.atom[ii].coors=[]
-            self.info_traj_frame=[]
 
         elif type(index) in ['int']:
             self.traj.__delitem__(index)
-            if self.info_traj_frame[0]==index:
+            if self.which_traj==index:
                 del(self.box);self.box=[]
                 for ii in range(self.num_atoms):
                     del(self.atom[ii].coors)
                     self.atom[ii].coors=[]
-            elif self.info_traj_frame[0]>index:
-                self.info_traj_frame[0]-=1
+            elif self.which_traj>index:
+                self.which_traj-=1
 
         pass
 
