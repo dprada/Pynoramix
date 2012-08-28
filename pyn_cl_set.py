@@ -205,12 +205,15 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                     download=download+'.pdb'
             input_file=download
             if not path.exists(input_file):
-                temp='wget -nv http://www.rcsb.org/pdb/files/'+input_file
+                temp='wget -nv http://www.rcsb.org/pdb/files/'+input_file+' 1>/dev/null 2>&1'
                 system(temp)
+                if path.exists(input_file):
+                    print '# File saved as '+input_file
+                else:
+                    print '# Error downloading http://www.rcsb.org/pdb/files/'+input_file
 
             else:
-                print '# The file '+input_file+' exists in the local folder.'
-                print '# Loading it...'
+                print '# The file '+input_file+' exists in the local folder. Loading it...'
 
             self.file_topol=input_file
 
@@ -461,7 +464,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         self.num_waters=len(self.water)
         self.num_trajs=len(self.traj)
         self.num_ions=len(self.ion)
-        print '#','System created from the file ',self.file_topol,':'
+        print '#','System created from the file',self.file_topol,':'
         print '#',self.num_atoms,' atoms'
         print '#',self.num_residues,' residues'
         print '#',self.num_chains,' chains'

@@ -26,16 +26,20 @@ A system can be loaded from a file (pdb,gro) or downloaded from the Protein Data
 
 .. sourcecode:: ipython
 
-   In [2]: mol_test=molecule(download='2WC2',coors=False,with_bonds=False)
-   # System created from the file  2WC2.pdb :
+   In [2]: mol_test=molecule(download='2WC2')
+   # File saved as 2WC2.pdb
+   # System created from the file 2WC2.pdb :
    # 6704  atoms
    # 418  residues
    # 2  chains
    # 0  waters
    # 0  ions
+   # 20  frames/models in traj 0
+
    
 
-.. todo:: Complete the topology of residues and terminals and remove the option "with_bonds=False".
+.. todo:: Complete the topology of residues and terminals. Apparently
+   it works without the option "with_bonds=False" but it needs to be watched.
 
 Navigating
 ++++++++++
