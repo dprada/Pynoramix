@@ -1,8 +1,6 @@
 ##############################
 ######## Internal variables:
 
-path_lib_xdr = "/home/diego/Projects/GitHub/Pyno_Back/io_format/"
-
 
 ###############################
 ####### External modules:
