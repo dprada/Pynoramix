@@ -3,6 +3,10 @@ from numpy import *
 from ctypes import *
 from numpy.ctypeslib import ndpointer
 
+import os
+cwd=os.path.dirname(os.path.abspath(__file__))
+
+
 # open
 # close
 # read_all
@@ -17,7 +21,7 @@ exdrNOMEM, exdrENDOFFILE, exdrNR = range(13)
 
 
 try: 
-    xdr=cdll.LoadLibrary("libxdrfile.so")
+    xdr=cdll.LoadLibrary(cwd+'/libxdrfile.so')
 except:
     raise IOError("libxdrfile.so can't be loaded")
 

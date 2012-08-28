@@ -23,9 +23,11 @@ Pynoramix depends on some packages:
 
 - NumPy
 - f2py
+- python-dev (to fix the problem with file Python.h)
 - Matplotlib
 
 .. warning:: Do not forget to add the xdrfiles/lib/ path to the LD_LIBRARY_PATH.
+	     No longer necessary if we include the libraries in the io_format folder.
 
 
 

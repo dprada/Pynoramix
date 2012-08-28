@@ -1,7 +1,7 @@
 import numpy as npy
 import copy
 import pylab
-import funcs as f
+import pyn_fort_math as f
 
 
 def average(a):
