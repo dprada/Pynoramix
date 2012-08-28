@@ -4,8 +4,8 @@ from ctypes import *
 from numpy.ctypeslib import ndpointer
 
 import os
-cwd=os.path.dirname(os.path.abspath(__file__))
-
+#cwd=os.path.dirname(os.path.abspath(__file__))
+cwd='/home/diego/Projects/GitHub/Pyno_Back/io_formats'
 
 # open
 # close
@@ -21,7 +21,9 @@ exdrNOMEM, exdrENDOFFILE, exdrNR = range(13)
 
 
 try: 
-    xdr=cdll.LoadLibrary(cwd+'/libxdrfile.so')
+    cwd2=cwd+'/libxdrfile.so'
+    print cwd2
+    xdr=cdll.LoadLibrary(cwd2)
 except:
     raise IOError("libxdrfile.so can't be loaded")
 
