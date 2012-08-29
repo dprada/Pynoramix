@@ -113,16 +113,16 @@ Along this section the different ways to do it will be illustrated.
    In [4]: GSGS.info_trajs()
    # No coordinates
 
-   In [5]: GSGS.load_traj('GSGS.dcd')
+   In [5]: GSGS.load_traj('GSGS.dcd','ALL')
    # 10 frames/models loaded.
 
 .. sourcecode:: ipython
 
    In [2]: GSGS=molecule('GSGS.pdb',coors=False,verbose=False)
     
-   In [3]: GSGS.load_traj('GSGS.dcd',verbose=False)
+   In [3]: GSGS.load_traj('GSGS.dcd',frame='ALL',verbose=False)
     
-   In [4]: GSGS.info()
+   In [4]: GSGS.info(); GSGS.info_trajs()
    # System created from the file GSGS.pdb :
    # 4723  atoms
    # 1568  residues
@@ -131,7 +131,34 @@ Along this section the different ways to do it will be illustrated.
    # 4  ions
    # 10  frames/models in traj 0
 
+.. sourcecode:: ipython
 
+   In [2]: GSGS=molecule('GSGS.pdb',coors=False,verbose=False)
+
+   In [3]: GSGS.load_traj('GSGS.dcd')
+   # 0 frames/models in traj 0
+
+   In [4]: print GSGS.traj[0].name, GSGS.traj[0].type, GSGS.traj[0].io_opened, GSGS.traj[0].io_end
+   GSGS.dcd dcd True False
+
+   In [5]: while 1:
+              GSGS.traj[0].upload_frame()
+              if GSGS.traj[0].io_end: break        # Or not GSGS.traj[0].io_opened
+     ....: 
+   # End of file
+
+   In [6]: GSGS.info_trajs()
+   # 10 frames/models in traj 0
+
+
+.. sourcecode:: ipython
+
+   In [2]: GSGS=molecule('GSGS.pdb',coors=False,verbose=False)
+
+   In [3]: GSGS.load_traj('GSGS.dcd')
+   # 0 frames/models in traj 0
+
+   In [4]: GSGS.traj[0].reload_frame()
 
 
 

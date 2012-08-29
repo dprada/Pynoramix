@@ -10,10 +10,16 @@ from numpy import array
 # write_frame
 
 def open_traj(file_name):
+    io_vars=[]
+    io_pos=0
+    io_err=False
     FFF=open(file_name,'r')
-    return FFF,0,0,0
+    return FFF,io_vars,io_pos,io_err # io_file,io_vars,io_pos,io_err
 
 def read_all(file_unit,io_vars=None,io_pos=None):
+
+    io_err=False
+    io_end=False
 
     model_inds=[]
     file_unit.seek(0)
@@ -50,11 +56,13 @@ def read_all(file_unit,io_vars=None,io_pos=None):
         frame.coors=array(frame.coors,order='Fortran')
         temp.append(frame)
 
-    return temp,0
+    io_end=True
+
+    return temp,io_err,io_end # io_file,io_err,io_end
 
 def read_next(file_unit,iopos=None):
 
-    return None,None,1
+    return None,None,True,False  # io_file,io_pos,io_err,io_end
 
 def read_frame(file_unit,iopos=None):
 
@@ -62,8 +70,9 @@ def read_frame(file_unit,iopos=None):
 
 def close_traj(file_unit):
 
+    io_err=False
     file_unit.close()
-    return None,0
+    return io_err  #io_err
     
 
 def write_all():

@@ -126,12 +126,12 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_vars,o_natom,o_delta_t,pos_o)
 END SUBROUTINE open_read
 
 
-SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_status)
+SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_err,io_end)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::funit,natom,pos_i
   INTEGER,INTENT(IN):: with_cell
-  INTEGER,INTENT(OUT)::pos_o,io_status
+  INTEGER,INTENT(OUT)::pos_o,io_err,io_end
 
   DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::cell
   DOUBLE PRECISION,DIMENSION(natom,3),INTENT(OUT)::coors
@@ -139,11 +139,12 @@ SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_status)
   REAL*8::buffer_cell(3,3)
   REAL(KIND=4),ALLOCATABLE,DIMENSION(:)::buffer
   INTEGER(KIND=4)::HD(2)
-  LOGICAL::io_end
+
 
   cell=0.0d0
   pos_o=pos_i
-  io_status=1
+  io_err=0
+  io_end=1
 
   ALLOCATE(buffer(natom))
 
@@ -162,7 +163,7 @@ SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_status)
   READ(funit) HD,buffer(:)
   coors(:,3)=dble(buffer(:))
 
-  io_status=0
+  io_end=0
 
   INQUIRE(funit,pos=pos_o)
   
@@ -171,11 +172,13 @@ SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_status)
 END SUBROUTINE read
 
 
-SUBROUTINE close(funit)
+SUBROUTINE close(funit,io_err)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::funit
+  INTEGER,INTENT(OUT)::io_err
 
   CLOSE(funit)
+  io_err=0 !good
 
 END SUBROUTINE close

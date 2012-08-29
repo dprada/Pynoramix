@@ -445,6 +445,8 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 for ii in missing_atoms:
                     print '#',ii[0],ii[1],ii[2]
                 self.info()
+                if coors:
+                    self.traj[0].info(index=0)
 
         ## END of IF input_file
 
@@ -471,8 +473,6 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         print '#',self.num_chains,' chains'
         print '#',self.num_waters,' waters'
         print '#',self.num_ions,' ions'
-        for ii in range(len(self.traj)):
-            print '#',self.traj[ii].num_frames,' frames/models in traj',str(ii)
 
     # To handle files
 
@@ -606,7 +606,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
     def info_trajs(self):
         if len(self.traj):
             for aa in range(len(self.traj)):
-                print '#',self.traj[aa].num_frames,'frames/models in traj',aa
+                self.traj[aa].info(index=aa)
         else:
             print '# No coordinates'
         pass
@@ -621,12 +621,16 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         pass
 
-    def load_traj (self,file_input=None,frame='ALL',begin=None,end=None,increment=1,units=None,verbose=True):
+    def load_traj (self,file_input=None,frame=None,begin=None,end=None,increment=1,units=None,verbose=True):
 
-        temp_traj=cl_traj(file_input,frame,begin,end,increment,units,verbose)
+        temp_traj=cl_traj(file_input,frame,begin,end,increment,units,verbose=False)
+        if verbose:
+            temp_traj.info(index=len(self.traj))
         self.traj.append(temp_traj)
-        if len(self.traj)==0:
-            self.coors2frame()
+        del(temp_traj)
+        if len(self.traj)==1:
+            if len(self.traj[0].frame) :
+                self.coors2frame()
 
     def delete_traj (self,index='ALL'):
 
