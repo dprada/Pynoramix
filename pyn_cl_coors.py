@@ -9,6 +9,7 @@ class cl_traj():
         self.io_pos=None
         self.io_status=False
         self.io_vars=[]
+        self.io_err=None
         self.num_frames=0
         self.precision=None
         self.frame=[]
@@ -81,7 +82,7 @@ class cl_traj():
                 self.num_frames+=1
             ### Uploading all frames
             elif frame in ['all','All','ALL']:
-                temp_frames,ioerr=getattr(io,'coor_'+self.type).read_all(self.io_file)
+                temp_frames,ioerr=getattr(io,'coor_'+self.type).read_all(self.io_file,self.io_vars,self.io_pos)
                 if ioerr: return '# Error reading file'
                 self.io_file,ioerr=getattr(io,'coor_'+self.type).close_traj(self.io_file)
                 if ioerr: return '# Error closing file'

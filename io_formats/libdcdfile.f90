@@ -1,27 +1,26 @@
-SUBROUTINE open(len_ch,file_name,option,funit)
+SUBROUTINE open_read(len_ch,file_name,funit,o_vars,o_natom,o_delta_t,pos_o)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::len_ch
   CHARACTER(80),INTENT(IN)::file_name
-  CHARACTER(1),INTENT(IN)::option
-  INTEGER,INTENT(OUT)::funit
+  INTEGER,INTENT(OUT)::funit,pos_o,o_natom
+  INTEGER,DIMENSION(20),INTENT(OUT)::o_vars
+  DOUBLE PRECISION,INTENT(OUT)::o_delta_t
 
   LOGICAL:: UNITOP
 
   INTEGER::uno
-  CHARACTER*1::word_uno(20)
+  CHARACTER(1),DIMENSION(20)::word_uno
   equivalence (word_uno, uno)
-  CHARACTER*6::endianness
+  CHARACTER(6)::endianness
 
   INTEGER(KIND=4)::NTITLE, DCD_VARS(20),NATOM,HD(2)
-  CHARACTER*4::DCD_TYPE
-  CHARACTER*80,ALLOCATABLE,DIMENSION(:)::TITLE
+  CHARACTER(4)::DCD_TYPE
+  CHARACTER(80),ALLOCATABLE,DIMENSION(:)::TITLE
   REAL(KIND=4)::delta_t
   equivalence(delta_t,DCD_VARS(10))
-  LOGICAL:: with_cell
   integer(4), parameter :: dcd_magic_little = X'44524f43', dcd_magic_big = X'434f5244'
 
-  ! Checking the unit
 
   UNITOP=.False.
 
@@ -116,52 +115,59 @@ SUBROUTINE open(len_ch,file_name,option,funit)
   ! DCD_VARS(19):
   ! DCD_VARS(20): CHARMM version number
 
-  with_cell=.false.
-  IF (DCD_VARS(11)) with_cell=.true.
-
   DEALLOCATE(TITLE)
 
-END SUBROUTINE open
+  ! Output:
+  INQUIRE(funit,pos=pos_o)
+  o_natom=NATOM
+  o_vars=DCD_VARS
+  o_delta_t=dble(delta_t)
+
+END SUBROUTINE open_read
 
 
-SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors)
+SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_status)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::funit,natom,pos_i
-  LOGICAL,INTENT(IN):: with_cell
-  INTEGER,INTENT(OUT)::pos_o
+  INTEGER,INTENT(IN):: with_cell
+  INTEGER,INTENT(OUT)::pos_o,io_status
 
   DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::cell
   DOUBLE PRECISION,DIMENSION(natom,3),INTENT(OUT)::coors
 
   REAL*8::buffer_cell(3,3)
   REAL(KIND=4),ALLOCATABLE,DIMENSION(:)::buffer
-  INTEGER(KIND=4)::NTITLE, DCD_VARS(20),NATOM,HD(2)
+  INTEGER(KIND=4)::HD(2)
+  LOGICAL::io_end
 
   cell=0.0d0
   pos_o=pos_i
+  io_status=1
+
+  ALLOCATE(buffer(natom))
 
   IF (with_cell) THEN
      buffer_cell=0.0d0
-     READ(funit,pos=pos_o) HD,buffer_cell(1,1), buffer_cell(1,2), buffer_cell(2,2), buffer_cell(1,3), buffer_cell(2,3), buffer_cell(3,3)
+     READ(funit,pos=pos_o,end=600) HD,buffer_cell(1,1), buffer_cell(1,2), buffer_cell(2,2), buffer_cell(1,3), buffer_cell(2,3), buffer_cell(3,3)
      cell=dble(buffer_cell)
      INQUIRE(funit,pos=pos_o)
   END IF
 
-  ALLOCATE(buffer(natom))
-
   coors=0.0d0
-  READ(funit,pos=pos_o) HD,buffer(:)
+  READ(funit,pos=pos_o,end=600) HD,buffer(:)
   coors(:,1)=dble(buffer(:))
   READ(funit) HD,buffer(:)
   coors(:,2)=dble(buffer(:))
   READ(funit) HD,buffer(:)
   coors(:,3)=dble(buffer(:))
 
-  DEALLOCATE(buffer)
+  io_status=0
 
   INQUIRE(funit,pos=pos_o)
   
+600  DEALLOCATE(buffer)
+
 END SUBROUTINE read
 
 

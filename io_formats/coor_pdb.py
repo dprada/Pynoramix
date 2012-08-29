@@ -13,7 +13,7 @@ def open_traj(file_name):
     FFF=open(file_name,'r')
     return FFF,0,0,0
 
-def read_all(file_unit,iopos=None):
+def read_all(file_unit,io_vars=None,io_pos=None):
 
     model_inds=[]
     file_unit.seek(0)

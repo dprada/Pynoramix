@@ -90,7 +90,7 @@ for ff in ${io_files[*]}; do
     if [ ! -e ${ff%.*}.so ]; then
         cd ${ff%/*}
 	faux=${ff##*/}
-	$f2py_exe --opt=$f90_opt --f90flags=$f90_flags -c -m ${faux%.*} $faux $f90_libs 1>> INSTALL.log 2>> INSTALL.log
+	$f2py_exe --opt=$f90_opt --f90flags=$f90_flags -c -m ${faux%.*} $faux $f90_libs 1>> $coming_back/INSTALL.log 2>> $coming_back/INSTALL.log
 	if [ ! -e ${faux%.*}.so ]; then
 	    echo '> Error compiling' $ff': check the file INSTALL.log'
 	else

@@ -113,6 +113,25 @@ Along this section the different ways to do it will be illustrated.
    In [4]: GSGS.info_trajs()
    # No coordinates
 
+   In [5]: GSGS.load_traj('GSGS.dcd')
+   # 10 frames/models loaded.
+
+.. sourcecode:: ipython
+
+   In [2]: GSGS=molecule('GSGS.pdb',coors=False,verbose=False)
+    
+   In [3]: GSGS.load_traj('GSGS.dcd',verbose=False)
+    
+   In [4]: GSGS.info()
+   # System created from the file GSGS.pdb :
+   # 4723  atoms
+   # 1568  residues
+   # 3  chains
+   # 1560  waters
+   # 4  ions
+   # 10  frames/models in traj 0
+
+
 
 
 
