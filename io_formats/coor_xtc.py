@@ -26,44 +26,51 @@ except:
     raise IOError("libxdrfile.so can't be loaded")
 
 def open_traj(file_name):
-    FFF=xdr.xdrfile_open(file_name,"r")
-    if not FFF: 
-        print "Cannot open file: "+file_name
-        return FFF,0,1
+
+    io_vars=[]
+    io_pos=0
+    io_err=0
+
+    funit=xdr.xdrfile_open(file_name,"r")
+    if not funit:
+        io_err=1
     else:
-
-        #read natoms
         natoms=c_int()
-        r=xdr.read_xtc_natoms(file_name,byref(natoms))
-        if r!=exdrOK: raise IOError("Error reading: "+file_name)
-        natoms=natoms.value
-
+        io_err=xdr.read_xtc_natoms(file_name,byref(natoms))
+        if io_err:
+            return funit,io_vars,io_pos,io_err
+        else:
+            io_vars.append(natoms.value)
+            
         #for NumPy define argtypes - ndpointer is not automatically converted to POINTER(c_float)
         #alternative of ctypes.data_as(POINTER(c_float)) requires two version for numpy and c_float array
-        xdr.read_xtc.argtypes=[c_int,c_int,POINTER(c_int),POINTER(c_float), \
-           ndpointer(ndim=2,dtype=float32),ndpointer(ndim=2,dtype=float32),POINTER(c_float)]
+            xdr.read_xtc.argtypes=[c_int,c_int,POINTER(c_int),POINTER(c_float), \
+                ndpointer(ndim=2,dtype=float32),ndpointer(ndim=2,dtype=float32),POINTER(c_float)]
 
-        return FFF,[natoms],0,0
+    return funit,io_vars,io_pos,io_err
 
-def read_all(file_unit,iovars=None,iopos=None):
+def read_all(file_unit,io_vars=None,io_pos=None):
 
     temp=[]
     while 1:
-        temp_frame,pos,end=read_next (file_unit,iovars,iopos)
-        if end:
+        temp_frame,io_pos,io_err,io_end=read_next(file_unit,io_vars,io_pos)
+        if io_end or io_err:
             break
         temp.append(temp_frame)
 
-    return temp,0
+    return temp,io_err,io_end
 
 
-def read_next (file_unit,iovars=None,iopos=None):
+def read_next (file_unit,io_vars=None,io_pos=None):
+
+    io_err=0
+    io_end=0
 
     step = c_int()
     time = c_float()
     prec = c_float()
     lam = c_float()
-    natoms=iovars[0]
+    natoms=io_vars[0]
 
     temp_frame=cl_frame()
     temp_frame.coors=empty((natoms,3),dtype=float32)
@@ -72,32 +79,33 @@ def read_next (file_unit,iovars=None,iopos=None):
     result = xdr.read_xtc(file_unit,natoms,byref(step),byref(time),temp_frame.box,
                                temp_frame.coors,byref(prec))
 
-    if result!=exdrOK: raise IOError("Error reading xdr file")
-    if result==exdrENDOFFILE: 
-        print '# End of file'
-        return temp_frame,pos,1
-     
-    temp_frame.precision=prec.value
-    temp_frame.time=time.value
-    temp_frame.step=step.value
-     
-    temp_frame.coors=array(temp_frame.coors,order='Fortran')
-    temp_frame.coors=10.0*temp_frame.coors
-    temp_frame.box=array(temp_frame.box,order='Fortran')
-    temp_frame.box=10.0*temp_frame.box
+    if result==exdrENDOFFILE:
+        io_end=1
+    elif result!=exdrOK: 
+        io_err=1
+    else:
+        temp_frame.precision=prec.value
+        temp_frame.time=time.value
+        temp_frame.step=step.value
+        temp_frame.coors=array(temp_frame.coors,order='Fortran')
+        temp_frame.coors=10.0*temp_frame.coors
+        temp_frame.box=array(temp_frame.box,order='Fortran')
+        temp_frame.box=10.0*temp_frame.box
 
-    pos=0
-    return temp_frame,pos,0
+    return temp_frame,io_pos,io_err,io_end
 
         
-def read_frame(file_unit,iovars=None,iopos=None):
+def read_frame(file_unit,frame,io_vars=None,io_pos=None):
 
-    return None,None,True
+    io_err=1
+    io_end=0
+    return None,io_pos,io_err,io_end
 
-def close(file_unit):
+def close_traj(file_unit):
 
-    file_unit.close()
-    return None,False
+    io_err=0
+    xdr.xdrfile_close(file_unit)
+    return io_err
     
 
 def write_all():
