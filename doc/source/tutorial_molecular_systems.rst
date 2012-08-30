@@ -89,13 +89,18 @@ sdfsdfdsf
 Loading/Writting a MD trajectory
 ================================
 
+Loading
++++++++
+
 Once a topology has been created a trajectory can be loaded from
 different formats: pdb, gro, xtc, trr, dcd, bin (to be deprecated).
 
 It is recommended the use of dcd files, the file is unformatted and
 thereby it is small and easy to handle.
 
-Along this section the different ways to do it will be illustrated.
+Along this section the different ways to do it will be illustrated
+using the files :download:`GSGS.pdb <../tutorials/systems_tut1/GSGS.pdb>`
+and :download:`GSGS.dcd <../tutorials/systems_tut1/GSGS.dcd>`.
 
 .. sourcecode:: ipython
 
