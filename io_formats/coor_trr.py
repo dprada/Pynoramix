@@ -77,12 +77,10 @@ def read_next (file_unit,io_vars=None,io_pos=None):
     temp_frame.box=empty((3,3),float32)
 
     result = xdr.read_trr(file_unit,natoms,byref(step),byref(time),byref(lam),
-                        temp_frame.box,temp_frame.x,None,None) #TODO: make v,f possible
+                        temp_frame.box,temp_frame.coors,None,None) #TODO: make v,f possible
 
-    if result==exdrENDOFFILE:
+    if result==exdrINT:    #TODO: dirty hack. read_trr return exdrINT not exdrENDOFFILE
         io_end=1
-    elif result==exdrINT:
-        io_err=1           #TODO: dirty hack. read_trr return exdrINT not exdrENDOFFILE
     elif result!=exdrOK: 
         io_err=1
     else:
