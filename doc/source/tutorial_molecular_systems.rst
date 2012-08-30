@@ -142,8 +142,8 @@ Along this section the different ways to do it will be illustrated.
    GSGS.dcd dcd True False
 
    In [5]: while 1:
-              GSGS.traj[0].upload_frame()
-              if GSGS.traj[0].io_end: break        # Or not GSGS.traj[0].io_opened
+     ....:     GSGS.traj[0].upload_frame()
+     ....:     if GSGS.traj[0].io_end: break
      ....: 
    # End of file
 
@@ -155,10 +155,28 @@ Along this section the different ways to do it will be illustrated.
 
    In [2]: GSGS=molecule('GSGS.pdb',coors=False,verbose=False)
 
-   In [3]: GSGS.load_traj('GSGS.dcd')
-   # 0 frames/models in traj 0
+   In [3]: GSGS.load_traj('GSGS.dcd',frame=0)
+   # 1 frames/models in traj 0
 
-   In [4]: GSGS.traj[0].reload_frame()
+   In [4]: while GSGS.traj[0].io_opened:
+      ...:     print GSGS.traj[0].frame[0].coors[0]
+      ...:     GSGS.traj[0].reload_frame()
+      ...: 
+   [ -7.26851273  -8.12112617  10.57811832]
+   [ -5.16595078  -9.8920269   12.24640751]
+   [ -6.12880325  -9.20014763  15.28322697]
+   [ -4.90646744  -8.31535339  12.97708988]
+   [ -5.04781723  -9.68705559  14.15655327]
+   [ -5.95707321  -8.45479965  17.51550102]
+   [ -4.45994186 -10.63479614  16.19140053]
+   [ -6.01659775 -13.60509872  16.98220253]
+   [ -4.40946579 -13.10482597  17.12298393]
+   [ -5.01924515 -13.77911949  15.64630699]
+   # End of file
+
+   In [5]: GSGS.info_trajs()
+   # 1 frames/models in traj 0
+
 
 
 

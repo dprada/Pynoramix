@@ -60,10 +60,20 @@ class cl_traj():
     # 
     #    pass
 
-    def reload_frame(self,old=0,new='next'):
+    def reload_frame(self,new='next',old=0):
 
         if new=='next':
-            temp_frame,self.io_pos,ioerr=getattr(io,'coor_'+self.type).read_next(self.io_file,self.io_vars,self.io_pos)
+            temp_frame,self.io_pos,self.io_err,self.io_end=getattr(io,'coor_'+self.type).read_next(self.io_file,self.io_vars,self.io_pos)
+            if self.io_err: 
+                print '# Error reading the file'
+                return
+            if self.io_end: 
+                print '# End of file'
+                self.io_err=getattr(io,'coor_'+self.type).close_traj(self.io_file)
+                if self.io_err: return '# Error closing file'
+                self.io_opened=False
+                self.io_file=None
+                return
             self.frame[old]=temp_frame
             del(temp_frame)
         else:
@@ -114,8 +124,8 @@ class cl_traj():
             ### Uploading a list of frames
             elif type(frame) in [tuple,list]:
                 for ii in frame:
-                    temp_frame,self.io_pos,ioerr=getattr(io,'coor_'+self.type).read_next(self.io_file,self.io_vars,self.io_pos,ii)
-                    if ioerr: return '# Error reading file'
+                    temp_frame,self.io_pos,self.io_err,self.io_end=getattr(io,'coor_'+self.type).read_frame(self.io_file,ii,self.io_vars,self.io_pos)
+                    if self.io_err: return '# Error reading file'
                     self.frame.append(temp_frame)
                     self.num_frames+=1
 

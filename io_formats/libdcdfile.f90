@@ -125,7 +125,6 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_vars,o_natom,o_delta_t,pos_o)
 
 END SUBROUTINE open_read
 
-
 SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_err,io_end)
 
   IMPLICIT NONE

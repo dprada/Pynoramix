@@ -25,6 +25,8 @@ import libdcdfile as libdcd
 #---
 # io_vars[20]: Number of atoms
 # io_vars[21]: delta_t
+# io_vars[22]: pos_header
+# io_vars[23]: pos_frame
 
 
 # open
@@ -61,6 +63,8 @@ def open_traj(file_name):
             io_vars.append(ii)
         io_vars.append(o_natom)
         io_vars.append(o_delta_t)
+        io_vars.append(io_pos)
+        io_vars.append(o_vars[10]*7*8+3*(o_natom*4+8))
 
     return funit,io_vars,io_pos,io_err  # io_file,io_vars,io_pos,io_err
 
@@ -84,11 +88,15 @@ def read_next(file_unit,io_vars=None,io_pos=None):
 
     io_pos,temp_frame.box,temp_frame.coors,io_err,io_end=libdcd.read(file_unit,io_vars[20],io_vars[10],io_pos)
 
-    return temp_frame,io_pos,io_err,io_end  # io_file,io_pos,io_err,io_end
+    return temp_frame,io_pos,io_err,io_end  # frame,io_pos,io_err,io_end
 
-def read_frame(file_unit,io_pos=None):
+def read_frame(file_unit,frame,io_vars=None,io_pos=None):
 
-    return None,None,1
+    temp_frame=cl_frame()
+    io_pos=io_vars[22]+frame*io_vars[23]
+    io_pos,temp_frame.box,temp_frame.coors,io_err,io_end=libdcd.read(file_unit,io_vars[20],io_vars[10],io_pos)
+    
+    return temp_frame,io_pos,io_err,io_end  # frame,io_pos,io_err,io_end
 
 def close_traj(file_unit):
 
