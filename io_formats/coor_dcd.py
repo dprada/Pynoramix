@@ -52,12 +52,12 @@ def open_traj(file_name):
 
     io_vars=[]
     io_pos=0
-    io_err=False
+    io_err=0
 
     funit,o_vars,o_natom,o_delta_t,io_pos=libdcd.open_read(len(file_name),str(file_name))
 
     if not funit:
-        io_err=True
+        io_err=1
     else:
         for ii in o_vars:
             io_vars.append(ii)
@@ -102,7 +102,6 @@ def close_traj(file_unit):
 
     io_err=libdcd.close(file_unit)
     return io_err   #io_err=0 good
-    
 
 def write_all():
 

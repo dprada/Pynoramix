@@ -10,67 +10,83 @@ from numpy import array
 # write_frame
 
 def open_traj(file_name):
-    FFF=open(file_name,'r')
-    return FFF,[],0,0
 
-def read_all(file_unit,iovars=None,iopos=None):
+    io_vars=[]
+    io_pos=0
+    io_err=0
+
+    funit=open(file_name,'r')
+
+    if not funit:
+        io_err=1
+    else:
+        io_err=0
+        io_pos=funit.tell()
+        line=funit.readline()       # Header of the gro file
+        natoms=int(funit.readline())    # Number of atoms
+        io_vars.append(natoms)
+        io_vars.append(io_pos)
+        funit.seek(io_pos)
+
+    return funit,io_vars,io_pos,io_err  # io_file,io_vars,io_pos,io_err
+
+def read_all(file_unit,io_vars=None,io_pos=None):
 
     temp=[]
-    model=0
-    pos=0
-    end=1
-    while end:
-        temp_frame=cl_frame()
-        file_unit.seek(pos)
-        line=file_unit.readline()
-        line=file_unit.readline()
-        num_atoms=int(line)
-        for i in range(num_atoms):
+    while 1:
+        temp_frame,io_pos,io_err,io_end=read_next(file_unit,io_vars,io_pos)
+        if io_end or io_err:
+            break
+        temp.append(temp_frame)
+
+    return temp,io_err,io_end   # io_file,io_err,io_end
+        
+def read_next(file_unit,io_vars=None,io_pos=None):
+
+    temp_frame,io_pos,io_err,io_end=read_aux(file_unit,io_vars,io_pos)
+    return temp_frame,io_pos,io_err,io_end  # frame,io_pos,io_err,io_end
+
+def read_frame(file_unit,frame,io_vars=None,io_pos=None):
+
+    io_err=1
+    io_end=0
+    return None,io_pos,io_err,io_end  # frame,io_pos,io_err,io_end
+
+
+def read_aux(file_unit,io_vars=None,io_pos=None):
+
+    io_end=0
+    io_err=0
+    temp_frame=cl_frame()
+
+    line=file_unit.readline()                                          # Header of the gro file
+    if len(line)==0: 
+        io_end=1
+    else:
+        line=file_unit.readline()                         
+        temp_frame.num_atoms=int(line)                                        # Number of atoms
+
+        for i in range(temp_frame.num_atoms): 
             line=file_unit.readline().split()
             temp_frame.coors.append(map(float,line[3:6]))
-        line=file_unit.readline().split()
-        temp_frame.box[0][0]=10.0*float(line[0])
-        temp_frame.box[1][1]=10.0*float(line[1])
-        temp_frame.box[2][2]=10.0*float(line[2])
-        temp_frame.coors=array(temp_frame.coors,order='Fortran')
-        temp_frame.coors=10.0*temp_frame.coors
-        temp.append(temp_frame)
-        pos=file_unit.tell()
-        test_line=file_unit.readline()
-        if len(test_line)==0: end=0
 
-    return temp,0
+        temp_frame.coors=10.0*array(temp_frame.coors,order='Fortran')
+        line=file_unit.readline().split()                         # Reading the size of the box
+        
+        temp_frame.box[0][0]=float(line[0])         # Using the global variable (pyn_var_glob.py) 
+        temp_frame.box[1][1]=float(line[1])         # for the size of the box vg.box      
+        temp_frame.box[2][2]=float(line[2])       
 
-def read_next(file_unit,iovars=None,iopos=None):
+        io_pos=file_unit.tell()
 
-    temp_frame=cl_frame()
-    file_unit.seek(pos)
-    line=file_unit.readline()
-    line=file_unit.readline()
-    num_atoms=int(line)
-    for i in range(num_atoms):
-        line=file_unit.readline().split()
-        temp_frame.coors.append(map(float,line[3:6]))
-    line=file_unit.readline().split()
-    temp_frame.box[0][0]=10.0*float(line[0])
-    temp_frame.box[1][1]=10.0*float(line[1])
-    temp_frame.box[2][2]=10.0*float(line[2])
-    temp_frame.coors=array(temp_frame.coors,order='Fortran')
-    temp_frame.coors=10.0*temp_frame.coors
-    temp.append(temp_frame)
-    pos=file_unit.tell()
+    return temp_frame,io_pos,io_err,io_end   # io_file,io_err,io_end
 
-    return temp_frame,pos,0
-
-def read_frame(file_unit,iovars=None,iopos=None):
-
-    return None,None,True
 
 def close_traj(file_unit):
 
+    io_err=0
     file_unit.close()
-    return None,0
-    
+    return io_err  #io_err
 
 def write_all():
 

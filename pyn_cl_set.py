@@ -525,7 +525,6 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
             ff.close()
 
-
     #def write_pdb (self,filename=None):
     #    
     #    if filename==None:

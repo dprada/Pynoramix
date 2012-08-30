@@ -4,9 +4,9 @@ class cl_traj():
     def __init__(self,file_input=None,frame=None,begin=None,end=None,increment=1,units=None,verbose=True):
 
         self.io_file=None
-        self.io_opened=False
-        self.io_end=False
-        self.io_err=False
+        self.io_opened=0
+        self.io_end=0
+        self.io_err=0
         self.io_pos=None
         self.io_vars=[]
 
@@ -41,7 +41,7 @@ class cl_traj():
         
         self.io_file,self.io_vars,self.io_pos,self.io_err=getattr(io,'coor_'+self.type).open_traj(self.name)
         if self.io_err: print '# Error opening the file'; return
-        self.io_opened=True
+        self.io_opened=1
 
 
     #def delete_frame(self,frame='ALL',begin=None,end=None,increment=1,units=None):
@@ -71,7 +71,7 @@ class cl_traj():
                 print '# End of file'
                 self.io_err=getattr(io,'coor_'+self.type).close_traj(self.io_file)
                 if self.io_err: return '# Error closing file'
-                self.io_opened=False
+                self.io_opened=0
                 self.io_file=None
                 return
             self.frame[old]=temp_frame

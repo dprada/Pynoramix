@@ -12,14 +12,14 @@ from numpy import array
 def open_traj(file_name):
     io_vars=[]
     io_pos=0
-    io_err=False
-    FFF=open(file_name,'r')
-    return FFF,io_vars,io_pos,io_err # io_file,io_vars,io_pos,io_err
+    io_err=0
+    funit=open(file_name,'r')
+    return funit,io_vars,io_pos,io_err # io_file,io_vars,io_pos,io_err
 
 def read_all(file_unit,io_vars=None,io_pos=None):
 
-    io_err=False
-    io_end=False
+    io_err=0
+    io_end=0
 
     model_inds=[]
     file_unit.seek(0)
@@ -60,17 +60,20 @@ def read_all(file_unit,io_vars=None,io_pos=None):
 
     return temp,io_err,io_end # io_file,io_err,io_end
 
-def read_next(file_unit,iopos=None):
+def read_next(file_unit,io_vars=None,io_pos=None):
 
-    return None,None,True,False  # io_file,io_pos,io_err,io_end
+    io_err=1
+    io_end=0
 
-def read_frame(file_unit,iopos=None):
+    return None,io_pos,io_err,io_end  # frame,io_pos,io_err,io_end
 
-    return None,None,1
+def read_frame(file_unit,frame,io_vars=None,io_pos=None):
+
+    return None,io_pos,io_err,io_end  # frame,io_pos,io_err,io_end
 
 def close_traj(file_unit):
 
-    io_err=False
+    io_err=0
     file_unit.close()
     return io_err  #io_err
     
