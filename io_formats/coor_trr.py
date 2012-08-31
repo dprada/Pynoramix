@@ -25,7 +25,7 @@ try:
 except:
     raise IOError("libxdrfile.so can't be loaded")
 
-def open_traj(file_name):
+def open_traj_read(file_name):
 
     io_vars=[]
     io_pos=0

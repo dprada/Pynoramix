@@ -9,6 +9,10 @@ class cl_traj():
         self.io_err=0
         self.io_pos=None
         self.io_vars=[]
+        self.io_w_file=None
+        self.io_w_name=None
+        self.io_w_type=None
+        self.io_w_opened=0
 
         self.name=None
         self.type=None
@@ -20,7 +24,7 @@ class cl_traj():
         if file_input!=None:
             self.name=file_input
             self.type=file_input.split('.')[1]
-            self.open()
+            self.open_read()
 
         if frame!=None or begin!=None or end!=None:
             self.upload_frame(frame,begin,end,increment,units)
@@ -37,11 +41,12 @@ class cl_traj():
             print '#',self.num_frames,'frames/models in traj',index
             
 
-    def open(self):
+    def open_traj(self):
         
-        self.io_file,self.io_vars,self.io_pos,self.io_err=getattr(io,'coor_'+self.type).open_traj(self.name)
+        self.io_file,self.io_vars,self.io_pos,self.io_err=getattr(io,'coor_'+self.type).open_traj_read(self.name)
         if self.io_err: print '# Error opening the file'; return
         self.io_opened=1
+
 
     def close(self):
 
@@ -141,5 +146,34 @@ class cl_traj():
         pass
 
 
+    def write(self,file_name=None,frame='ALL',begin=None,end=None,increment=1,units=None,action=None):
+
+        if action in ['INFO','Info','info']:
+            if not self.io_w_opened:
+                print '# No file opened to be written.'
+                return
+            else:
+                print '# File',self.io_w_name,'opened to be written.'
+                return
+
+        if (action in ['OPEN','Open','open']) or self.io_w_opened==0:
+            if self.io_w_opened: print '# There is a file opened to write'; return
+            self.io_w_type=file_name.split('.')[1]
+            self.io_w_name=file_name
+            self.io_w_file,self.io_err=getattr(io,'coor_'+self.io_w_type).open_traj_write(file_name)
+            #if self.io_err: print '# Error opening the file'; return
+            self.io_w_opened=1
+        
+        if action in ['CLOSE','Close','close']:
+            #self.io_err=getattr(io,'coor_'+self.io_w_type).close_traj(self.io_w_file)
+            if self.io_err: print '# Error closing the file'; return
+            self.io_w_opened=0
+            pass
+
+        if action==None:
+            if not self.io_w_opened: print '# Error: No file opened to be written.'; return
+            #self.io_w_file,self.io_err=getattr(io,'coor_'+self.type).open_traj_write(file_name)
+            if self.io_err: print '# Error opening the file'; return
+            self.io_w_opened=1
 
         

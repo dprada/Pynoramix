@@ -21,7 +21,7 @@ import libbinfile as libbin
 # io_vars[2]: pos_header
 # io_vars[3]: pos_frame
 
-def open_traj(file_name):
+def open_traj_read(file_name):
 
     io_vars=[]
     io_pos=0
