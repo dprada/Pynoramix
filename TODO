@@ -9,3 +9,39 @@
 - Case to study: The system named A has a selection name sub_A. If the coordinates of A have changed (i.e.: new frames attached or a rotation of A)... the coordinates of sub_A are updated?
 - Case to sudy: The neighbors belonging to selection sub_B of the selection sub_A are computed. The indexes of atoms neighbors[0] are internal indexes of sub_B. Is it right?
 - Write trajs 
+
+- ##### Not orthorhombic cells to be corrected: #########
+
+See: http://www.mail-archive.com/gmx-users@gromacs.org/msg28019.html
+
+def triclinic(L):
+    B = [[0,0,0],[0,0,0],[0,0,0]]
+
+    x, y, z, a, b, c = L[:6]
+
+    B[0][0] = x
+    if a == 90 and b == 90 and c == 90:
+        B[1][1] = y
+        B[2][2] = z
+    else:
+        a = a*pi/180
+        b = b*pi/180
+        c = c*pi/180
+        B[1][0] = y*cos(c)
+        B[1][1] = y*sin(c)
+        B[2][0] = z*cos(b)
+        B[2][1] = z*(cos(a)-cos(b)*cos(c))/sin(c)
+        B[2][2] = sqrt(z*z-B[2][0]**2-B[2][1]**2)
+
+    return B
+
+## Or:
+
+a        b(cos(gama))        c(cos(beta))
+0        b(sin(gama))        c(cos(alpha) - cos(beta) cos(gama) / sin(gama)
+0        0                   V/(ab sin(gama))
+
+where V = abc(1 - (cos(alpha))^2 - (cos(beta))^2 - (cos(gama))^2+
+2cos(alpha) cos(beta) cos(gama))^1/2
+
+- ######################################################
