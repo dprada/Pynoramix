@@ -3,7 +3,8 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_vars,o_natom,o_delta_t,pos_o)
   IMPLICIT NONE
   INTEGER,INTENT(IN)::len_ch
   CHARACTER(80),INTENT(IN)::file_name
-  INTEGER,INTENT(OUT)::funit,pos_o,o_natom
+  INTEGER,INTENT(OUT)::funit,o_natom
+  INTEGER(KIND=8),INTENT(OUT)::pos_o
   INTEGER,DIMENSION(20),INTENT(OUT)::o_vars
   DOUBLE PRECISION,INTENT(OUT)::o_delta_t
 
@@ -128,9 +129,11 @@ END SUBROUTINE open_read
 SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_err,io_end)
 
   IMPLICIT NONE
-  INTEGER,INTENT(IN)::funit,natom,pos_i
+  INTEGER,INTENT(IN)::funit,natom
+  INTEGER(KIND=8),INTENT(IN)::pos_i
   INTEGER,INTENT(IN):: with_cell
-  INTEGER,INTENT(OUT)::pos_o,io_err,io_end
+  INTEGER,INTENT(OUT)::io_err,io_end
+  INTEGER(KIND=8),INTENT(OUT)::pos_o
 
   DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::cell
   DOUBLE PRECISION,DIMENSION(natom,3),INTENT(OUT)::coors
