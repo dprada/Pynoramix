@@ -155,12 +155,11 @@ and :download:`GSGS.dcd <../tutorials/systems_tut1/GSGS.dcd>`.
    In [6]: GSGS.info_trajs()
    # 10 frames/models in traj 0
 
-
 .. sourcecode:: ipython
 
    In [2]: GSGS=molecule('GSGS.pdb',coors=False,verbose=False)
 
-   In [3]: GSGS.load_traj('GSGS.dcd',frame=0)
+   In [3]: GSGS.load_traj('GSGS.dcd',frame=0)  # Or frame='Next'
    # 1 frames/models in traj 0
 
    In [4]: while GSGS.traj[0].io_opened:
