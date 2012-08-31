@@ -43,6 +43,11 @@ class cl_traj():
         if self.io_err: print '# Error opening the file'; return
         self.io_opened=1
 
+    def close(self):
+
+        self.io_err=getattr(io,'coor_'+self.type).close_traj(self.io_file)
+        if self.io_err: print '# Error closing the file'; return
+        self.io_opened=0
 
     #def delete_frame(self,frame='ALL',begin=None,end=None,increment=1,units=None):
     # 

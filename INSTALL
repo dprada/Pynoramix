@@ -48,7 +48,7 @@ if [ ! -e io_formats/libxdrfile.so ]; then
 fi
 
 f_files=(pyn_water.f90 pyn_fort_enm.f90 pyn_fort_general.f90 pyn_fort_net.f90 pyn_hbonds.f90 pyn_fort_math.f90)
-io_files=(io_formats/libdcdfile.f90)
+io_files=(io_formats/libdcdfile.f90 io_formats/libbinfile.f90)
 
 
 for ff in ${f_files[*]}; do

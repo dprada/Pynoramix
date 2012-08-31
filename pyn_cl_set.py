@@ -634,6 +634,9 @@ class molecule(labels_set):               # The suptra-estructure: System (water
     def delete_traj (self,index='ALL'):
 
         if index in ['all','All','ALL']:
+            for ii in self.traj:
+                if ii.io_opened:
+                    ii.close()
             del(self.traj);self.traj=[]
             del(self.box);self.box=[]
             for ii in range(self.num_atoms):
