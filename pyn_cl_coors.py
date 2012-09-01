@@ -13,6 +13,7 @@ class cl_traj():
         self.io_w_name=None
         self.io_w_type=None
         self.io_w_opened=0
+        self.io_w_vars=[]
 
         self.name=None
         self.type=None
@@ -160,8 +161,25 @@ class cl_traj():
             if self.io_w_opened: print '# There is a file opened to write'; return
             self.io_w_type=file_name.split('.')[1]
             self.io_w_name=file_name
-            self.io_w_file,self.io_err=getattr(io,'coor_'+self.io_w_type).open_traj_write(file_name)
-            #if self.io_err: print '# Error opening the file'; return
+            io_w_vars     = [0 for ii in range(22)]
+            io_w_vars[0]  = 0     # Number of frames in the file (INT)
+            io_w_vars[1]  = 0     # Number of previous integration steps (INT)
+            io_w_vars[2]  = 0     # Frequency (integration steps) to save this file (INT)
+            io_w_vars[3]  = 0     # Number of integration steps in the run to create this file (INT)
+            io_w_vars[4]  = 0     # Frequency of coordinate saving (INT)
+            io_w_vars[7]  = 0     # Number of degrees of freedom during the run (INT)
+            io_w_vars[8]  = 0     # Number of fixed atoms (INT)
+            io_w_vars[9]  = 0     # Timestep in AKMA-units. Bit-copy from the 32-bit real number
+            io_w_vars[10] = 1     # 1 if crystal lattice information is present in the frames (INT)
+            io_w_vars[11] = 0     # 1 if this is a 4D trajectory (INT)
+            io_w_vars[12] = 0     # 1 if fluctuating charges are present (INT)
+            io_w_vars[13] = 1     # 1 if trajectory is the result of merge without consistency checks (INT)
+            io_w_vars[19] = 0     # CHARMM version number (INT)
+                                  # --  --  --  --  --  --  --  --  --  --  --  --  --
+            io_w_vars[20] = 0     # Number of atoms (INT)
+            io_w_vars[21] = 0     # delta_t
+            self.io_w_file,self.io_err=getattr(io,'coor_'+self.io_w_type).open_traj_write(file_name,io_w_vars,self.name)
+            if self.io_err: print '# Error opening the file'; return
             self.io_w_opened=1
         
         if action in ['CLOSE','Close','close']:

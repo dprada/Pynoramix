@@ -126,6 +126,29 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_vars,o_natom,o_delta_t,pos_o)
 
 END SUBROUTINE open_read
 
+OPEN SUBROUTINE open_write(len_ch,file_name,i_vars,i_natom,origin_name,funit)
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN)::len_ch
+  CHARACTER(80),INTENT(IN)::file_name,origin_name
+  INTEGER,DIMENSION(20),INTENT(OUT)::i_vars
+  INTEGER,INTENT(OUT)::funit,i_natom
+
+  LOGICAL:: UNITOP
+
+  INTEGER(KIND=4)::NTITLE, DCD_VARS(20),NATOM,HD(2)
+  CHARACTER(4)::DCD_TYPE
+  CHARACTER(80),ALLOCATABLE,DIMENSION(:)::TITLE
+  REAL(KIND=4)::delta_t
+  equivalence(delta_t,DCD_VARS(10))
+
+
+
+
+
+
+
+
 SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_err,io_end)
 
   IMPLICIT NONE
