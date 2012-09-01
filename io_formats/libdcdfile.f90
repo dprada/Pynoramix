@@ -126,28 +126,6 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_vars,o_natom,o_delta_t,pos_o)
 
 END SUBROUTINE open_read
 
-OPEN SUBROUTINE open_write(len_ch,file_name,i_vars,i_natom,origin_name,funit)
-
-  IMPLICIT NONE
-  INTEGER,INTENT(IN)::len_ch
-  CHARACTER(80),INTENT(IN)::file_name,origin_name
-  INTEGER,DIMENSION(20),INTENT(OUT)::i_vars
-  INTEGER,INTENT(OUT)::funit,i_natom
-
-  LOGICAL:: UNITOP
-
-  INTEGER(KIND=4)::NTITLE, DCD_VARS(20),NATOM,HD(2)
-  CHARACTER(4)::DCD_TYPE
-  CHARACTER(80),ALLOCATABLE,DIMENSION(:)::TITLE
-  REAL(KIND=4)::delta_t
-  equivalence(delta_t,DCD_VARS(10))
-
-
-
-
-
-
-
 
 SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_err,io_end)
 
@@ -196,6 +174,77 @@ SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_err,io_end)
 
 END SUBROUTINE read
 
+SUBROUTINE open_write(len_ch,file_name,i_vars,i_natom,i_delta_t,origin_name,funit)
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN)::len_ch,i_natom
+  CHARACTER(80),INTENT(IN)::file_name,origin_name
+  INTEGER,DIMENSION(20),INTENT(IN)::i_vars
+  DOUBLE PRECISION,INTENT(IN)::i_delta_t
+  INTEGER,INTENT(OUT)::funit
+
+  LOGICAL:: UNITOP
+
+  INTEGER(KIND=4)::NTITLE, DCD_VARS(20),NATOM,HD(2)
+  CHARACTER(4)::DCD_TYPE
+  CHARACTER(80),ALLOCATABLE,DIMENSION(:)::TITLE
+  REAL(KIND=4)::delta_t
+  equivalence(DCD_VARS(10),delta_t)
+
+  UNITOP=.False.
+  funit=550
+  do while (UNITOP)
+     inquire (unit=funit,opened=UNITOP)
+     if (UNITOP) funit=funit+1
+  end do
+
+  if (len_ch>80) then
+     PRINT*, '# Error: Name of file too long.'
+     EXIT
+  end if
+
+  OPEN (unit=funit,name=TRIM(file_name),status='NEW',action='write',form='unformatted')
+
+  DCD_TYPE='COOR'
+  DCD_VARS=i_vars
+  delta_t=i_delta_t
+  NATOM=i_natom
+  NTITLE=2
+  ALLOCATE(TITLE(2))
+  TITLE(1)='REMARK TRAJECTORY CREATED BY PYNORAMIX 0.1'
+  TITLE(2)='REMARK FROM THE ORIGINAL TRAJECTORY NAMED',TRIM(origin_name)
+
+  WRITE(funit) DCD_TYPE, DCD_VARS
+  WRITE(funit) NTITLE,TITLE(:)
+  WRITE(funit) NATOM
+
+END SUBROUTINE open_write
+
+SUBROUTINE write(funit,box,coors,i_natom)
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN)::funit,i_natom
+  DOUBLE PRECISION,DIMENSION(3,3)::box
+  DOUBLE PRECISION,DIMENSION(i_natom,3)::coors
+
+  REAL*8::cell
+  REAL(KIND=4),ALLOCATABLE,DIMENSION(:)::buffer
+
+  ALLOCATE(buffer(i_natom))
+  cell=box
+
+  WRITE(funit) cell(1,1), cell(1,2), cell(2,2), cell(1,3), cell(2,3), cell(3,3)
+
+  buffer=real(coors(:,1))
+  WRITE(funit) buffer(:)
+  buffer=real(coors(:,2))
+  WRITE(funit) buffer(:)
+  buffer=real(coors(:,3))
+  WRITE(funit) buffer(:)
+
+  DEALLOCATE(buffer)
+
+END SUBROUTINE write
 
 SUBROUTINE close(funit,io_err)
 
@@ -207,3 +256,27 @@ SUBROUTINE close(funit,io_err)
   io_err=0 !good
 
 END SUBROUTINE close
+
+OPEN SUBROUTINE close_write(funit,i_vars,i_natom,i_delta_t,io_err)
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN)::funit,i_natom
+  CHARACTER(80)::file_name
+  INTEGER,DIMENSION(20),INTENT(IN)::i_vars
+  DOUBLE PRECISION,INTENT(IN)::i_delta_t
+  INTEGER,INTENT(OUT)::io_err
+
+  INTEGER(KIND=4)::NTITLE, DCD_VARS(20),NATOM,HD(2)
+  CHARACTER(4)::DCD_TYPE
+  CHARACTER(80),ALLOCATABLE,DIMENSION(:)::TITLE
+  REAL(KIND=4)::delta_t
+  equivalence(DCD_VARS(10),delta_t)
+
+  INQUIRE(funit,name=file_name)
+  CLOSE(funit)
+
+  OPEN (unit=funit,name=TRIM(file_name),status='OLD',action='readwrite',form='unformatted',access='stream')
+
+  CLOSE (funit)
+
+END SUBROUTINE close_write

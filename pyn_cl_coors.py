@@ -161,37 +161,40 @@ class cl_traj():
             if self.io_w_opened: print '# There is a file opened to write'; return
             self.io_w_type=file_name.split('.')[1]
             self.io_w_name=file_name
-            io_w_vars     = [0 for ii in range(22)]
-            io_w_vars[0]  = 0     # Number of frames in the file (INT)
-            io_w_vars[1]  = 0     # Number of previous integration steps (INT)
-            io_w_vars[2]  = 0     # Frequency (integration steps) to save this file (INT)
-            io_w_vars[3]  = 0     # Number of integration steps in the run to create this file (INT)
-            io_w_vars[4]  = 0     # Frequency of coordinate saving (INT)
-            io_w_vars[7]  = 0     # Number of degrees of freedom during the run (INT)
-            io_w_vars[8]  = 0     # Number of fixed atoms (INT)
-            io_w_vars[9]  = 0     # Timestep in AKMA-units. Bit-copy from the 32-bit real number
-            io_w_vars[10] = 1     # 1 if crystal lattice information is present in the frames (INT)
-            io_w_vars[11] = 0     # 1 if this is a 4D trajectory (INT)
-            io_w_vars[12] = 0     # 1 if fluctuating charges are present (INT)
-            io_w_vars[13] = 1     # 1 if trajectory is the result of merge without consistency checks (INT)
-            io_w_vars[19] = 0     # CHARMM version number (INT)
-                                  # --  --  --  --  --  --  --  --  --  --  --  --  --
-            io_w_vars[20] = 0     # Number of atoms (INT)
-            io_w_vars[21] = 0     # delta_t
+            self.io_w_vars     = [0 for ii in range(22)]
+            self.io_w_vars[0]  = 0     # Number of frames in the file (INT)
+            self.io_w_vars[1]  = 0     # Number of previous integration steps (INT)
+            self.io_w_vars[2]  = 0     # Frequency (integration steps) to save this file (INT)
+            self.io_w_vars[3]  = 0     # Number of integration steps in the run to create this file (INT)
+            self.io_w_vars[4]  = 0     # Frequency of coordinate saving (INT)
+            self.io_w_vars[7]  = 0     # Number of degrees of freedom during the run (INT)
+            self.io_w_vars[8]  = 0     # Number of fixed atoms (INT)
+            self.io_w_vars[9]  = 0     # Timestep in AKMA-units. Bit-copy from the 32-bit real number
+            self.io_w_vars[10] = 1     # 1 if crystal lattice information is present in the frames (INT)
+            self.io_w_vars[11] = 0     # 1 if this is a 4D trajectory (INT)
+            self.io_w_vars[12] = 0     # 1 if fluctuating charges are present (INT)
+            self.io_w_vars[13] = 1     # 1 if trajectory is the result of merge without consistency checks (INT)
+            self.io_w_vars[19] = 0     # CHARMM version number (INT)
+                                       # --  --  --  --  --  --  --  --  --  --  --  --  --
+            self.io_w_vars[20] = 0     # Number of atoms (INT)
+            self.io_w_vars[21] = 0     # delta_t
             self.io_w_file,self.io_err=getattr(io,'coor_'+self.io_w_type).open_traj_write(file_name,io_w_vars,self.name)
             if self.io_err: print '# Error opening the file'; return
             self.io_w_opened=1
-        
-        if action in ['CLOSE','Close','close']:
-            #self.io_err=getattr(io,'coor_'+self.io_w_type).close_traj(self.io_w_file)
-            if self.io_err: print '# Error closing the file'; return
-            self.io_w_opened=0
-            pass
 
         if action==None:
             if not self.io_w_opened: print '# Error: No file opened to be written.'; return
-            #self.io_w_file,self.io_err=getattr(io,'coor_'+self.type).open_traj_write(file_name)
-            if self.io_err: print '# Error opening the file'; return
-            self.io_w_opened=1
+            
+            if frame=='ALL' and begin==None and end==None:
+                for temp_frame in self.frame:
+                    self.io_w_vars[0]+=1
+                    self.io_err=getattr(io,'coor_'+self.io_w_type).write_frame(self.io_w_file,temp_frame.box,temp_frame.coors,len(temp_frame.coors))
 
-        
+        if action in ['CLOSE','Close','close']:
+            self.io_err=getattr(io,'coor_'+self.io_w_type).close_traj_write(self.io_w_file,self.io_w_vars)
+            if self.io_err: print '# Error closing the file'; return
+            self.io_w_vars=[]
+            self.io_w_opened=0
+
+                
+        pass

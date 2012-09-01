@@ -68,11 +68,6 @@ def open_traj_read(file_name):
 
     return funit,io_vars,io_pos,io_err  # io_file,io_vars,io_pos,io_err
 
-def open_traj_write(file_name,io_w_vars,origin_name):
-
-    funit=libdcd.open_write(len(file_name),str(file_name),io_w_vars[0:20],io_w_vars[20],str(origin_name))
-
-    return funit,io_err
 
 def read_all(file_unit,io_vars=None,io_pos=None):
 
@@ -108,6 +103,24 @@ def close_traj(file_unit):
     io_err=libdcd.close(file_unit)
     return io_err   #io_err=0 good
 
-def write_frame():
+def open_traj_write(file_name,io_w_vars,origin_name):
 
-    pass
+    io_err=0
+    funit=libdcd.open_write(len(file_name),str(file_name),io_w_vars[0:20],io_w_vars[20],io_w_vars[21],str(origin_name))
+
+    if not funit:
+        io_err=1
+
+    return funit,io_err
+
+def write_frame(file_unit,temp_frame,i_natom):
+
+    io_err=libdcd.write(file_unit,temp_frame.box,temp_frame.coors,i_natom)
+    return io_err
+
+def close_traj_write(file_unit,io_w_vars):
+
+    io_err=0
+    io_err=libdcd.close_write(file_unit,io_w_vars[0:20],io_w_vars[20],io_w_vars[21])
+    return io_err   #io_err=0 good
+

@@ -171,6 +171,34 @@ covalent_bonds['ASP']=[
 ['atC'   ,'atO'    ] 
 ]
 
+
+### CYS:
+
+residue_atoms['CYS']=[
+'atN',
+'atH',
+'atCA',
+'atHA',
+'atCB',
+'atHB1',
+'atHB2',
+'atHB3',
+'atC',
+'atO'
+]
+ 
+covalent_bonds['CYS']=[
+['atN'   ,'atH'    ],
+['atN'   ,'atCA'   ],
+['atCA'  ,'atHA'   ],
+['atCA'  ,'atCB'   ],
+['atCA'  ,'atC'    ],
+['atCB'  ,'atHB1'  ],
+['atCB'  ,'atHB2'  ],
+['atCB'  ,'atHB3'  ],
+['atC'   ,'atO'    ] 
+]
+
 ### GLU:
 
 residue_atoms['GLU']=[
