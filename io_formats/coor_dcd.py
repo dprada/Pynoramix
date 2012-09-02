@@ -113,9 +113,9 @@ def open_traj_write(file_name,io_w_vars,origin_name):
 
     return funit,io_err
 
-def write_frame(file_unit,temp_frame,i_natom):
+def write_frame(file_unit,temp_frame):
 
-    io_err=libdcd.write(file_unit,temp_frame.box,temp_frame.coors,i_natom)
+    io_err=libdcd.write(file_unit,temp_frame.box,temp_frame.coors,len(temp_frame.coors))
     return io_err
 
 def close_traj_write(file_unit,io_w_vars):

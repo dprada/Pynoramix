@@ -200,23 +200,25 @@ SUBROUTINE open_write(len_ch,file_name,i_vars,i_natom,i_delta_t,origin_name,funi
 
   if (len_ch>80) then
      PRINT*, '# Error: Name of file too long.'
-     EXIT
+     return
   end if
 
   OPEN (unit=funit,name=TRIM(file_name),status='NEW',action='write',form='unformatted')
 
-  DCD_TYPE='COOR'
+  DCD_TYPE='CORD'
   DCD_VARS=i_vars
   delta_t=i_delta_t
   NATOM=i_natom
   NTITLE=2
   ALLOCATE(TITLE(2))
   TITLE(1)='REMARK TRAJECTORY CREATED BY PYNORAMIX 0.1'
-  TITLE(2)='REMARK FROM THE ORIGINAL TRAJECTORY NAMED',TRIM(origin_name)
+  TITLE(2)='REMARK FROM THE ORIGINAL TRAJECTORY NAMED '//TRIM(origin_name)
 
   WRITE(funit) DCD_TYPE, DCD_VARS
   WRITE(funit) NTITLE,TITLE(:)
   WRITE(funit) NATOM
+
+  print*,NATOM
 
 END SUBROUTINE open_write
 
@@ -227,11 +229,11 @@ SUBROUTINE write(funit,box,coors,i_natom)
   DOUBLE PRECISION,DIMENSION(3,3)::box
   DOUBLE PRECISION,DIMENSION(i_natom,3)::coors
 
-  REAL*8::cell
+  REAL*8::cell(3,3)
   REAL(KIND=4),ALLOCATABLE,DIMENSION(:)::buffer
 
   ALLOCATE(buffer(i_natom))
-  cell=box
+  cell=box                      !!! MMM.... There is something to be fixed here
 
   WRITE(funit) cell(1,1), cell(1,2), cell(2,2), cell(1,3), cell(2,3), cell(3,3)
 
@@ -257,7 +259,7 @@ SUBROUTINE close(funit,io_err)
 
 END SUBROUTINE close
 
-OPEN SUBROUTINE close_write(funit,i_vars,i_natom,i_delta_t,io_err)
+SUBROUTINE close_write(funit,i_vars,i_natom,i_delta_t,io_err)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::funit,i_natom
@@ -271,11 +273,21 @@ OPEN SUBROUTINE close_write(funit,i_vars,i_natom,i_delta_t,io_err)
   CHARACTER(80),ALLOCATABLE,DIMENSION(:)::TITLE
   REAL(KIND=4)::delta_t
   equivalence(DCD_VARS(10),delta_t)
+  INTEGER::opos
+
+  DCD_VARS=i_vars
+  delta_t=i_delta_t
 
   INQUIRE(funit,name=file_name)
   CLOSE(funit)
 
   OPEN (unit=funit,name=TRIM(file_name),status='OLD',action='readwrite',form='unformatted',access='stream')
+
+  READ(funit,pos=5) DCD_TYPE
+  INQUIRE(funit,pos=opos)
+  WRITE(funit,pos=opos) DCD_VARS(0)
+  INQUIRE(funit,pos=opos)
+  print*,DCD_VARS
 
   CLOSE (funit)
 

@@ -45,3 +45,5 @@ where V = abc(1 - (cos(alpha))^2 - (cos(beta))^2 - (cos(gama))^2+
 2cos(alpha) cos(beta) cos(gama))^1/2
 
 - ######################################################
+
+- Fix the problem of box/cell to include the angles. When the frame is handed and when the traj is writted.
