@@ -233,15 +233,15 @@ There are few special key words.
 
    In [2]: GSGS=molecule('GSGS.pdb',verbose=False)
     
-   In [3]: list=GSGS.selection('backbone')
+   In [3]: list1=GSGS.selection('backbone')
 
    In [4]: list2=GSGS.selection('(atom.name N CA C O)')
     
-   In [5]: print list; print list2
+   In [5]: print list1; print list2
    [0, 4, 7, 8, 9, 11, 18, 19, 20, 22, 25, 26, 27, 30, 32]
    [0, 4, 7, 8, 9, 11, 18, 19, 20, 22, 25, 26, 27, 30, 32]
 
-   In [5]: list=GSGS.selection('sidechain')
+   In [5]: list1=GSGS.selection('sidechain')
    
    In [6]: list2=GSGS.selection('(atom.resid.type Protein and not atom.name N CA C O H1 H2)')
     
