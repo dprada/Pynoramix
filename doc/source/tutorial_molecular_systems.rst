@@ -188,6 +188,40 @@ and :download:`GSGS.dcd <../tutorials/systems_tut1/GSGS.dcd>`.
 Converting a trajectory into other format
 +++++++++++++++++++++++++++++++++++++++++
 
+Right now the output formats are only dcd files.
+
+.. sourcecode:: ipython
+
+   In [2]: ion=molecule('run_ion.gro',coors=False,verbose=False)
+    
+   In [3]: ion.load_traj('traj.trr',verbose=False)
+    
+   In [4]: ion.traj[0].upload_frame(frame='ALL')
+    
+   In [5]: ion.traj[0].write('new_traj.dcd',action='Open')
+    
+   In [6]: ion.traj[0].write(frame='ALL')
+    
+   In [7]: ion.traj[0].write(action='Close')
+
+.. sourcecode:: ipython
+
+   In [2]: ion=molecule('run_ion.gro',coors=False,verbose=False)
+    
+   In [3]: ion.load_traj('traj.trr',verbose=False)
+    
+   In [4]: ion.traj[0].upload_frame()
+    
+   In [5]: ion.traj[0].write('new_traj.dcd',action='Open')
+    
+   In [6]: while ion.traj[0].io_opened:
+      ...:     ion.traj[0].write()
+      ...:     ion.traj[0].reload_frame()
+      ...: 
+   # End of file
+    
+   In [7]: ion.traj[0].write(action='Close')
+
 
 How to make an atoms selection
 ==============================
