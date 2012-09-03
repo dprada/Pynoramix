@@ -187,6 +187,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         self.which_traj=None
         self.which_frame=None
         self.box=[]
+        self.cell=[]
         self.traj=[]
         self.dist_matrix=[]             # distance matrix (This should go to cl_coors?)
 

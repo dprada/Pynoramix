@@ -8,3 +8,4 @@ class cl_frame():
         self.model=None
         self.coors=[]
         self.box=zeros(shape=(3,3),order='Fortran')
+        self.cell=zeros(shape=(3,3),order='Fortran')
