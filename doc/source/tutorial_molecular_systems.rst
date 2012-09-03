@@ -226,6 +226,31 @@ This way the original trajectory is not stored in memory:
 How to make an atoms selection
 ==============================
 
-xxxxxxxxxxxxxx
+The syntax is close to the pynoramix syntax.
+There are few special key words.
+
+.. sourcecode:: ipython
+
+   In [2]: GSGS=molecule('GSGS.pdb',verbose=False)
+    
+   In [3]: list=GSGS.selection('backbone')
+
+   In [4]: list2=GSGS.selection('(atom.name N CA C O)')
+    
+   In [5]: print list; print list2
+   [0, 4, 7, 8, 9, 11, 18, 19, 20, 22, 25, 26, 27, 30, 32]
+   [0, 4, 7, 8, 9, 11, 18, 19, 20, 22, 25, 26, 27, 30, 32]
+
+   In [5]: list=GSGS.selection('sidechain')
+   
+   In [6]: list2=GSGS.selection('(atom.resid.type Protein and not atom.name N CA C O H1 H2)')
+    
+   In [7]: print list; print list2
+   [1, 2, 3, 5, 6, 10, 12, 13, 14, 15, 16, 17, 21, 23, 24, 28, 29, 31, 33, 34, 35, 36, 37, 38]
+   [1, 2, 3, 5, 6, 10, 12, 13, 14, 15, 16, 17, 21, 23, 24, 28, 29, 31, 33, 34, 35, 36, 37, 38]
+
+
+
+
 
 

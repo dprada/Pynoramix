@@ -654,6 +654,10 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         pass
 
+    def selection (self,condition=None):
+
+        list_condition=selection(self,condition)
+        return list_condition
 
 
 ###############################################################
@@ -818,8 +822,8 @@ def selection(system=None,condition=None):
     # attributes syntaxis:
 
     dict_selects={
-        'backbone': '(atom.name N CA C O H1 H2)',
-        'sidechain': '(atom.type Protein and not atom.name N CA C O H1 H2)',
+        'backbone': '(atom.name N CA C O)',
+        'sidechain': '(atom.resid.type Protein and not atom.name N CA C O H1 H2)',
         }
 
     for ii,jj in dict_selects.iteritems():
@@ -841,6 +845,9 @@ def selection(system=None,condition=None):
     icondition=icondition.replace('WITHIN','within')
     icondition=icondition.replace('Of','of')
     icondition=icondition.replace('OF','of')
+    icondition=icondition.replace(' in ',' ')
+    icondition=icondition.replace(' In ',' ')
+    icondition=icondition.replace(' IN ',' ')
     ### Second block.
     icondition=icondition.replace(' chain',' atom.chain')
     icondition=icondition.replace(' resid',' atom.resid')
@@ -880,14 +887,10 @@ def selection(system=None,condition=None):
                     else:
                         part2=icondition[jj]
                         try:
-                            kk=int(part2)
-                            ocondition.append(part2); ocondition.append(',')
+                            kk=float(part2)
+                            ocondition.append(part2+',')
                         except:
-                            try:
-                                kk=float(part2)
-                                ocondition.append(part2),ocondition.append(',')
-                            except:
-                                ocondition.append("'"+part2+"'")
+                            ocondition.append("'"+part2+"',")
                         aux_cond[jj]=False
         else:
             if aux_cond[ii]:
@@ -901,11 +904,11 @@ def selection(system=None,condition=None):
         #atom.name OW within 3.0 of sel1
         #atom.name OW within 3.0 of atom.name HW1
         pass
-    
+
     # Applying selection
     list_select=[]
-    condition=' '.join(ocondition)
-     
+    condition=' '.join(ocondition)    
+
     for atom in system.atom:
         if eval(condition):
             list_select.append(atom.index)
