@@ -127,7 +127,7 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_vars,o_natom,o_delta_t,pos_o)
 END SUBROUTINE open_read
 
 
-SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_err,io_end)
+SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,box,coors,io_err,io_end)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::funit,natom
@@ -136,7 +136,7 @@ SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_err,io_end)
   INTEGER,INTENT(OUT)::io_err,io_end
   INTEGER(KIND=8),INTENT(OUT)::pos_o
 
-  DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::cell
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::cell,box
   DOUBLE PRECISION,DIMENSION(natom,3),INTENT(OUT)::coors
 
   REAL*8::buffer_cell(3,3)
@@ -145,6 +145,7 @@ SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_err,io_end)
 
 
   cell=0.0d0
+  box=0.0d0
   pos_o=pos_i
   io_err=0
   io_end=1
@@ -156,6 +157,7 @@ SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_err,io_end)
      READ(funit,pos=pos_o,end=600) HD,buffer_cell(1,1), buffer_cell(1,2), buffer_cell(2,2), buffer_cell(1,3), buffer_cell(2,3), buffer_cell(3,3)
      cell=dble(buffer_cell)
      INQUIRE(funit,pos=pos_o)
+     CALL TRICLINIC (cell,box)
   END IF
 
   coors=0.0d0
@@ -220,20 +222,20 @@ SUBROUTINE open_write(len_ch,file_name,i_vars,i_natom,i_delta_t,origin_name,funi
 
 END SUBROUTINE open_write
 
-SUBROUTINE write(funit,box,coors,i_natom)
+SUBROUTINE write(funit,cell,coors,i_natom)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::funit,i_natom
   DOUBLE PRECISION,DIMENSION(3,3)::box
   DOUBLE PRECISION,DIMENSION(i_natom,3)::coors
 
-  REAL*8::cell(3,3)
+  REAL*8::cell_buffer(3,3)
   REAL(KIND=4),ALLOCATABLE,DIMENSION(:)::buffer
 
   ALLOCATE(buffer(i_natom))
-  cell=box                      !!! MMM.... There is something to be fixed here
+  cell_buffer=cell                      !!! MMM.... There is something to be fixed here
 
-  WRITE(funit) cell(1,1), cell(1,2), cell(2,2), cell(1,3), cell(2,3), cell(3,3)
+  WRITE(funit) cell_buffer(1,1), cell_buffer(1,2), cell_buffer(2,2), cell_buffer(1,3), cell_buffer(2,3), cell_buffer(3,3)
 
   buffer=real(coors(:,1))
   WRITE(funit) buffer(:)
@@ -283,3 +285,34 @@ SUBROUTINE close_write(funit,i_vars,i_natom,i_delta_t,io_err)
   CLOSE (funit)
 
 END SUBROUTINE close_write
+
+SUBROUTINE TRICLINIT (cell,box)
+
+  IMPLICIT NONE
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::cell
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::box
+  DOUBLE PRECISION::alpha,beta,gamma,x,y,z
+
+  box=0.0d0
+  alpha=cell(1,2)
+  beta=cell(1,3)
+  gamma=cell(2,3)
+  x=cell(1,1)
+  y=cell(2,2)
+  z=cell(3,3)
+
+  box(1,1)=x
+  IF ((alpha==90).and.(beta==90).and.(gamma==90)) THEN
+     box(2,2)=y
+     box(3,3)=z
+  ELSE
+     box(2,1)=y*cosd(gamma)
+     box(2,2)=y*sind(gamma)
+     box(3,1)=z*cosd(beta)
+     box(3,2)=z*(cosd(alpha)-cosd(beta)*cosd(gamma))/sind(gamma)
+     box(3,3)=sqrt(z*z-box(3,1)**2-box(3,2)**2)
+  END IF
+
+END SUBROUTINE TRICLINIT
+
+  
