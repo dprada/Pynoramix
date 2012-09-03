@@ -1,31 +1,22 @@
 import io_formats as io
 
-# io_w_vars/io_vars[0] : Number of frames in the file  (INT)
-# io_w_vars/io_vars[1] : Number of previous integration steps  (INT)
-# io_w_vars/io_vars[2] : Frequency (integration steps) to save this file  (INT)
-# io_w_vars/io_vars[3] : Number of integration steps in the run to create this file  (INT)
-# io_w_vars/io_vars[4] : Frequency of coordinate saving  (INT)
-# io_w_vars/io_vars[5] :
-# io_w_vars/io_vars[6] :
-# io_w_vars/io_vars[7] : Number of degrees of freedom during the run  (INT)
-# io_w_vars/io_vars[8] : Number of fixed atoms  (INT)
-# io_w_vars/io_vars[9] : Timestep in AKMA-units. Bit-copy from the 32-bit real number  (INT)
-# io_w_vars/io_vars[10]: 1 if crystal lattice information is present in the frames  (INT)
-# io_w_vars/io_vars[11]: 1 if this is a 4D trajectory  (INT)
-# io_w_vars/io_vars[12]: 1 if fluctuating charges are present  (INT)
-# io_w_vars/io_vars[13]: 1 if trajectory is the result of merge without consistency checks  (INT)
-# io_w_vars/io_vars[14]:
-# io_w_vars/io_vars[15]:
-# io_w_vars/io_vars[16]:
-# io_w_vars/io_vars[17]:
-# io_w_vars/io_vars[18]:
-# io_w_vars/io_vars[19]: CHARMM version number  (INT)
-# ---
-# io_w_vars/io_vars[20]: Number of atoms
-# io_w_vars/io_vars[21]: delta_t
-# io_w_vars/io_vars[22]: pos_header
-# io_w_vars/io_vars[23]: pos_frame
-
+# io_w_vars/io_vars[0]: Number of atoms
+# io_w_vars/io_vars[1]: delta_t
+# io_w_vars/io_vars[2]: pos_header
+# io_w_vars/io_vars[3]: pos_frame
+# -----
+# io_w_vars/io_vars[10] : Number of frames in the file  (INT)
+# io_w_vars/io_vars[11] : Number of previous integration steps  (INT)
+# io_w_vars/io_vars[12] : Frequency (integration steps) to save this file  (INT)
+# io_w_vars/io_vars[13] : Number of integration steps in the run to create this file  (INT)
+# io_w_vars/io_vars[14] : Frequency of coordinate saving  (INT)
+# io_w_vars/io_vars[17] : Number of degrees of freedom during the run  (INT)
+# io_w_vars/io_vars[18] : Number of fixed atoms  (INT)
+# io_w_vars/io_vars[19] : Timestep in AKMA-units. Bit-copy from the 32-bit real number  (INT)
+# io_w_vars/io_vars[20] : if crystal lattice information is present in the frames  (INT)
+# io_w_vars/io_vars[21] : if this is a 4D trajectory  (INT)
+# io_w_vars/io_vars[22] : if fluctuating charges are present  (INT)
+# io_w_vars/io_vars[23] : if trajectory is the result of merge without consistency checks  (INT)
 
 class cl_traj():
     def __init__(self,file_input=None,frame=None,begin=None,end=None,increment=1,units=None,verbose=True):
@@ -35,12 +26,12 @@ class cl_traj():
         self.io_end=0
         self.io_err=0
         self.io_pos=None
-        self.io_vars=[]
+        self.io_vars=[0 for ii in range(30)]
         self.io_w_file=None
         self.io_w_name=None
         self.io_w_type=None
         self.io_w_opened=0
-        self.io_w_vars=[]
+        self.io_w_vars=[0 for ii in range(30)]
 
         self.name=None
         self.type=None
@@ -188,10 +179,12 @@ class cl_traj():
             if self.io_w_opened: print '# There is a file opened to write'; return
             self.io_w_type=file_name.split('.')[1]
             self.io_w_name=file_name
-            self.io_w_vars     = [0 for ii in range(22)]
-            self.io_w_vars[10] = 1     # 1 if crystal lattice information is present in the frames (INT)
-            self.io_w_vars[13] = 1     # 1 if trajectory is the result of merge without consistency checks (INT)
-            self.io_w_vars[20] = self.io_vars[20]  # Num Atoms
+            self.io_w_vars     = [0 for ii in range(30)]
+            self.io_w_vars[20] = 1     # 1 if crystal lattice information is present in the frames (INT)
+            self.io_w_vars[0]  = self.io_vars[0]  # Num Atoms
+            self.io_w_vars[1]  = 1.000000 # delta_t (by the moment 1.0d0) 
+            self.io_w_vars[12] = 1 # delta steps to save the data
+            self.io_w_vars[29] = 1001 # id number to identify pynoramix traj. 
             self.io_w_file,self.io_err=getattr(io,'coor_'+self.io_w_type).open_traj_write(file_name,self.io_w_vars,self.name)
             if self.io_err: print '# Error opening the file'; return
             self.io_w_opened=1
@@ -201,16 +194,17 @@ class cl_traj():
             
             if frame=='ALL' and begin==None and end==None:
                 for temp_frame in self.frame:
-                    self.io_w_vars[0]+=1
+                    self.io_w_vars[10]+=1
                     self.io_err=getattr(io,'coor_'+self.io_w_type).write_frame(self.io_w_file,temp_frame)
 
         if action in ['CLOSE','Close','close']:
+            self.io_w_vars[13]=self.io_w_vars[10]  # Number of integration steps in the run to create this file  (INT)
             self.io_err=getattr(io,'coor_'+self.io_w_type).close_traj_write(self.io_w_file,self.io_w_vars)
             if self.io_err: print '# Error closing the file'; return
             self.io_w_file=None
             self.io_w_name=None
             self.io_w_type=None
             self.io_w_opened=0
-            self.io_w_vars=[]
+            self.io_w_vars=[0 for ii in range(30)]
                 
         pass

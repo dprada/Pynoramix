@@ -23,7 +23,7 @@ import libbinfile as libbin
 
 def open_traj_read(file_name):
 
-    io_vars=[]
+    io_vars=[0 for ii in range(30)]
     io_pos=0
     io_err=0
 
@@ -32,10 +32,10 @@ def open_traj_read(file_name):
     if not funit:
         io_err=1
     else:
-        io_vars.append(o_natom)
-        io_vars.append(o_box)
-        io_vars.append(io_pos)
-        io_vars.append((13+o_natom*3)*4)
+        io_vars[0]=o_natom
+        io_vars[2]=io_pos
+        io_vars[3]=(13+o_natom*3)*4
+        io_vars[4]=o_box
 
     return funit,io_vars,io_pos,io_err
 

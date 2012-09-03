@@ -11,7 +11,7 @@ from numpy import array
 
 def open_traj_read(file_name):
 
-    io_vars=[]
+    io_vars=[0 for ii in range(30)]
     io_pos=0
     io_err=0
 
@@ -24,8 +24,8 @@ def open_traj_read(file_name):
         io_pos=funit.tell()
         line=funit.readline()       # Header of the gro file
         natoms=int(funit.readline())    # Number of atoms
-        io_vars.append(natoms)
-        io_vars.append(io_pos)
+        io_vars[0]=natoms
+        io_vars[2]=io_pos
         funit.seek(io_pos)
 
     return funit,io_vars,io_pos,io_err  # io_file,io_vars,io_pos,io_err

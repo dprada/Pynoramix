@@ -27,7 +27,7 @@ except:
 
 def open_traj_read(file_name):
 
-    io_vars=[]
+    io_vars=[0 for ii in range(30)]
     io_pos=0
     io_err=0
 
@@ -40,7 +40,7 @@ def open_traj_read(file_name):
         if io_err:
             return funit,io_vars,io_pos,io_err
         else:
-            io_vars.append(natoms.value)
+            io_vars[0]=natoms.value
             
         #for NumPy define argtypes - ndpointer is not automatically converted to POINTER(c_float)
         #alternative of ctypes.data_as(POINTER(c_float)) requires two version for numpy and c_float array

@@ -218,8 +218,6 @@ SUBROUTINE open_write(len_ch,file_name,i_vars,i_natom,i_delta_t,origin_name,funi
   WRITE(funit) NTITLE,TITLE(:)
   WRITE(funit) NATOM
 
-  print*,NATOM
-
 END SUBROUTINE open_write
 
 SUBROUTINE write(funit,box,coors,i_natom)
@@ -273,7 +271,6 @@ SUBROUTINE close_write(funit,i_vars,i_natom,i_delta_t,io_err)
   CHARACTER(80),ALLOCATABLE,DIMENSION(:)::TITLE
   REAL(KIND=4)::delta_t
   equivalence(DCD_VARS(10),delta_t)
-  INTEGER::opos
 
   DCD_VARS=i_vars
   delta_t=i_delta_t
@@ -282,13 +279,7 @@ SUBROUTINE close_write(funit,i_vars,i_natom,i_delta_t,io_err)
   CLOSE(funit)
 
   OPEN (unit=funit,name=TRIM(file_name),status='OLD',action='readwrite',form='unformatted',access='stream')
-
-  READ(funit,pos=5) DCD_TYPE
-  INQUIRE(funit,pos=opos)
-  WRITE(funit,pos=opos) DCD_VARS(0)
-  INQUIRE(funit,pos=opos)
-  print*,DCD_VARS
-
+  WRITE(funit,pos=9) DCD_VARS(:)
   CLOSE (funit)
 
 END SUBROUTINE close_write

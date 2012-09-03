@@ -2,32 +2,24 @@ from frame import *
 from numpy import array
 import libdcdfile as libdcd
 
-# io_vars[0]: Number of frames in the file
-# io_vars[1]: Number of previous integration steps
-# io_vars[2]: Frequency (integration steps) to save this file
-# io_vars[3]: Number of integration steps in the run to create this file
-# io_vars[4]: Frequency of coordinate saving
-# io_vars[5]:
-# io_vars[6]:
-# io_vars[7]: Number of degrees of freedom during the run
-# io_vars[8]: Number of fixed atoms
-# io_vars[9]: Timestep in AKMA-units. Bit-copy from the 32-bit real number
-# io_vars[10]: 1 if crystal lattice information is present in the frames
-# io_vars[11]: 1 if this is a 4D trajectory
-# io_vars[12]: 1 if fluctuating charges are present
-# io_vars[13]: 1 if trajectory is the result of merge without consistency checks
-# io_vars[14]:
-# io_vars[15]:
-# io_vars[16]:
-# io_vars[17]:
-# io_vars[18]:
-# io_vars[19]: CHARMM version number
-#---
-# io_vars[20]: Number of atoms
-# io_vars[21]: delta_t
-# io_vars[22]: pos_header
-# io_vars[23]: pos_frame
-
+# io_w_vars/io_vars[0]: Number of atoms
+# io_w_vars/io_vars[1]: delta_t
+# io_w_vars/io_vars[2]: pos_header
+# io_w_vars/io_vars[3]: pos_frame
+# io_w_vars/io_vars[4]: box initial frame 0
+# -----
+# io_w_vars/io_vars[10] : Number of frames in the file  (INT)
+# io_w_vars/io_vars[11] : Number of previous integration steps  (INT)
+# io_w_vars/io_vars[12] : Frequency (integration steps) to save this file  (INT)
+# io_w_vars/io_vars[13] : Number of integration steps in the run to create this file  (INT)
+# io_w_vars/io_vars[14] : Frequency of coordinate saving  (INT)
+# io_w_vars/io_vars[17] : Number of degrees of freedom during the run  (INT)
+# io_w_vars/io_vars[18] : Number of fixed atoms  (INT)
+# io_w_vars/io_vars[19] : Timestep in AKMA-units. Bit-copy from the 32-bit real number  (INT)
+# io_w_vars/io_vars[20] : if crystal lattice information is present in the frames  (INT)
+# io_w_vars/io_vars[21] : if this is a 4D trajectory  (INT)
+# io_w_vars/io_vars[22] : if fluctuating charges are present  (INT)
+# io_w_vars/io_vars[23] : if trajectory is the result of merge without consistency checks  (INT)
 
 # open
 # > io_file,io_vars,io_pos,io_err
@@ -50,7 +42,7 @@ import libdcdfile as libdcd
 
 def open_traj_read(file_name):
 
-    io_vars=[]
+    io_vars=[0 for ii in range(30)]
     io_pos=0
     io_err=0
 
@@ -59,12 +51,11 @@ def open_traj_read(file_name):
     if not funit:
         io_err=1
     else:
-        for ii in o_vars:
-            io_vars.append(ii)
-        io_vars.append(o_natom)
-        io_vars.append(o_delta_t)
-        io_vars.append(io_pos)
-        io_vars.append(o_vars[10]*7*8+3*(o_natom*4+8))
+        io_vars[10:30]=o_vars[0:20]
+        io_vars[0]=o_natom
+        io_vars[1]=o_delta_t
+        io_vars[2]=io_pos
+        io_vars[3]=(o_vars[10]*7*8+3*(o_natom*4+8))
 
     return funit,io_vars,io_pos,io_err  # io_file,io_vars,io_pos,io_err
 
@@ -86,15 +77,15 @@ def read_next(file_unit,io_vars=None,io_pos=None):
     #temp_frame.coors=empty((natoms,3),dtype=float32)
     #temp_frame.box=empty((3,3),float32)
 
-    io_pos,temp_frame.box,temp_frame.coors,io_err,io_end=libdcd.read(file_unit,io_vars[20],io_vars[10],io_pos)
+    io_pos,temp_frame.box,temp_frame.coors,io_err,io_end=libdcd.read(file_unit,io_vars[0],io_vars[20],io_pos)
 
     return temp_frame,io_pos,io_err,io_end  # frame,io_pos,io_err,io_end
 
 def read_frame(file_unit,frame,io_vars=None,io_pos=None):
 
     temp_frame=cl_frame()
-    io_pos=io_vars[22]+frame*io_vars[23]
-    io_pos,temp_frame.box,temp_frame.coors,io_err,io_end=libdcd.read(file_unit,io_vars[20],io_vars[10],io_pos)
+    io_pos=io_vars[2]+frame*io_vars[3]
+    io_pos,temp_frame.box,temp_frame.coors,io_err,io_end=libdcd.read(file_unit,io_vars[0],io_vars[20],io_pos)
     
     return temp_frame,io_pos,io_err,io_end  # frame,io_pos,io_err,io_end
 
@@ -106,7 +97,7 @@ def close_traj(file_unit):
 def open_traj_write(file_name,io_w_vars,origin_name):
 
     io_err=0
-    funit=libdcd.open_write(len(file_name),str(file_name),io_w_vars[0:20],io_w_vars[20],io_w_vars[21],str(origin_name))
+    funit=libdcd.open_write(len(file_name),str(file_name),io_w_vars[10:30],io_w_vars[0],io_w_vars[1],str(origin_name))
 
     if not funit:
         io_err=1
@@ -121,6 +112,6 @@ def write_frame(file_unit,temp_frame):
 def close_traj_write(file_unit,io_w_vars):
 
     io_err=0
-    io_err=libdcd.close_write(file_unit,io_w_vars[0:20],io_w_vars[20],io_w_vars[21])
+    io_err=libdcd.close_write(file_unit,io_w_vars[10:30],io_w_vars[0],io_w_vars[1])
     return io_err   #io_err=0 good
 

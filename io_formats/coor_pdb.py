@@ -10,7 +10,7 @@ from numpy import array
 # write_frame
 
 def open_traj_read(file_name):
-    io_vars=[]
+    io_vars=[0 for ii in range(30)]
     io_pos=0
     io_err=0
     funit=open(file_name,'r')
