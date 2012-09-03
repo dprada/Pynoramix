@@ -664,9 +664,39 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 ###############################################################
     # To handle the set
 
-    #def selection(self,condition=None):
-    #    return make_selection(self,condition)
-    # 
+    def distance(self,setA='ALL',setB=None,traj=0,frame='ALL',pbc=False):
+        
+        diff_system=1
+        if pbc: pbc=1
+
+        if setA in ['ALL','All','all']:
+            setA=[ii in range(self.num_atoms)]
+            n_A=self.num_atoms
+            natoms_A=self.num_atoms
+        else:
+            n_A=len(setA)
+            natoms_A=self.num_atoms
+
+        if setB in [None,'ALL','All','all']:
+            setB=[ii in range(self.num_atoms)]
+            n_B=self.num_atoms
+            natoms_B=self.num_atoms
+        else:
+            n_B=len(setB)
+            natoms_B=self.num_atoms
+
+        if setA=='ALL' and setB in [None,'ALL','All','all']:
+            diff_system=0
+
+        if frame in ['ALL','All','all']:
+            dists=[]
+            for frame in self.traj[traj].frame:
+                dist_frame=f.dist(diff_system,pbc,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
+                dists.append(dist_frame)
+
+        return dists
+            
+
     #def distance(self,pbc=False):
     #            
     #    for frame in self.frame:

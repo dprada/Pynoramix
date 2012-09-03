@@ -1,45 +1,91 @@
-MODULE aux_funcs_general
+!MODULE aux_funcs_general
 
-CONTAINS
+!CONTAINS
 
-SUBROUTINE dist (pbc_opt,coors1,box1,coors2,n1,n2,matrix)
+SUBROUTINE dist (diff_system,pbc_opt,list1,coors1,box1,list2,coors2,n1,n2,natom1,natom2,matrix)
 
 IMPLICIT NONE
 
-INTEGER,INTENT(IN)::pbc_opt
-integer,intent(in)::n1,n2
-real,dimension(n1,3),intent(in)::coors1
-REAL,DIMENSION(3,3),INTENT(IN)::box1
-real,dimension(n2,3),intent(in)::coors2
-real,dimension(n1,n2),intent(out)::matrix
-integer::i,j
-real,dimension(3)::vect
+INTEGER,INTENT(IN)::diff_system,pbc_opt
+integer,intent(in)::n1,n2,natom1,natom2
+INTEGER,DIMENSION(n1),INTENT(IN)::list1
+INTEGER,DIMENSION(n2),INTENT(IN)::list2
+double precision,dimension(natom1,3),intent(in)::coors1
+double precision,DIMENSION(3,3),INTENT(IN)::box1
+double precision,dimension(natom2,3),intent(in)::coors2
+double precision,dimension(n1,n2),intent(out)::matrix
+integer::i,j,ai,aj
+double precision,dimension(:),allocatable::vect,vect_aux
+integer,dimension(:),allocatable::llist1,llist2
+double precision::val_aux
 
+ALLOCATE(vect(3),vect_aux(3))
+ALLOCATE(llist1(n1),llist2(n2))
+llist1=list1+1
+llist2=list2+1
 
-IF (pbc_opt==1) THEN
+matrix=0.0d0
 
-   vect=0.0d0
-   do i=1,n1
-      do j=1,n2
-         
-         vect=(coors1(i,:)-coors2(j,:))
-         CALL PBC (vect,box1)
-         matrix(i,j)=sqrt(dot_product(vect,vect))
-         
+IF (diff_system) THEN
+   IF (pbc_opt) THEN
+      do i=1,n1
+         ai=llist1(i)
+         vect_aux=coors1(ai,:)
+         do j=1,n2
+            aj=llist2(j)
+            vect=(vect_aux-coors2(aj,:))
+            CALL PBC (vect,box1)
+            val_aux=sqrt(dot_product(vect,vect))
+            matrix(i,j)=val_aux
+         end do
       end do
-   end do
-   
+   ELSE
+      do i=1,n1
+         ai=llist1(i)
+         vect_aux=coors1(ai,:)
+         do j=1,n2
+            aj=llist2(j)
+            vect=(vect_aux-coors2(aj,:))
+            val_aux=sqrt(dot_product(vect,vect))
+            matrix(i,j)=val_aux
+         end do
+      end do
+   END IF
 ELSE
-
-   vect=0.0d0
-   do i=1,n1
-      do j=1,n2
-         vect=(coors1(i,:)-coors2(j,:))
-         matrix(i,j)=sqrt(dot_product(vect,vect))
+   IF (pbc_opt) THEN
+      do i=1,n1
+         ai=llist1(i)
+         vect_aux=coors1(ai,:)
+         do j=1,n2
+            aj=llist2(j)
+            if (aj>ai) then
+               vect=(vect_aux-coors1(aj,:))
+               CALL PBC (vect,box1)
+               val_aux=sqrt(dot_product(vect,vect))
+               matrix(i,j)=val_aux
+               matrix(j,i)=val_aux
+            end if
+         end do
       end do
-   end do
-   
+   ELSE
+      do i=1,n1
+         ai=llist1(i)
+         vect_aux=coors1(ai,:)
+         do j=1,n2
+            aj=llist2(j)
+            if (aj>ai) then
+               vect=(vect_aux-coors1(aj,:))
+               val_aux=sqrt(dot_product(vect,vect))
+               matrix(i,j)=val_aux
+               matrix(j,i)=val_aux
+            end if
+         end do
+      end do
+   END IF
 END IF
+
+DEALLOCATE(vect,vect_aux)
+DEALLOCATE(llist1,llist2)
 
 END SUBROUTINE dist
 
@@ -609,4 +655,4 @@ END DO
 
 end subroutine proj3d
 
-END MODULE aux_funcs_general
+!END MODULE aux_funcs_general

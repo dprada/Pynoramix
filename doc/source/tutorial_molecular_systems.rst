@@ -223,8 +223,8 @@ This way the original trajectory is not stored in memory:
    In [6]: ion.traj[0].write(action='Close')
 
 
-How to make an atoms selection
-==============================
+How to make atoms selections
+============================
 
 The syntax is close to the pynoramix syntax.
 There are few special key words.
@@ -235,7 +235,7 @@ There are few special key words.
     
    In [3]: list1=GSGS.selection('backbone')
 
-   In [4]: list2=GSGS.selection('(atom.name N CA C O)')
+   In [4]: list2=GSGS.selection('atom.name N CA C O')
     
    In [5]: print list1; print list2
    [0, 4, 7, 8, 9, 11, 18, 19, 20, 22, 25, 26, 27, 30, 32]
@@ -248,6 +248,46 @@ There are few special key words.
    In [7]: print list; print list2
    [1, 2, 3, 5, 6, 10, 12, 13, 14, 15, 16, 17, 21, 23, 24, 28, 29, 31, 33, 34, 35, 36, 37, 38]
    [1, 2, 3, 5, 6, 10, 12, 13, 14, 15, 16, 17, 21, 23, 24, 28, 29, 31, 33, 34, 35, 36, 37, 38]
+
+We can also make use of the expression 'within X of', X is a float number indicating a distance threshold.
+
+
+.. sourcecode:: ipython
+
+   In [2]: GSGS=molecule('GSGS.pdb',verbose=False)
+    
+   In [3]: list1=GSGS.selection('atom.name OW within 3.0 of atom.resid.type Protein')
+
+Computing distances
+===================
+
+It is faster if len(list1)<len(list2).
+
+.. sourcecode:: ipython
+
+   In [2]: GSGS=molecule('GSGS.pdb',coors=False,verbose=False)
+    
+   In [3]: GSGS.load_traj('GSGS.dcd',frame='ALL',verbose=False)
+    
+   In [4]: list1=GSGS.selection('atom.resid.type Protein')
+    
+   In [5]: list2=GSGS.selection('atom.resid.type Water and atom.type O')
+
+   In [6]: result=GSGS.distance(list1,list2)
+ 
+   In [7]: for ii in range(GSGS.traj[0].num_frames):
+      ....:    print 'The distance between atoms index',list1[1],'and',list2[3],'is',result[ii][1,3],'in frame',ii
+      ....: 
+   The distance between atoms index 1 and 48 is 24.8435076017 in frame 0
+   The distance between atoms index 1 and 48 is 23.6529328175 in frame 1
+   The distance between atoms index 1 and 48 is 24.3209230117 in frame 2
+   The distance between atoms index 1 and 48 is 21.5236312048 in frame 3
+   The distance between atoms index 1 and 48 is 25.2685193116 in frame 4
+   The distance between atoms index 1 and 48 is 28.2550958504 in frame 5
+   The distance between atoms index 1 and 48 is 26.1290587977 in frame 6
+   The distance between atoms index 1 and 48 is 20.9157208891 in frame 7
+   The distance between atoms index 1 and 48 is 21.6473615840 in frame 8
+   The distance between atoms index 1 and 48 is 18.5862638499 in frame 9
 
 
 
