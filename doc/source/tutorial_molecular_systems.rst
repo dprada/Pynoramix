@@ -190,37 +190,37 @@ Converting a trajectory into other format
 
 Right now the output formats are only dcd files.
 
-.. sourcecode:: ipython
-
-   In [2]: ion=molecule('run_ion.gro',coors=False,verbose=False)
-    
-   In [3]: ion.load_traj('traj.trr',verbose=False)
-    
-   In [4]: ion.traj[0].upload_frame(frame='ALL')
-    
-   In [5]: ion.traj[0].write('new_traj.dcd',action='Open')
-    
-   In [6]: ion.traj[0].write(frame='ALL')
-    
-   In [7]: ion.traj[0].write(action='Close')
+This way the original trajectory is stored in memory:
 
 .. sourcecode:: ipython
 
    In [2]: ion=molecule('run_ion.gro',coors=False,verbose=False)
     
-   In [3]: ion.load_traj('traj.trr',verbose=False)
+   In [3]: ion.load_traj('traj.xtc',frame='ALL',verbose=False)
     
-   In [4]: ion.traj[0].upload_frame()
+   In [4]: ion.traj[0].write('new_traj.dcd',action='Open')
     
-   In [5]: ion.traj[0].write('new_traj.dcd',action='Open')
+   In [5]: ion.traj[0].write(frame='ALL')
     
-   In [6]: while ion.traj[0].io_opened:
+   In [6]: ion.traj[0].write(action='Close')
+
+This way the original trajectory is not stored in memory:
+
+.. sourcecode:: ipython
+
+   In [2]: ion=molecule('run_ion.gro',coors=False,verbose=False)
+    
+   In [3]: ion.load_traj('traj.xtc',frame='Next',verbose=False)
+    
+   In [4]: ion.traj[0].write('new_traj.dcd',action='Open')
+    
+   In [5]: while ion.traj[0].io_opened:
       ...:     ion.traj[0].write()
       ...:     ion.traj[0].reload_frame()
       ...: 
    # End of file
     
-   In [7]: ion.traj[0].write(action='Close')
+   In [6]: ion.traj[0].write(action='Close')
 
 
 How to make an atoms selection
