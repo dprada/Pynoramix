@@ -668,7 +668,12 @@ class molecule(labels_set):               # The suptra-estructure: System (water
     def distance(self,setA='ALL',setB=None,traj=0,frame='ALL',pbc=False):
         
         diff_system=1
-        if pbc: pbc=1
+        if pbc:
+            check_cell=self.traj[traj].frame[0].cell
+            if check_cell[0,1]!=90 or check_cell[0,2]!=90 or check_cell[1,2]!=90:
+                print '# PBC not implemented for not orthorhombic boxes'
+                return
+            pbc=1
 
         if setA in ['ALL','All','all']:
             setA=[ii in range(self.num_atoms)]
