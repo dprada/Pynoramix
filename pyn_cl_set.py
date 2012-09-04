@@ -728,10 +728,15 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             yyy=[0 for ii in range(len(xxx))]
             for frame in self.traj[traj].frame:
                 dist_frame=f.dist(1,pbc,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
+                density=(frame.box[0,0]*frame.box[1,1]*frame.box[2,2])/float(n_A)
                 for ii in range(n_B):
                     aaa,bbb=pyn_math.binning(dist_frame[:,ii],bins,segment,delta_x,None)
                     for jj in bbb:
-                        yyy[jj]+=1
+                        yyy[jj]+=density
+            density=(4*pi*float(len(self.traj[traj].frame))*float(n_A))
+            for ii in range(len(xxx)):
+                yyy[ii]=yyy[ii]/((xxx[ii]**2)*delta_x)
+            yyy=yyy/(4*pi*float(len(self.traj[traj].frame))*float(n_A))
             return xxx,yyy
 
     #def neighbs(self,system2=None,limit=0,dist=0.0,pbc=False):
