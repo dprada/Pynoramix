@@ -851,7 +851,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 ######################################################
 
 
-def selection(system=None,condition=None):
+def selection(system=None,condition=None,traj=0,frame='ALL',pbc=True):
 
     icondition=condition
 
@@ -934,12 +934,31 @@ def selection(system=None,condition=None):
                 aux_cond[ii]=False
 
     # Solving the 'withins':
-    if 'within' in ocondition:
-        print 'Option "within x of" not implemented yet.'
-        #atom.name OW within 3.0 of [3,4,5]
-        #atom.name OW within 3.0 of sel1
-        #atom.name OW within 3.0 of atom.name HW1
-        pass
+    for ii in range(len(ocondition)):
+        if 'within' == ocondition[ii]:
+            cutoff=float(ocondition[ii+1])
+            if ')' not in ocondition[0:ii]:
+                sel1=[]
+                cond1=' '.join(ocondition[0:ii])
+                for atom in system.atom:
+                    if eval(cond1):
+                        sel1.append(atom.index)
+            if '(' not in ocondition[(ii+3):]:
+                sel2=[]
+                cond2=' '.join(ocondition[(ii+3):])
+                for atom in system.atom:
+                    if eval(cond2):
+                        sel2.append(atom.index)
+            dists_sels=system.distance(sel1,sel2,traj=traj,frame=frame,pbc=pbc)
+            list_sel1=[]
+            for jj in range(len(sel1)):
+                if f.within(dists_sels[0][jj,:],cutoff,len(sel2)):
+                    list_sel1.append(sel1[jj])
+            #'(atom.resid.type Water and atom.type O) within 3.0 of atom.resid.type Protein'
+            #atom.name OW within 3.0 of [3,4,5]
+            #atom.name OW within 3.0 of sel1
+            #atom.name OW within 3.0 of atom.name HW1
+            return list_sel1
 
     # Applying selection
     list_select=[]

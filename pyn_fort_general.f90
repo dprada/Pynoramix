@@ -89,6 +89,25 @@ DEALLOCATE(llist1,llist2)
 
 END SUBROUTINE dist
 
+SUBROUTINE within (list_dists,cutoff,dim_list,ISIN)
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN)::dim_list
+  DOUBLE PRECISION,INTENT(IN)::cutoff
+  DOUBLE PRECISION,DIMENSION(dim_list),INTENT(IN)::list_dists
+  INTEGER,INTENT(OUT)::ISIN
+  INTEGER::ii
+
+  ISIN=0
+
+  DO ii=1,dim_list
+     IF (list_dists(ii)<=cutoff) THEN
+        ISIN=1
+        EXIT
+     END IF
+  END DO
+
+END SUBROUTINE within
 
 SUBROUTINE min_dist_atoms (pbc_opt,eq_opt,coors,box,list_a,list_b,N_tot,N_a,N_b,ind_a,ind_b,min_dist)
 
