@@ -77,7 +77,7 @@ def read_next(file_unit,io_vars=None,io_pos=None):
     #temp_frame.coors=empty((natoms,3),dtype=float32)
     #temp_frame.box=empty((3,3),float32)
 
-    io_pos,temp_frame.box,temp_frame.coors,io_err,io_end=libdcd.read(file_unit,io_vars[0],io_vars[20],io_pos)
+    io_pos,temp_frame.cell,temp_frame.box,temp_frame.coors,io_err,io_end=libdcd.read(file_unit,io_vars[0],io_vars[20],io_pos)
 
     return temp_frame,io_pos,io_err,io_end  # frame,io_pos,io_err,io_end
 
@@ -85,7 +85,7 @@ def read_frame(file_unit,frame,io_vars=None,io_pos=None):
 
     temp_frame=cl_frame()
     io_pos=io_vars[2]+frame*io_vars[3]
-    io_pos,temp_frame.box,temp_frame.coors,io_err,io_end=libdcd.read(file_unit,io_vars[0],io_vars[20],io_pos)
+    io_pos,temp_frame.cell,temp_frame.box,temp_frame.coors,io_err,io_end=libdcd.read(file_unit,io_vars[0],io_vars[20],io_pos)
     
     return temp_frame,io_pos,io_err,io_end  # frame,io_pos,io_err,io_end
 
@@ -106,7 +106,7 @@ def open_traj_write(file_name,io_w_vars,origin_name):
 
 def write_frame(file_unit,temp_frame):
 
-    io_err=libdcd.write(file_unit,temp_frame.box,temp_frame.coors,len(temp_frame.coors))
+    io_err=libdcd.write(file_unit,temp_frame.cell,temp_frame.coors,len(temp_frame.coors))
     return io_err
 
 def close_traj_write(file_unit,io_w_vars):

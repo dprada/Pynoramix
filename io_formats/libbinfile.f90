@@ -1,11 +1,11 @@
-SUBROUTINE open_read(len_ch,file_name,funit,o_natom,o_box,pos_o)
+SUBROUTINE open_read(len_ch,file_name,funit,o_natom,o_cell,o_box,pos_o)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::len_ch
   CHARACTER(80),INTENT(IN)::file_name
   INTEGER,INTENT(OUT)::funit,o_natom
   INTEGER(KIND=8),INTENT(OUT)::pos_o
-  DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::o_box
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::o_box,o_cell
 
   LOGICAL:: UNITOP
   REAL::box(9)
@@ -19,7 +19,7 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_natom,o_box,pos_o)
      inquire (unit=funit,opened=UNITOP)
      if (UNITOP) funit=funit+1
   end do
-
+  
   if (len_ch>80) then
      PRINT*, '# Error: Name of file too long.'
   end if
@@ -28,15 +28,20 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_natom,o_box,pos_o)
 
   READ(funit) o_natom,box
 
+  o_box=0.0d0
   o_box(1,:)=10.0d0*dble(box(1:3))
   o_box(2,:)=10.0d0*dble(box(4:6))
   o_box(3,:)=10.0d0*dble(box(7:9))
+  o_cell=o_box
+  o_cell(1,2)=90.0d0
+  o_cell(1,3)=90.0d0
+  o_cell(2,3)=90.0d0
 
   INQUIRE(funit,pos=pos_o)
 
 END SUBROUTINE open_read
 
-SUBROUTINE read (funit,natom,pos_i,pos_o,step,time,prec,cell,coors,io_err,io_end)
+SUBROUTINE read (funit,natom,pos_i,pos_o,step,time,prec,cell,box,coors,io_err,io_end)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::funit,natom
@@ -44,11 +49,11 @@ SUBROUTINE read (funit,natom,pos_i,pos_o,step,time,prec,cell,coors,io_err,io_end
   INTEGER,INTENT(OUT)::io_err,io_end
   INTEGER(KIND=8),INTENT(OUT)::pos_o
   DOUBLE PRECISION,DIMENSION(natom,3),INTENT(OUT)::coors
-  DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::cell
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::cell,box
   INTEGER,INTENT(OUT)::step
   DOUBLE PRECISION,INTENT(OUT)::prec,time
 
-  REAL,DIMENSION(:),ALLOCATABLE::cell_buffer
+  REAL,DIMENSION(:),ALLOCATABLE::box_buffer
   REAL,DIMENSION(:),ALLOCATABLE::x_buffer
   REAL::prec_buffer,time_buffer
   INTEGER::num_atoms,ii,jj,gg
@@ -57,16 +62,20 @@ SUBROUTINE read (funit,natom,pos_i,pos_o,step,time,prec,cell,coors,io_err,io_end
   io_err=0
   io_end=1
 
-  ALLOCATE(cell_buffer(9),x_buffer(natom*3))
+  ALLOCATE(box_buffer(9),x_buffer(natom*3))
 
 
-  READ(funit,pos=pos_o,end=600) num_atoms,step,time_buffer,cell_buffer,x_buffer,prec_buffer
+  READ(funit,pos=pos_o,end=600) num_atoms,step,time_buffer,box_buffer,x_buffer,prec_buffer
   time=dble(time_buffer)
   prec=dble(prec_buffer)
   
-  cell(1,:)=10.0d0*dble(cell_buffer(1:3))
-  cell(2,:)=10.0d0*dble(cell_buffer(4:6))
-  cell(3,:)=10.0d0*dble(cell_buffer(7:9))
+  box(1,:)=10.0d0*dble(box_buffer(1:3))
+  box(2,:)=10.0d0*dble(box_buffer(4:6))
+  box(3,:)=10.0d0*dble(box_buffer(7:9))
+  cell=box
+  cell(1,2)=90.0d0
+  cell(1,3)=90.0d0
+  cell(2,3)=90.0d0
 
   gg=0
   DO ii=1,num_atoms
@@ -80,14 +89,14 @@ SUBROUTINE read (funit,natom,pos_i,pos_o,step,time,prec,cell,coors,io_err,io_end
 
   INQUIRE(funit,pos=pos_o)
 
-600 DEALLOCATE(cell_buffer,x_buffer)
+600 DEALLOCATE(box_buffer,x_buffer)
 
 END SUBROUTINE read
 
 SUBROUTINE close(funit,io_err)
 
   IMPLICIT NONE
-  INTEGER,INTENT(IN)::funit
+INTEGER,INTENT(IN)::funit
   INTEGER,INTENT(OUT)::io_err
 
   CLOSE(funit)

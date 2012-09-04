@@ -157,7 +157,14 @@ SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,box,coors,io_err,io_end)
      READ(funit,pos=pos_o,end=600) HD,buffer_cell(1,1), buffer_cell(1,2), buffer_cell(2,2), buffer_cell(1,3), buffer_cell(2,3), buffer_cell(3,3)
      cell=dble(buffer_cell)
      INQUIRE(funit,pos=pos_o)
-     CALL TRICLINIC (cell,box)
+     IF (buffer_cell(1,2)==0) THEN
+        box=cell
+        cell(1,2)=90.0d0
+        cell(1,3)=90.0d0
+        cell(2,3)=90.0d0
+     ELSE
+        CALL TRICLINIC (cell,box)
+     END IF
   END IF
 
   coors=0.0d0
@@ -226,13 +233,13 @@ SUBROUTINE write(funit,cell,coors,i_natom)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::funit,i_natom
-  DOUBLE PRECISION,DIMENSION(3,3)::box
-  DOUBLE PRECISION,DIMENSION(i_natom,3)::coors
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::cell
+  DOUBLE PRECISION,DIMENSION(i_natom,3),INTENT(IN)::coors
 
-  REAL*8::cell_buffer(3,3)
+  REAL*8,ALLOCATABLE,DIMENSION(:,:)::cell_buffer
   REAL(KIND=4),ALLOCATABLE,DIMENSION(:)::buffer
 
-  ALLOCATE(buffer(i_natom))
+  ALLOCATE(buffer(i_natom),cell_buffer(3,3))
   cell_buffer=cell                      !!! MMM.... There is something to be fixed here
 
   WRITE(funit) cell_buffer(1,1), cell_buffer(1,2), cell_buffer(2,2), cell_buffer(1,3), cell_buffer(2,3), cell_buffer(3,3)
@@ -286,7 +293,7 @@ SUBROUTINE close_write(funit,i_vars,i_natom,i_delta_t,io_err)
 
 END SUBROUTINE close_write
 
-SUBROUTINE TRICLINIT (cell,box)
+SUBROUTINE TRICLINIC (cell,box)
 
   IMPLICIT NONE
   DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::cell
@@ -313,6 +320,6 @@ SUBROUTINE TRICLINIT (cell,box)
      box(3,3)=sqrt(z*z-box(3,1)**2-box(3,2)**2)
   END IF
 
-END SUBROUTINE TRICLINIT
+END SUBROUTINE TRICLINIC
 
   

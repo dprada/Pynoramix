@@ -47,6 +47,10 @@ def read_all(file_unit,io_vars=None,io_pos=None):
                 frame.box[0][0]=float(ii[1])
                 frame.box[1][1]=float(ii[2])
                 frame.box[2][2]=float(ii[3])
+                frame.cell=frame.box
+                frame.cell[0][1]=float(ii[4])
+                frame.cell[0][2]=float(ii[5])
+                frame.cell[1][2]=float(ii[6])
             if (ii[0] in ['ATOM','HETATM']):
                 aux=(float(line[30:38]),float(line[38:46]),float(line[46:54]))
                 frame.coors.append(aux)

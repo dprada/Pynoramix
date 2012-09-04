@@ -27,7 +27,7 @@ def open_traj_read(file_name):
     io_pos=0
     io_err=0
 
-    funit,o_natom,o_box,io_pos=libbin.open_read(len(file_name),str(file_name))
+    funit,o_natom,o_cell,o_box,io_pos=libbin.open_read(len(file_name),str(file_name))
     
     if not funit:
         io_err=1
@@ -53,7 +53,7 @@ def read_all(file_unit,io_vars=None,io_pos=None):
 def read_next(file_unit,io_vars=None,io_pos=None):
 
     temp_frame=cl_frame()
-    io_pos,temp_frame.step,temp_frame.time,temp_frame.precision,temp_frame.box,temp_frame.coors,io_err,io_end=libbin.read(file_unit,io_vars[0],io_pos)
+    io_pos,temp_frame.step,temp_frame.time,temp_frame.precision,temp_frame.cell,temp_frame.box,temp_frame.coors,io_err,io_end=libbin.read(file_unit,io_vars[0],io_pos)
 
     return temp_frame,io_pos,io_err,io_end  # frame,io_pos,io_err,io_end
 
@@ -61,7 +61,7 @@ def read_frame(file_unit,frame,io_vars=None,io_pos=None):
 
     temp_frame=cl_frame()
     io_pos=io_vars[2]+frame*io_vars[3]
-    io_pos,temp_frame.step,temp_frame.time,temp_frame.prec,temp_frame.box,temp_frame.coors,io_err,io_end=libbin.read(file_unit,io_vars[0],io_pos)
+    io_pos,temp_frame.step,temp_frame.time,temp_frame.prec,temp_frame.cell,temp_frame.box,temp_frame.coors,io_err,io_end=libbin.read(file_unit,io_vars[0],io_pos)
 
     return temp_frame,io_pos,io_err,io_end
 

@@ -76,6 +76,10 @@ def read_aux(file_unit,io_vars=None,io_pos=None):
         temp_frame.box[0][0]=float(line[0])         # Using the global variable (pyn_var_glob.py) 
         temp_frame.box[1][1]=float(line[1])         # for the size of the box vg.box      
         temp_frame.box[2][2]=float(line[2])       
+        temp_frame.cell=temp_frame.box
+        temp_frame.cell[0][1]=90
+        temp_frame.cell[0][2]=90
+        temp_frame.cell[1][2]=90
 
         io_pos=file_unit.tell()
 
