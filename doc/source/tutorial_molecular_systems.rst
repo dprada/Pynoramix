@@ -256,7 +256,23 @@ We can also make use of the expression 'within X of', X is a float number indica
 
    In [2]: GSGS=molecule('GSGS.pdb',verbose=False)
     
-   In [3]: list1=GSGS.selection('atom.name OW within 3.0 of atom.resid.type Protein')
+   In [3]: list1=GSGS.selection('atom.name OH2 within 3.0 of atom.resid.type Protein')
+
+.. sourcecode:: ipython
+
+   In [2]: ion=molecule('run_ion.gro',coors=False,verbose=False) 
+    
+   In [3]: ion.load_traj('traj.dcd',frame='ALL',verbose=False)
+    
+   In [4]: list1=ion.selection('atom.name OW within 3.0 of atom.resid.type Ion')
+
+   In [5]: for ii in range(3):
+      ...:     print len(list1[ii]),'waters below 3.0 in frame', ii
+      ...: 
+   6 waters below 3.0 in frame 0
+   6 waters below 3.0 in frame 1
+   6 waters below 3.0 in frame 2
+
 
 Computing distances
 ===================

@@ -951,14 +951,20 @@ def selection(system=None,condition=None,traj=0,frame='ALL',pbc=True):
                         sel2.append(atom.index)
             dists_sels=system.distance(sel1,sel2,traj=traj,frame=frame,pbc=pbc)
             list_sel1=[]
-            for jj in range(len(sel1)):
-                if f.within(dists_sels[0][jj,:],cutoff,len(sel2)):
-                    list_sel1.append(sel1[jj])
+            for gg in range(len(dists_sels)):
+                list_sel_frame=[]
+                for jj in range(len(sel1)):
+                    if f.within(dists_sels[gg][jj,:],cutoff,len(sel2)):
+                        list_sel_frame.append(sel1[jj])
+                list_sel1.append(list_sel_frame)
             #'(atom.resid.type Water and atom.type O) within 3.0 of atom.resid.type Protein'
             #atom.name OW within 3.0 of [3,4,5]
             #atom.name OW within 3.0 of sel1
             #atom.name OW within 3.0 of atom.name HW1
-            return list_sel1
+            if len(list_sel1)==1:
+                return list_sel1[0]
+            else:
+                return list_sel1
 
     # Applying selection
     list_select=[]
