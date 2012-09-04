@@ -21,6 +21,7 @@ import datetime as datetime
 from pyn_cl_coors import *
 import top_par as tp
 import pyn_fort_general as f
+import pyn_math as pyn_math
 
 #
 # Structure of the file:
@@ -655,9 +656,9 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         pass
 
-    def selection (self,condition=None):
+    def selection (self,condition=None,traj=0,frame='ALL',pbc=True):
 
-        list_condition=selection(self,condition)
+        list_condition=selection(self,condition,traj,frame,pbc)
         return list_condition
 
 
@@ -665,7 +666,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 ###############################################################
     # To handle the set
 
-    def distance(self,setA='ALL',setB=None,traj=0,frame='ALL',pbc=False):
+    def distance(self,setA='ALL',setB=None,traj=0,frame='ALL',pbc=True):
         
         diff_system=1
         if pbc:
@@ -674,6 +675,9 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 print '# PBC not implemented for not orthorhombic boxes'
                 return
             pbc=1
+
+        if setA=='ALL' and setB in [None,'ALL','All','all']:
+            diff_system=0
 
         if setA in ['ALL','All','all']:
             setA=[ii in range(self.num_atoms)]
@@ -691,9 +695,6 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             n_B=len(setB)
             natoms_B=self.num_atoms
 
-        if setA=='ALL' and setB in [None,'ALL','All','all']:
-            diff_system=0
-
         if frame in ['ALL','All','all']:
             dists=[]
             for frame in self.traj[traj].frame:
@@ -702,15 +703,37 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         return dists
             
+    def rdf(self,setA=None,setB=None,traj=0,frame='ALL',pbc=True,delta_x=None,bins=100,segment=None):
 
-    #def distance(self,pbc=False):
-    #            
-    #    for frame in self.frame:
-    # 
-    #        dist_frame=f.aux_funcs_general.dist(pbc,frame.coors,frame.box,frame.coors,self.num_atoms,self.num_atoms)
-    #        
-    #    self.dist_matrix.append(dist_frame)
-    # 
+        if setA==None or setB==None:
+            return
+
+        if type(setA) not in [int,list,tuple]:
+            setA=self.selection(setA)
+        elif type(setA) in [int]:
+            setA=[setA]
+
+        if type(setB) not in [int,list,tuple]:
+            setB=self.selection(setB)
+        elif type(setB) in [int]:
+            setB=[setB]
+
+        n_A=len(setA)
+        n_B=len(setB)
+        natoms_A=self.num_atoms
+        natoms_B=self.num_atoms
+
+        if frame in ['ALL','All','all']:
+            xxx,bbb=pyn_math.binning([0],bins,segment,delta_x,None)
+            yyy=[0 for ii in range(len(xxx))]
+            for frame in self.traj[traj].frame:
+                dist_frame=f.dist(1,pbc,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
+                for ii in range(n_B):
+                    aaa,bbb=pyn_math.binning(dist_frame[:,ii],bins,segment,delta_x,None)
+                    for jj in bbb:
+                        yyy[jj]+=1
+            return xxx,yyy
+
     #def neighbs(self,system2=None,limit=0,dist=0.0,pbc=False):
     # 
     # 
