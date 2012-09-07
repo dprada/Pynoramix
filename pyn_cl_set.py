@@ -703,7 +703,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         return dists
             
-    def rdf(self,setA=None,setB=None,traj=0,frame='ALL',pbc=True,delta_x=None,bins=100,segment=None):
+    def rdf(self,setA=None,setB=None,traj=0,frame='ALL',pbc=True,bins=100,segment=None):
 
         if setA==None or setB==None:
             return
@@ -723,21 +723,25 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         natoms_A=self.num_atoms
         natoms_B=self.num_atoms
 
-        if frame in ['ALL','All','all']:
-            xxx,bbb=pyn_math.binning([0],bins,segment,delta_x,None)
-            yyy=[0 for ii in range(len(xxx))]
+        if frame==0:
+            frame=self.traj[traj].frame[frame]
+            dist_frame=f.dist(1,pbc,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
+            rdf_frame=f.rdf_frame(dist_frame,frame.box,segment[0],segment[1],bins,n_A,n_B)
+            return rdf_frame
+
+        elif frame in ['ALL','All','all']:
+            xxx=pyn_math.binning(None,bins,segment,None,None)
+            rdf_tot=zeros(shape=(bins),dtype=float,order='Fortran')
+            num_frames=0.0
             for frame in self.traj[traj].frame:
                 dist_frame=f.dist(1,pbc,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
-                density=(frame.box[0,0]*frame.box[1,1]*frame.box[2,2])/float(n_A)
-                for ii in range(n_B):
-                    aaa,bbb=pyn_math.binning(dist_frame[:,ii],bins,segment,delta_x,None)
-                    for jj in bbb:
-                        yyy[jj]+=density
-            density=(4*pi*float(len(self.traj[traj].frame))*float(n_A))
-            for ii in range(len(xxx)):
-                yyy[ii]=yyy[ii]/((xxx[ii]**2)*delta_x)
-            yyy=yyy/(4*pi*float(len(self.traj[traj].frame))*float(n_A))
-            return xxx,yyy
+                rdf_frame=f.rdf_frame(dist_frame,frame.box,segment[0],segment[1],bins,n_A,n_B)
+                rdf_tot+=rdf_frame
+                num_frames+=1.0
+            rdf_tot=rdf_tot/num_frames
+            return xxx,rdf_tot
+
+        
 
     #def neighbs(self,system2=None,limit=0,dist=0.0,pbc=False):
     # 

@@ -194,6 +194,45 @@ SUBROUTINE min_dist_atoms_ref (pbc_opt,coors,box,list_a,list_coors_b,N_tot,N_a,N
 
 END SUBROUTINE min_dist_atoms_ref
 
+SUBROUTINE rdf_frame(distances,box,segment_min,segment_max,bins,n_A,n_B,rdf)
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN)::n_A,n_B,bins
+  DOUBLE PRECISION,INTENT(IN)::segment_min,segment_max
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::box
+  DOUBLE PRECISION,DIMENSION(n_A,n_B),INTENT(IN)::distances
+  DOUBLE PRECISION,DIMENSION(bins),INTENT(OUT)::rdf
+
+  INTEGER::ii,jj,kk,tt
+  DOUBLE PRECISION::pi,factor,density,aux
+  DOUBLE PRECISION::ro,delta_x
+
+  pi=acos(-1.0d0)
+  delta_x=(segment_max-segment_min)/(1.0d0*bins)
+  factor=0.0d0
+  factor=(4.0d0*pi*n_B*delta_x)
+  density=(box(1,1)*box(2,2)*box(3,3))/(1.0d0*n_A)
+  factor=density/factor
+  rdf=0.0d0
+
+  DO ii=1,n_B
+     DO jj=1,n_A
+        
+        aux=(distances(jj,ii)-segment_min)/delta_x
+        tt=FLOOR(aux)+1
+        rdf(tt)=rdf(tt)+factor
+
+     END DO
+  END DO
+
+  ro=segment_min+delta_x/2.0d0
+  DO ii=1,bins
+     rdf(ii)=rdf(ii)/(ro**2)
+     ro=ro+delta_x
+  END DO
+  
+
+END SUBROUTINE rdf_frame
 
 
 SUBROUTINE neighbs_limit(pbc_opt,ident,limit,coors1,box1,coors2,n_atoms1,n_atoms2,neighb_list,neighb_dist,neighb_uvect)

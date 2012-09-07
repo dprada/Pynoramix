@@ -121,6 +121,7 @@ MODULE stats
     
     
     !! Output
+    CALL free_mem()
     ALLOCATE(histo_y(bins),histo_x(bins))
     histo_y=frecuencias
     DO i=1,bins
@@ -203,6 +204,7 @@ MODULE stats
     
     
     !! Output
+    CALL free_mem()
     ALLOCATE(histo_x(bins))
 
     DO i=1,bins
@@ -215,6 +217,56 @@ MODULE stats
   END SUBROUTINE binning
   
 
+  SUBROUTINE binning_x (opt_range,opt,ibins,imin_x,imax_x,idelta_x,iprec,delta_x)
+    
+    implicit none
+    INTEGER,INTENT(IN)::opt_range,opt,ibins
+    DOUBLE PRECISION,INTENT(IN)::idelta_x,imax_x,imin_x,iprec
+
+    DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::frecuencias
+    INTEGER::i,j,k,prec,aux,bins
+    DOUBLE PRECISION::max,min,total,sobra
+    DOUBLE PRECISION,INTENT(OUT)::delta_x
+    
+    bins=ibins
+
+    !! Por un problema que hay con python 2.6 corrijo la precision
+
+    max=imax_x
+    min=imin_x
+    delta_x=idelta_x
+    
+    IF (opt_range==0) THEN
+       IF (opt==1) THEN
+          bins=CEILING((max-min)/delta_x)
+          sobra=(bins*delta_x-(max-min))/2.0d0
+          bins=bins+1
+          min=min-sobra
+          max=max+sobra
+       ELSE
+          delta_x=(max-min)/(bins*1.0d0)
+          sobra=delta_x/2.0d0
+          min=min-sobra
+          max=max+sobra
+          bins=bins+1
+       END IF
+    ELSE
+       IF (opt==1) THEN
+          bins=CEILING((max-min)/delta_x)
+       ELSE
+          delta_x=(max-min)/(bins*1.0d0)
+       END IF
+    END IF
+    
+    !! Output
+    CALL free_mem()
+    ALLOCATE(histo_x(bins))
+
+    DO i=1,bins
+       histo_x(i)=min+(i*1.0d0-0.50d0)*delta_x
+    END DO
+    
+  END SUBROUTINE binning_x
 
 END MODULE stats
 

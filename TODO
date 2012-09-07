@@ -19,4 +19,6 @@ The PBC function does not work for not cubic boxes.
 -selection 'within x of' should work for any list of frames not only for "ALL". In addition, it is not efficient when reload_frame is used a lot.
 Making selections is computationally expensive. It is not the distance.. or the within... the problem is making the selection all the time.
 
-
+- RDF: Right now the function does not work properly if setA=setB. In
+  addition, this should be efficient including the condition "same
+  set" for function dists.

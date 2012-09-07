@@ -61,9 +61,8 @@ def histogram(a,bins=20,segment=None,delta_x=None,prec=None,norm=None,plot=True)
     return h_x,h_y
 
 
-def binning(a,bins=20,segment=None,delta_x=None,prec=None):
+def binning(traj=None,bins=20,segment=None,delta_x=None,prec=None):
 
-    leng=len(a)
 
     if prec==None:
         opt_prec=0
@@ -86,12 +85,22 @@ def binning(a,bins=20,segment=None,delta_x=None,prec=None):
         delta_x=1.0
         opt=2
 
-    tray_bins=f.stats.binning(opt_prec,opt_range,opt,a,bins,mmn,mmx,delta_x,prec,leng)
+    if traj==None:
 
-    h_x=copy.deepcopy(f.stats.histo_x)
+        o_delta_x=f.stats.binning_x(opt_range,opt,bins,mmn,mmx,delta_x,prec)
+        h_x=copy.deepcopy(f.stats.histo_x)
+        f.stats.free_mem()
+        
+        return h_x
+
+    else:
+
+        tray_bins=f.stats.binning(opt_prec,opt_range,opt,traj,bins,mmn,mmx,delta_x,prec,len(traj))
+
+        h_x=copy.deepcopy(f.stats.histo_x)
     
-    f.stats.free_mem()
+        f.stats.free_mem()
 
-    return h_x,tray_bins
+        return h_x,tray_bins
 
 

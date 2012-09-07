@@ -305,6 +305,54 @@ It is faster if len(list1)<len(list2).
    The distance between atoms index 1 and 48 is 21.6473615840 in frame 8
    The distance between atoms index 1 and 48 is 18.5862638499 in frame 9
 
+Radial Distribution Funcions
+============================
+
+It is more efficient (fast and no memory consumming) when the trajectorie is read frame by frame, and
+not loaded at a time.
+
+.. warning:: Right now the function does not work properly if
+.. setA=setB. In addition, this should be efficient including the
+.. condition "same set" for function dists.
+
+.. sourcecode:: ipython
+
+   In [2]: ion=molecule('run_ion.gro',coors=False,verbose=False) 
+    
+   In [3]: ion.load_traj('traj.dcd',frame='ALL',verbose=False)
+    
+   In [4]: list1=ion.selection('atom.name OW')
+    
+   In [5]: list2=ion.selection('atom.resid.type Ion')
+    
+   In [6]: rdf_xx,rdf_yy=ion.rdf(setA=list1,setB=list2,bins=1500,segment=[0.0,30.0])
+
+.. sourcecode:: ipython
+
+   In [2]: ion=molecule('run_ion.gro',coors=False,verbose=False) 
+    
+   In [3]: ion.load_traj('traj.dcd',frame='Next',verbose=False)
+    
+   In [4]: list1=ion.selection('atom.name OW')
+    
+   In [5]: list2=ion.selection('atom.resid.type Ion')
+    
+   In [6]: rdf_xx=pyn_math.binning(bins=1500,segment=[0.0,30.0])
+    
+   In [7]: rdf_yy=zeros(shape=(1500),dtype=float,order='Fortran')
+    
+   In [8]: num_frames=0
+    
+   In [9]: while ion.traj[0].io_opened:
+      ...:     rdf_yy+=ion.rdf(setA=list1,setB=list2,traj=0,frame=0,bins=1500,segment=[0.0,30.0])
+      ...:     num_frames+=1
+      ...:     ion.traj[0].reload_frame()
+   # End of file
+    
+   In [10]: rdf_yy=rdf_yy/(1.0*num_frames)
+
+
+xxx
 
 
 
