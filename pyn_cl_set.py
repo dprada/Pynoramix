@@ -743,26 +743,49 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         
 
-    #def neighbs(self,system2=None,limit=0,dist=0.0,pbc=False):
-    # 
-    # 
-    #    if system2==None:
-    #        system2=self
-    #        ident=True
-    #    else:
-    #        ident=False
-    # 
-    #    if limit != 0:
-    #        neighbs=f.aux_funcs_general.neighbs_limit(pbc,ident,limit,self.frame[0].coors,self.frame[0].box,system2.frame[0].coors,self.num_atoms,system2.num_atoms)
-    #    
-    #    else:
-    #        print type(self.frame[0].coors[1][:]),self.frame[0].coors[1][:],system2.num_atoms
-    #        neighbs=f.aux_funcs_general.neighbs_dist(pbc,ident,dist,self.frame[0].coors,self.frame[0].box,system2.frame[0].coors,system2.num_atoms)
-    # 
-    # 
-    #    return neighbs
-    # 
-    #    
+    def neighbs(self,setA=None,setB=None,ranking=1,dist=None,traj=0,frame=None,pbc=True):
+     
+        if setA==None or setB==None:
+            return
+
+        if type(setA) not in [int,list,tuple]:
+            setA=self.selection(setA)
+        elif type(setA) in [int]:
+            setA=[setA]
+
+        if type(setB) not in [int,list,tuple]:
+            setB=self.selection(setB)
+        elif type(setB) in [int]:
+            setB=[setB]
+
+        n_A=len(setA)
+        n_B=len(setB)
+        natoms_A=self.num_atoms
+        natoms_B=self.num_atoms
+
+        diff_system=1
+
+        if dist=None:
+            
+            if frame==0:
+                frame=self.traj[traj].frame[frame]
+                neighbs=f.neighbs_ranking(diff_system,pbc,ranking,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
+                return neighbs
+        
+        else:
+            if frame==0:
+                frame=self.traj[traj].frame[frame]
+                contact_map,num_neighb,dist_matrix=f.neighbs_dist(diff_system,pbc,ranking,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
+                neighbs=[]
+                for ii in range(n_A):
+                    neighbs_A=f.sort_list(setB,contact_map[ii,:],dist_matrix[ii,:],num_neighb[ii])
+                    neighbs.append[neighbs_A]
+
+                return neighbs
+     
+        print 'Not Implemented' 
+        pass
+        
     #def plot_contact_map(contact_map):
     #    
     #    pylab.gray()

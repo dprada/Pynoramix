@@ -235,77 +235,85 @@ SUBROUTINE rdf_frame(distances,box,segment_min,segment_max,bins,n_A,n_B,rdf)
 END SUBROUTINE rdf_frame
 
 
-SUBROUTINE neighbs_limit(pbc_opt,ident,limit,coors1,box1,coors2,n_atoms1,n_atoms2,neighb_list,neighb_dist,neighb_uvect)
+SUBROUTINE neighbs_ranking (diff_system,pbc_opt,limit,list1,coors1,box1,list2,coors2,n1,n2,natom1,natom2,neighb_list) !before: neighb_dist,neighb_uvect
 
   IMPLICIT NONE
-  
-  INTEGER,INTENT(IN)::pbc_opt,ident
+
+  INTEGER,INTENT(IN)::diff_system,pbc_opt
   INTEGER,INTENT(IN)::limit
-  INTEGER,INTENT(IN)::n_atoms1,n_atoms2
-  REAL,DIMENSION(n_atoms1,3),INTENT(IN)::coors1
-  REAL,DIMENSION(n_atoms2,3),INTENT(IN)::coors2
-  REAL,DIMENSION(3,3),INTENT(IN)::box1
-  INTEGER,DIMENSION(n_atoms1,limit),INTENT(OUT)::neighb_list
-  REAL,DIMENSION(n_atoms1,limit),INTENT(OUT)::neighb_dist
-  REAL,DIMENSION(n_atoms1,limit,3),INTENT(OUT)::neighb_uvect
+  integer,intent(in)::n1,n2,natom1,natom2
+  INTEGER,DIMENSION(n1),INTENT(IN)::list1
+  INTEGER,DIMENSION(n2),INTENT(IN)::list2
+  double precision,dimension(natom1,3),intent(in)::coors1
+  double precision,DIMENSION(3,3),INTENT(IN)::box1
+  double precision,dimension(natom2,3),intent(in)::coors2
+  double precision,dimension(n1,limit),intent(out)::neighb_list
 
-  LOGICAL::lpbc,lident
-  INTEGER::i,j,g
-  INTEGER,DIMENSION(:),ALLOCATABLE::list
-  REAL,DIMENSION(:),ALLOCATABLE::list_dists
+  DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::dist_matrix
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::dist_aux
+  INTEGER,DIMENSION(:),ALLOCATABLE::neight_aux
   LOGICAL,DIMENSION(:),ALLOCATABLE::filter
-  REAL,DIMENSION(:,:),ALLOCATABLE::list_vects
-  REAL,DIMENSION(:),ALLOCATABLE::aux,aux2
-  REAL::norm
+  INTEGER::ii,jj,gg
 
-  lident=.FALSE.
-  lpbc=.FALSE.
-  IF (ident>0) lident=.TRUE.
-  IF (pbc_opt>0) lpbc=.TRUE.
+  !DOUBLE PRECISION,DIMENSION(n_atoms1,limit),INTENT(OUT)::neighb_dist
+  !DOUBLE PRECISION,DIMENSION(n_atoms1,limit,3),INTENT(OUT)::neighb_uvect
 
+  ALLOCATE(dist_matrix(n1,n2),dist_aux(n2),filter(n2),neight_aux(limit))
+  filter=.TRUE.
+  CALL dist (diff_system,pbc_opt,list1,coors1,box1,list2,coors2,n1,n2,natom1,natom2,dist_matrix)
 
-  ALLOCATE(list(limit),list_vects(n_atoms2,3),list_dists(n_atoms2),filter(n_atoms2),aux(3),aux2(3))
-
-  list=0
-  list_dists=0.0d0
-  list_vects=0.0d0
-  aux=0.0d0
-  aux2=0.0d0
-  filter=.true.
-
-  DO i=1,n_atoms1
-     aux=coors1(i,:)
-     DO j=1,n_atoms2
-        aux2=coors2(j,:)-aux
-        IF (lpbc.eqv..true.) CALL PBC (aux2,box1)
-        list_dists(j)=sqrt(dot_product(aux2,aux2))
-        list_vects(j,:)=aux2
+  DO ii=1,n1
+     dist_aux=dist_matrix(ii,:)
+     DO jj=1,limit
+        gg=MINLOC(dist_aux(:),DIM=1,MASK=filter(:))
+        neight_aux(jj)=gg
+        filter(gg)=.FALSE.
      END DO
-
-     IF (lident.eqv..true.) filter(i)=.false.
-
-     DO j=1,limit
-        g=MINLOC(list_dists(:),DIM=1,MASK=filter(:))
-        list(j)=g
-        norm=list_dists(g)
-        neighb_dist(i,j)=norm
-        neighb_uvect(i,j,:)=list_vects(g,:)/norm
-        neighb_list(i,j)=g
-        filter(g)=.false.
+     DO jj=1,limit
+        gg=neight_aux(jj)
+        filter(gg)=.TRUE.
      END DO
+     neighb_list(ii,:)=neight_aux(:)-1 !to correct indexes
+  END DO
+        
+  DEALLOCATE(dist_matrix,dist_aux,filter,neight_aux)
 
-     DO j=1,limit
-        g=list(j)
-        filter(g)=.true.
+END SUBROUTINE neighbs_ranking
+
+
+SUBROUTINE neighbs_dist (diff_system,pbc_opt,limit,list1,coors1,box1,list2,coors2,n1,n2,natom1,natom2,contact_map,dist_matrix) !before: neighb_dist,neighb_uvect
+
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN)::diff_system,pbc_opt
+  DOUBLE PRECISION,INTENT(IN)::limit
+  integer,intent(in)::n1,n2,natom1,natom2
+  INTEGER,DIMENSION(n1),INTENT(IN)::list1
+  INTEGER,DIMENSION(n2),INTENT(IN)::list2
+  double precision,dimension(natom1,3),intent(in)::coors1
+  double precision,DIMENSION(3,3),INTENT(IN)::box1
+  double precision,dimension(natom2,3),intent(in)::coors2
+  INTEGER,dimension(n1,n2),intent(out)::neighb_list
+  DOUBLE PRECISION,DIMENSION(n1,n2),intent(out)::dist_matrix
+  INTEGER::ii,jj,gg
+
+  !DOUBLE PRECISION,DIMENSION(n_atoms1,limit),INTENT(OUT)::neighb_dist
+  !DOUBLE PRECISION,DIMENSION(n_atoms1,limit,3),INTENT(OUT)::neighb_uvect
+
+
+  CALL dist (diff_system,pbc_opt,list1,coors1,box1,list2,coors2,n1,n2,natom1,natom2,dist_matrix)
+
+  neighb_list=0
+
+  DO ii=1,n1
+     DO jj=1,n2
+        IF (dist_matrix(ii,jj)<=limit) neighb_list(ii,jj)=1
      END DO
-     filter(i)=.true.
   END DO
 
-  DEALLOCATE(list,list_vects,list_dists,filter,aux,aux2)
+END SUBROUTINE neighbs_dist
 
-  neighb_list=neighb_list-1
 
-END SUBROUTINE NEIGHBS_LIMIT
 
 SUBROUTINE neighbs_dist2(pbc_opt,ident,ii,dist,coors1,box1,coors2,n_atoms2,neighb_list,neighb_dist,neighb_uvect)
 
@@ -394,7 +402,7 @@ SUBROUTINE neighbs_dist2(pbc_opt,ident,ii,dist,coors1,box1,coors2,n_atoms2,neigh
 END SUBROUTINE NEIGHBS_DIST2
 
 
-SUBROUTINE neighbs_dist(pbc_opt,ident,dist,coors1,box1,coors2,n_atoms1,n_atoms2,neighb_list,neighb_dist,neighb_uvect)
+SUBROUTINE neighbs_dist1(pbc_opt,ident,dist,coors1,box1,coors2,n_atoms1,n_atoms2,neighb_list,neighb_dist,neighb_uvect)
 
   IMPLICIT NONE
   
@@ -473,7 +481,7 @@ SUBROUTINE neighbs_dist(pbc_opt,ident,dist,coors1,box1,coors2,n_atoms1,n_atoms2,
 
   neighb_list=neighb_list-1
 
-END SUBROUTINE NEIGHBS_DIST
+END SUBROUTINE NEIGHBS_DIST1
 
 
 SUBROUTINE PBC(vector,box)
