@@ -312,8 +312,8 @@ It is more efficient (fast and no memory consumming) when the trajectorie is rea
 not loaded at a time.
 
 .. warning:: Right now the function does not work properly if
-.. setA=setB. In addition, this should be efficient including the
-.. condition "same set" for function dists.
+   setA=setB. In addition, this should be efficient including the
+   condition "same set" for function dists.
 
 .. sourcecode:: ipython
 
