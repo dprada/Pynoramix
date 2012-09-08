@@ -247,7 +247,7 @@ SUBROUTINE neighbs_ranking (diff_system,pbc_opt,limit,list1,coors1,box1,list2,co
   double precision,dimension(natom1,3),intent(in)::coors1
   double precision,DIMENSION(3,3),INTENT(IN)::box1
   double precision,dimension(natom2,3),intent(in)::coors2
-  double precision,dimension(n1,limit),intent(out)::neighb_list
+  INTEGER,dimension(n1,limit),intent(out)::neighb_list
 
   DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::dist_matrix
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::dist_aux
@@ -257,6 +257,8 @@ SUBROUTINE neighbs_ranking (diff_system,pbc_opt,limit,list1,coors1,box1,list2,co
 
   !DOUBLE PRECISION,DIMENSION(n_atoms1,limit),INTENT(OUT)::neighb_dist
   !DOUBLE PRECISION,DIMENSION(n_atoms1,limit,3),INTENT(OUT)::neighb_uvect
+
+  ! The indexes in list1 and list2 not corrected yet (because of function dist)
 
   ALLOCATE(dist_matrix(n1,n2),dist_aux(n2),filter(n2),neight_aux(limit))
   filter=.TRUE.
@@ -272,8 +274,8 @@ SUBROUTINE neighbs_ranking (diff_system,pbc_opt,limit,list1,coors1,box1,list2,co
      DO jj=1,limit
         gg=neight_aux(jj)
         filter(gg)=.TRUE.
+        neighb_list(ii,jj)=list2(gg) ! No correction was done on indexes
      END DO
-     neighb_list(ii,:)=neight_aux(:)-1 !to correct indexes
   END DO
         
   DEALLOCATE(dist_matrix,dist_aux,filter,neight_aux)
@@ -281,7 +283,7 @@ SUBROUTINE neighbs_ranking (diff_system,pbc_opt,limit,list1,coors1,box1,list2,co
 END SUBROUTINE neighbs_ranking
 
 
-SUBROUTINE neighbs_dist (diff_system,pbc_opt,limit,list1,coors1,box1,list2,coors2,n1,n2,natom1,natom2,contact_map,dist_matrix) !before: neighb_dist,neighb_uvect
+SUBROUTINE neighbs_dist (diff_system,pbc_opt,limit,list1,coors1,box1,list2,coors2,n1,n2,natom1,natom2,contact_map,num_neighbs,dist_matrix) !before: neighb_dist,neighb_uvect
 
   IMPLICIT NONE
 
@@ -293,27 +295,71 @@ SUBROUTINE neighbs_dist (diff_system,pbc_opt,limit,list1,coors1,box1,list2,coors
   double precision,dimension(natom1,3),intent(in)::coors1
   double precision,DIMENSION(3,3),INTENT(IN)::box1
   double precision,dimension(natom2,3),intent(in)::coors2
-  INTEGER,dimension(n1,n2),intent(out)::neighb_list
+  INTEGER,dimension(n1,n2),intent(out)::contact_map
+  INTEGER,DIMENSION(n1),INTENT(OUT)::num_neighbs
   DOUBLE PRECISION,DIMENSION(n1,n2),intent(out)::dist_matrix
+
   INTEGER::ii,jj,gg
 
   !DOUBLE PRECISION,DIMENSION(n_atoms1,limit),INTENT(OUT)::neighb_dist
   !DOUBLE PRECISION,DIMENSION(n_atoms1,limit,3),INTENT(OUT)::neighb_uvect
 
-
+  ! The indexes in list1 and list2 not corrected yet (because of function dist)
   CALL dist (diff_system,pbc_opt,list1,coors1,box1,list2,coors2,n1,n2,natom1,natom2,dist_matrix)
 
-  neighb_list=0
+  contact_map=0
+  num_neighbs=0
 
   DO ii=1,n1
+     gg=0
      DO jj=1,n2
-        IF (dist_matrix(ii,jj)<=limit) neighb_list(ii,jj)=1
+        IF (dist_matrix(ii,jj)<=limit) THEN
+           contact_map(ii,jj)=1
+           gg=gg+1
+        END IF
      END DO
+     num_neighbs(ii)=gg
   END DO
 
 END SUBROUTINE neighbs_dist
 
+SUBROUTINE translate_list (sort,list,filter,distance,dim_out,n_list,trans_inds)
 
+  IMPLICIT NONE
+  INTEGER,INTENT(IN)::n_list,dim_out,sort
+  INTEGER,DIMENSION(n_list),INTENT(IN)::list,filter
+  DOUBLE PRECISION,DIMENSION(n_list),INTENT(IN)::distance
+  INTEGER,DIMENSION(dim_out),INTENT(OUT)::trans_inds
+
+  LOGICAL,DIMENSION(:),ALLOCATABLE::ifilter
+  INTEGER::ii,gg
+
+  IF (sort) THEN
+
+     ALLOCATE(ifilter(n_list))
+     ifilter=filter
+
+     DO ii=1,dim_out
+        gg=MINLOC(distance(:),DIM=1,MASK=ifilter(:))
+        ifilter(gg)=.FALSE.
+        trans_inds(ii)=list(gg) ! The indexes were not corrected
+     END DO
+
+     DEALLOCATE(ifilter)
+
+  ELSE
+
+     gg=0
+     DO ii=1,n_list
+        IF (filter(ii)) THEN
+           gg=gg+1
+           trans_inds(gg)=list(gg)
+        END IF
+     END DO
+
+  END IF
+
+END SUBROUTINE translate_list
 
 SUBROUTINE neighbs_dist2(pbc_opt,ident,ii,dist,coors1,box1,coors2,n_atoms2,neighb_list,neighb_dist,neighb_uvect)
 

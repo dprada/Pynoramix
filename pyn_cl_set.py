@@ -743,7 +743,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         
 
-    def neighbs(self,setA=None,setB=None,ranking=1,dist=None,traj=0,frame=None,pbc=True):
+    def neighbs(self,setA=None,setB=None,ranking=1,dist=None,traj=0,frame=0,pbc=True):
      
         if setA==None or setB==None:
             return
@@ -765,7 +765,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         diff_system=1
 
-        if dist=None:
+        if dist==None:
             
             if frame==0:
                 frame=self.traj[traj].frame[frame]
@@ -775,14 +775,24 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         else:
             if frame==0:
                 frame=self.traj[traj].frame[frame]
-                contact_map,num_neighb,dist_matrix=f.neighbs_dist(diff_system,pbc,ranking,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
+                contact_map,num_neighbs,dist_matrix=f.neighbs_dist(diff_system,pbc,dist,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
                 neighbs=[]
-                for ii in range(n_A):
-                    neighbs_A=f.sort_list(setB,contact_map[ii,:],dist_matrix[ii,:],num_neighb[ii])
-                    neighbs.append[neighbs_A]
-
+                if ranking:
+                    for ii in range(n_A):
+                        if num_neighbs[ii]:
+                            neighbs_A=f.translate_list(1,setB,contact_map[ii,:],dist_matrix[ii,:],num_neighbs[ii],n_B)
+                            neighbs.append(neighbs_A)
+                        else:
+                            neighbs.append([])
+                else:
+                    for ii in range(n_A):
+                        if num_neighbs[ii]:
+                            neighbs_A=f.translate_list(0,setB,contact_map[ii,:],dist_matrix[ii,:],num_neighbs[ii],n_B)
+                            neighbs.append(neighbs_A)
+                        else:
+                            neighbs.append([])
                 return neighbs
-     
+
         print 'Not Implemented' 
         pass
         
