@@ -1,5 +1,6 @@
 from numpy import *
 import pyn_fort_net as f_net
+import pyn_fort_prov as faux
 import pyn_math as pymath
 import copy
 
@@ -1150,16 +1151,46 @@ class traj2net():
 
 class kinetic_network(network):
 
-    def __init__(self,traj=None,num_frames=0,dimension=0,verbose=True):
+    def __init__(self,traj=None,ranges=None,verbose=True):
 
         self.__init_att__()
 
-        self.traj=traj2net()
+        try:
+            rango_traj=traj.shape
+        except:
+            traj=array(traj,order='Fortran')
+            rango_traj=traj.shape
+
+        if len(rango_traj)==2:
+            traj=[traj]
+            traj=array(traj,order='Fortran')
+            rango_traj=traj.shape
+
+        num_parts=rango_traj[0]
+        num_frames=rango_traj[1]
+        dimensions=rango_traj[2]
+        
+        print rango_traj
+
+        len_str=0
+        for aa in ranges:
+            bb=len(str(aa[0]))
+            if (bb>len_str): 
+                len_str=bb 
+            bb=len(str(aa[1]))
+            if (bb>len_str): 
+                len_str=bb 
+                
+        len_str=len_str+1
+        N_nodes,K_tot=faux.aux.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
+        
+        # Ya tenemos faux.aux.T_ind,faux.aux.T_tau,faux.aux.T_start,faux.aux.labels
+
 
         if verbose:
             print 'listo'
 
-        pass
+        print N_nodes,K_tot
 
     
 

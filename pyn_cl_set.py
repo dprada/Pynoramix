@@ -701,21 +701,22 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 dist_frame=f.dist(diff_system,pbc,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
                 dists.append(dist_frame)
 
-        return dists
+        return array(dists,order='Fortran')
             
     def rdf(self,setA=None,setB=None,traj=0,frame='ALL',pbc=True,bins=100,segment=None):
 
         if setA==None or setB==None:
             return
 
-        if type(setA) not in [int,list,tuple]:
+        if type(setA) not in [int32,int,list,tuple]:
+            print type(setA)
             setA=self.selection(setA)
-        elif type(setA) in [int]:
+        elif type(setA) in [int,int32]:
             setA=[setA]
 
-        if type(setB) not in [int,list,tuple]:
+        if type(setB) not in [int32,int,list,tuple]:
             setB=self.selection(setB)
-        elif type(setB) in [int]:
+        elif type(setB) in [int,int32]:
             setB=[setB]
 
         n_A=len(setA)
