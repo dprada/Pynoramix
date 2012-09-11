@@ -1,12 +1,14 @@
 MODULE stats
 
     DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::histo_x,histo_y
+    DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::histo_z
 
   CONTAINS
 
   SUBROUTINE free_mem ()
     IF (ALLOCATED(histo_x)) DEALLOCATE(histo_x)
     IF (ALLOCATED(histo_y)) DEALLOCATE(histo_y)
+    IF (ALLOCATED(histo_z)) DEALLOCATE(histo_z)
   END SUBROUTINE free_mem
 
   SUBROUTINE average (idatos,l,aa,sigma)
@@ -133,6 +135,107 @@ MODULE stats
 
   END SUBROUTINE histograma
   
+  SUBROUTINE histograma_2d (opt_norm,opt_prec,opt_range,opt,idatos,ibins,imin_x,imax_x,idelta_x,iprec,l)
+    
+    implicit none
+    INTEGER,INTENT(IN)::opt_norm,opt_prec,opt_range,opt,l
+    INTEGER,DIMENSION(2),INTENT(IN)::ibins
+    DOUBLE PRECISION,DIMENSION(l,2),INTENT(IN)::idatos
+    DOUBLE PRECISION,DIMENSION(2),INTENT(IN)::idelta_x,imax_x,imin_x
+    DOUBLE PRECISION,INTENT(IN)::iprec
+
+    INTEGER::tt,qq
+    DOUBLE PRECISION,DIMENSION(2)::max,min
+    DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::frecuencias
+    INTEGER::i,j,k,prec,aux
+    INTEGER,DIMENSION(2)::bins
+    DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::datos
+    DOUBLE PRECISION::omax(2),omin(2),delta_x(2)
+    DOUBLE PRECISION::total,sobra
+    
+    bins=ibins
+
+    ALLOCATE(datos(l,2))
+    datos=0.0d0
+
+    !! Por un problema que hay con python 2.6 corrijo la precision
+    IF (opt_prec==1) THEN
+       prec=nint(1.0/iprec)
+       datos=0.0d0
+       DO i=1,l
+          aux=nint(idatos(i,1)*prec)
+          datos(i,1)=(aux*1.0d0)/(prec*1.0d0)
+          aux=nint(idatos(i,2)*prec)
+          datos(i,2)=(aux*1.0d0)/(prec*1.0d0)
+       END DO
+       omax=(nint(imax_x*prec)*1.0d0)/(prec*1.0d0)
+       omin=(nint(imin_x*prec)*1.0d0)/(prec*1.0d0)
+       delta_x=idelta_x
+    ELSE
+       datos=idatos
+       omax=imax_x
+       omin=imin_x
+       delta_x=idelta_x
+    END IF
+    
+    IF (opt_range==0) THEN
+       IF (opt==1) THEN
+          DO i=1,2
+             bins(i)=CEILING((omax(i)-omin(i))/delta_x(i))
+             sobra=(bins(i)*delta_x(i)-(omax(i)-omin(i)))/2.0d0
+             bins(i)=bins(i)+1
+             omin(i)=omin(i)-sobra
+             omax(i)=omax(i)+sobra
+          END DO
+       ELSE
+          DO i=1,2
+             delta_x(i)=(omax(i)-omin(i))/(bins(i)*1.0d0)
+             sobra=delta_x(i)/2.0d0
+             omin(i)=omin(i)-sobra
+             omax(i)=omax(i)+sobra
+             bins(i)=bins(i)+1
+          END DO
+       END IF
+    ELSE
+       IF (opt==1) THEN
+          DO i=1,2
+             bins(i)=CEILING((omax(i)-omin(i))/delta_x(i))
+          END DO
+       ELSE
+          DO i=1,2
+             delta_x(i)=(omax(i)-omin(i))/(bins(i)*1.0d0)
+          END DO
+       END IF
+    END IF
+    
+    ALLOCATE(frecuencias(bins(1),bins(2)))
+    frecuencias=0.0d0
+    
+    DO k=1,l
+       tt=FLOOR((datos(k,1)-omin(1))/delta_x(1)) 
+       qq=FLOOR((datos(k,2)-omin(2))/delta_x(2))
+       frecuencias(tt,qq)=frecuencias(tt,qq)+1
+    END DO
+    
+    IF (opt_norm==1) THEN
+       frecuencias=frecuencias/(l*delta_x(1)*delta_x(2))
+    END IF
+        
+    !! Output
+    CALL free_mem()
+    ALLOCATE(histo_x(bins(1)),histo_y(bins(2)),histo_z(bins(1),bins(2)))
+    histo_z=frecuencias
+    DO i=1,bins(1)
+       histo_x(i)=omin(1)+(i*1.0d0-0.50d0)*delta_x(1)
+    END DO
+    DO i=1,bins(2)
+       histo_y(i)=omin(2)+(i*1.0d0-0.50d0)*delta_x(2)
+    END DO
+    
+    DEALLOCATE(datos,frecuencias)
+
+  END SUBROUTINE histograma_2d
+
 
   SUBROUTINE binning (opt_prec,opt_range,opt,idatos,ibins,imin_x,imax_x,idelta_x,iprec,l,tray_bins)
     

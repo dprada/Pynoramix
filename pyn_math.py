@@ -20,11 +20,11 @@ def average(a):
 
 
 
-def histogram(a,bins=20,segment=None,delta_x=None,prec=None,norm=None,plot=True):
+def histogram(a,bins=20,segment=None,delta_x=None,prec=None,norm=False,plot=False):
 
     leng=len(a)
 
-    if norm==None:
+    if norm==False:
         opt_norm=0
     else:
         opt_norm=1
@@ -60,6 +60,50 @@ def histogram(a,bins=20,segment=None,delta_x=None,prec=None,norm=None,plot=True)
 
     return h_x,h_y
 
+def histogram2d(a,bins=[20,20],segment=None,delta_x=None,prec=None,norm=False,plot=False):
+
+    leng=len(a)
+
+    if norm==False:
+        opt_norm=0
+    else:
+        opt_norm=1
+
+    if prec==None:
+        opt_prec=0
+        prec=1.0
+    else:
+        opt_prec=1
+
+    if segment==None:
+        opt_range=0
+        mmx0=max(a[:,0])
+        mmx1=max(a[:,1])
+        mmn0=min(a[:,0])
+        mmn1=min(a[:,1])
+    else:
+        opt_range=1
+        mmn0=segment[0][0]
+        mmn1=segment[1][0]
+        mmx0=segment[0][1]
+        mmx1=segment[1][1]
+
+    if delta_x!=None:
+        opt=1
+    else:
+        delta_x=[1.0,1.0]
+        opt=2
+
+    f.stats.histograma_2d(opt_norm,opt_prec,opt_range,opt,a,bins,[mmn0,mmn1],[mmx0,mmx1],delta_x,prec,leng)
+
+    h_x=copy.deepcopy(f.stats.histo_x)
+    h_y=copy.deepcopy(f.stats.histo_y)
+    h_z=copy.deepcopy(f.stats.histo_z)
+    f.stats.free_mem()
+    if plot:
+        pylab.plot(h_x,h_y,'ro-')
+
+    return h_x,h_y,h_z
 
 def binning(traj=None,bins=20,segment=None,delta_x=None,prec=None):
 
