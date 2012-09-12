@@ -52,6 +52,9 @@ MODULE stats
     DOUBLE PRECISION::max,min,delta_x,total,sobra
     
     bins=ibins
+    max=imax
+    min=imin
+    delta_x=idelta_x
 
     ALLOCATE(datos(l))
     datos=0.0d0
