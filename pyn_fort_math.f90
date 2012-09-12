@@ -39,15 +39,15 @@ MODULE stats
   
 
 
-  SUBROUTINE histograma (opt_norm,opt_prec,opt_range,opt,idatos,ibins,imin_x,imax_x,idelta_x,iprec,l)
+  SUBROUTINE histograma (opt_norm,opt_prec,opt_range,opt,opt_cumul,idatos,ibins,imin_x,imax_x,idelta_x,iprec,l)
     
     implicit none
-    INTEGER,INTENT(IN)::opt_norm,opt_prec,opt_range,opt,l,ibins
+    INTEGER,INTENT(IN)::opt_norm,opt_prec,opt_range,opt,l,ibins,opt_cumul
     DOUBLE PRECISION,DIMENSION(l),INTENT(IN)::idatos
     DOUBLE PRECISION,INTENT(IN)::idelta_x,imax_x,imin_x,iprec
 
     DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::frecuencias
-    INTEGER::i,j,k,prec,aux,bins
+    INTEGER::i,j,k,prec,aux,bins,tt
     DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::datos
     DOUBLE PRECISION::max,min,delta_x,total,sobra
     
@@ -100,32 +100,27 @@ MODULE stats
     frecuencias=0.0d0
     
     DO k=1,l
-       DO j=bins,1,-1
-          IF (datos(k)<(min+j*delta_x)) THEN
-             frecuencias(j)=frecuencias(j)+1.0d0
-          ELSE
-             EXIT
-          END IF
-       END DO
+       tt=FLOOR((datos(k)-min)/delta_x) 
+       frecuencias(tt)=frecuencias(tt)+1.0d0
     END DO
     
-    DO j=bins,2,-1
-       
-       frecuencias(j)=frecuencias(j)-frecuencias(j-1)
-       
-    END DO
 
-    
     IF (opt_norm==1) THEN
        total=SUM(frecuencias)*delta_x
        frecuencias=frecuencias/total
     END IF
     
-    
     !! Output
+
     CALL free_mem()
     ALLOCATE(histo_y(bins),histo_x(bins))
     histo_y=frecuencias
+    IF (opt_cumul==1) THEN
+       DO i=1,bins-1
+          histo_y(i+1)=histo_y(i+1)+histo_y(i)
+       END DO
+    END IF
+
     DO i=1,bins
        histo_x(i)=min+(i*1.0d0-0.50d0)*delta_x
     END DO

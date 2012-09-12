@@ -20,9 +20,9 @@ def average(a):
 
 
 
-def histogram(a,bins=20,segment=None,delta_x=None,prec=None,norm=False,plot=False):
+def histogram(traj,bins=20,segment=None,delta_x=None,prec=None,norm=False,cumul=False,plot=False):
 
-    leng=len(a)
+    leng=len(traj)
 
     if norm==False:
         opt_norm=0
@@ -37,8 +37,8 @@ def histogram(a,bins=20,segment=None,delta_x=None,prec=None,norm=False,plot=Fals
 
     if segment==None:
         opt_range=0
-        mmx=max(a)
-        mmn=min(a)
+        mmx=max(traj)
+        mmn=min(traj)
     else:
         opt_range=1
         mmn=segment[0]
@@ -50,7 +50,12 @@ def histogram(a,bins=20,segment=None,delta_x=None,prec=None,norm=False,plot=Fals
         delta_x=1.0
         opt=2
 
-    f.stats.histograma(opt_norm,opt_prec,opt_range,opt,a,bins,mmn,mmx,delta_x,prec,leng)
+    if cumul:
+        opt_cumul=1
+    else:
+        opt_cumul=0
+
+    f.stats.histograma(opt_norm,opt_prec,opt_range,opt,opt_cumul,traj,bins,mmn,mmx,delta_x,prec,leng)
 
     h_x=copy.deepcopy(f.stats.histo_x)
     h_y=copy.deepcopy(f.stats.histo_y)
@@ -60,9 +65,9 @@ def histogram(a,bins=20,segment=None,delta_x=None,prec=None,norm=False,plot=Fals
 
     return h_x,h_y
 
-def histogram2d(a,bins=[20,20],segment=None,delta_x=None,prec=None,norm=False,plot=False):
+def histogram2d(traj,bins=[20,20],segment=None,delta_x=None,prec=None,norm=False,plot=False):
 
-    leng=len(a)
+    leng=len(traj)
 
     if norm==False:
         opt_norm=0
@@ -77,10 +82,10 @@ def histogram2d(a,bins=[20,20],segment=None,delta_x=None,prec=None,norm=False,pl
 
     if segment==None:
         opt_range=0
-        mmx0=max(a[:,0])
-        mmx1=max(a[:,1])
-        mmn0=min(a[:,0])
-        mmn1=min(a[:,1])
+        mmx0=max(traj[:,0])
+        mmx1=max(traj[:,1])
+        mmn0=min(traj[:,0])
+        mmn1=min(traj[:,1])
     else:
         opt_range=1
         mmn0=segment[0][0]
@@ -94,7 +99,7 @@ def histogram2d(a,bins=[20,20],segment=None,delta_x=None,prec=None,norm=False,pl
         delta_x=[1.0,1.0]
         opt=2
 
-    f.stats.histograma_2d(opt_norm,opt_prec,opt_range,opt,a,bins,[mmn0,mmn1],[mmx0,mmx1],delta_x,prec,leng)
+    f.stats.histograma_2d(opt_norm,opt_prec,opt_range,opt,traj,bins,[mmn0,mmn1],[mmx0,mmx1],delta_x,prec,leng)
 
     h_x=copy.deepcopy(f.stats.histo_x)
     h_y=copy.deepcopy(f.stats.histo_y)
