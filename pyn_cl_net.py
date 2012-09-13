@@ -1182,9 +1182,9 @@ class kinetic_network(network):
                 len_str=bb 
                 
         len_str=len_str+1
-        N_nodes,K_tot=faux.aux.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
+        N_nodes,K_tot=ftrajs.aux.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
         
-        # Ya tenemos faux.aux.T_ind,faux.aux.T_tau,faux.aux.T_start,faux.aux.labels
+        # Ya tenemos ftrajs.aux.T_ind,ftrajs.aux.T_tau,ftrajs.aux.T_start,ftrajs.aux.labels
 
 
         if verbose:

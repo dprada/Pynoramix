@@ -6,7 +6,7 @@ f90_libs='-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_def -lpthread' # 64
 #f90_libs='-lmkl_sequential -lmkl_core -lmkl_def -lpthread' # ??
 #f90_libs='-lmkl_intel -lmkl_sequential -lmkl_core -lpthread -lm' # 32 bits
 #f90_libs=-llapack
-#f90_opt='-fast'
+f90_opt='-fast'
 #f90_opt='-check all'
 
 f2py_exe='none'
@@ -47,7 +47,7 @@ if [ ! -e io_formats/libxdrfile.so ]; then
 
 fi
 
-f_files=(pyn_water.f90 pyn_fort_enm.f90 pyn_fort_general.f90 pyn_fort_net.f90 pyn_hbonds.f90 pyn_fort_math.f90 pyn_fort_prov.f90)
+f_files=(pyn_water.f90 pyn_fort_enm.f90 pyn_fort_general.f90 pyn_fort_net.f90 pyn_hbonds.f90 pyn_fort_math.f90 pyn_fort_anal_trajs.f90)
 io_files=(io_formats/libdcdfile.f90 io_formats/libbinfile.f90)
 
 

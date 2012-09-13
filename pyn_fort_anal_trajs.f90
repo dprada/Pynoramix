@@ -11,14 +11,9 @@ TYPE darray_pointer
 DOUBLE PRECISION,DIMENSION(:),POINTER::d1
 END TYPE darray_pointer
 
-DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::histo_x,histo_y
 
 CONTAINS
 
-  SUBROUTINE free_mem ()
-    IF (ALLOCATED(histo_x)) DEALLOCATE(histo_x)
-    IF (ALLOCATED(histo_y)) DEALLOCATE(histo_y)
-  END SUBROUTINE free_mem
 
 SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,N_nodes,Ktot)
 
@@ -328,26 +323,25 @@ subroutine rao_stat_1(tw,traj_dists,limits,frames,len_lims,traj_bins)
 end subroutine rao_stat_1
 
 
-subroutine ganna (opt_range,opt,ibins,immn,immx,idelta_x,traj,ksi,tw,len_traj,traj_out)
+subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,len_traj,traj_out)
 
   IMPLICIT NONE
-  INTEGER,INTENT(IN)::opt_prec,opt_range,opt,bins,tw
-  DOUBLE PRECISION,INTENT(IN)::delta_x,mmn,mmx,prec
+  INTEGER,INTENT(IN)::opt_range,opt,ibins,tw,len_traj
+  DOUBLE PRECISION,INTENT(IN)::idelta_x,imin,imax
   DOUBLE PRECISION,INTENT(IN)::ksi
   DOUBLE PRECISION,DIMENSION(len_traj),INTENT(IN)::traj
-  DOUBLE PRECISION,DIMENSION(len_traj-2*tw),INTENT(OUT)::traj_out
+  INTEGER,DIMENSION(len_traj-2*tw),INTENT(OUT)::traj_out
 
-
-
-
-
-  INTEGER::ii,jj,gg,represent,Ltw
-  INTEGER::num_rep
-  INTEGER,DIMENSION(:),ALLOCATABLE::list,aux_list
-  DOUBLE PRECISION::dsm,dist
-  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::cumul_test,segmento
-  LOGICAL::switch
+  INTEGER::bins
+  DOUBLE PRECISION::delta_x,min,max,sobra
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::cumul
+  INTEGER::Ltw,num_rep
+  DOUBLE PRECISION::dsm
+  DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::cumul_list,aux_list
   LOGICAL,DIMENSION(:),ALLOCATABLE::filter
+  DOUBLE PRECISION::dist
+  INTEGER::ii,jj,gg,kk,tt,lll
+  LOGICAL::switch
 
   !!! For histogram:
 
@@ -365,10 +359,6 @@ subroutine ganna (opt_range,opt,ibins,immn,immx,idelta_x,traj,ksi,tw,len_traj,tr
         max=max+sobra
      ELSE
         delta_x=(max-min)/(bins*1.0d0)
-        sobra=delta_x/2.0d0
-        min=min-sobra
-        max=max+sobra
-        bins=bins+1
      END IF
   ELSE
      IF (opt==1) THEN
@@ -378,38 +368,51 @@ subroutine ganna (opt_range,opt,ibins,immn,immx,idelta_x,traj,ksi,tw,len_traj,tr
      END IF
   END IF
 
+  !!
   ALLOCATE(cumul(bins))
   cumul=0.0d0
-
-  !!!
-
 
   Ltw=(2*tw+1)
   traj_out=0
   dsm=sqrt(2.0d0/(1.0d0*Ltw))*ksi !Kolmogorov-Smirnov
 
-  ALLOCATE(cumul_test(num_bins),segmento(Ltw))
-
+  !! First frame
   num_rep=1
-  ALLOCATE(list(num_rep),filter(num_rep))
-  list(1)=num_rep
+  ALLOCATE(cumul_list(num_rep,bins),filter(num_rep))
+  
+  ii=1
+  cumul=0.0d0
+  DO kk=ii,ii+Ltw-1
+     tt=CEILING((traj(kk)-min)/delta_x) 
+     IF (tt==0) tt=1
+     cumul(tt)=cumul(tt)+1.0d0
+  END DO
+  cumul=cumul/(Ltw*1.0d0)
+  DO kk=1,bins-1
+     cumul(kk+1)=cumul(kk+1)+cumul(kk)
+  END DO
+  cumul_list(1,:)=cumul
   traj_out(1)=num_rep
 
-  DO ii=1,len_traj-2*tw
-     kk=ii+tw
-     segmento(:)=traj(ii:(ii+Ltw))
-     CALL histograma(1,opt_prec,opt_range,opt,1,segmento,bins,mmn,mmx,delta_x,prec,Ltw)
-     
+  !! Rest of frames
 
-  DO ii=2,len_traj
-     cumul_test=cumul_traj(ii,:)
+  DO ii=2,len_traj-2*tw
+     cumul=0.0d0
+     DO kk=ii,ii+Ltw-1
+        tt=CEILING((traj(kk)-min)/delta_x) 
+        IF (tt==0) tt=1
+        cumul(tt)=cumul(tt)+1.0d0
+     END DO
+     cumul=cumul/(1.0d0*Ltw)
+     DO kk=1,bins-1
+        cumul(kk+1)=cumul(kk+1)+cumul(kk)
+     END DO
      switch=.true.
      filter=.true.
      DO jj=ii-1,1,-1
         gg=traj_out(jj)
-        represent=list(gg)
         IF (filter(gg)==.true.) THEN
-           dist=MAXVAL(abs(cumul_traj(represent,:)-cumul_test(:)),DIM=1)
+           dist=MAXVAL(abs(cumul_list(gg,:)-cumul(:)),DIM=1)
            IF (dist<=dsm) THEN
               traj_out(ii)=gg
               switch=.false.
@@ -422,111 +425,22 @@ subroutine ganna (opt_range,opt,ibins,immn,immx,idelta_x,traj,ksi,tw,len_traj,tr
         END IF
      END DO
      IF (switch==.true.) THEN
-        ALLOCATE(aux_list(num_rep))
-        aux_list=list
-        DEALLOCATE(list,filter)
+        ALLOCATE(aux_list(num_rep,bins))
+        aux_list=cumul_list
+        DEALLOCATE(cumul_list,filter)
         num_rep=num_rep+1
-        ALLOCATE(list(num_rep),filter(num_rep))
-        list(1:(num_rep-1))=aux_list
+        ALLOCATE(cumul_list(num_rep,bins),filter(num_rep))
+        cumul_list(1:(num_rep-1),:)=aux_list
         DEALLOCATE(aux_list)
-        list(num_rep)=ii
+        cumul_list(num_rep,:)=cumul
         traj_out(ii)=num_rep
      END IF
   END DO
 
+  DEALLOCATE(cumul_list,filter,cumul)
+
+
 END subroutine ganna
-
-  SUBROUTINE histograma (opt_norm,opt_prec,opt_range,opt,opt_cumul,idatos,ibins,imin_x,imax_x,idelta_x,iprec,l)
-    
-    implicit none
-    INTEGER,INTENT(IN)::opt_norm,opt_prec,opt_range,opt,l,ibins,opt_cumul
-    DOUBLE PRECISION,DIMENSION(l),INTENT(IN)::idatos
-    DOUBLE PRECISION,INTENT(IN)::idelta_x,imax_x,imin_x,iprec
-
-    DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::frecuencias
-    INTEGER::i,j,k,prec,aux,bins,tt
-    DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::datos
-    DOUBLE PRECISION::max,min,delta_x,total,sobra
-    
-    bins=ibins
-
-    ALLOCATE(datos(l))
-    datos=0.0d0
-
-    !! Por un problema que hay con python 2.6 corrijo la precision
-    IF (opt_prec==1) THEN
-       prec=nint(1.0/iprec)
-       datos=0.0d0
-       DO i=1,l
-          aux=nint(idatos(i)*prec)
-          datos(i)=(aux*1.0d0)/(prec*1.0d0)
-       END DO
-       max=(nint(imax_x*prec)*1.0d0)/(prec*1.0d0)
-       min=(nint(imin_x*prec)*1.0d0)/(prec*1.0d0)
-       delta_x=idelta_x
-    ELSE
-       datos=idatos
-       max=imax_x
-       min=imin_x
-       delta_x=idelta_x
-    END IF
-    
-    IF (opt_range==0) THEN
-       IF (opt==1) THEN
-          bins=CEILING((max-min)/delta_x)
-          sobra=(bins*delta_x-(max-min))/2.0d0
-          bins=bins+1
-          min=min-sobra
-          max=max+sobra
-       ELSE
-          delta_x=(max-min)/(bins*1.0d0)
-          sobra=delta_x/2.0d0
-          min=min-sobra
-          max=max+sobra
-          bins=bins+1
-       END IF
-    ELSE
-       IF (opt==1) THEN
-          bins=CEILING((max-min)/delta_x)
-       ELSE
-          delta_x=(max-min)/(bins*1.0d0)
-       END IF
-    END IF
-    
-    ALLOCATE(frecuencias(bins))
-    frecuencias=0.0d0
-    
-    DO k=1,l
-       tt=FLOOR((datos(k)-min)/delta_x) 
-       frecuencias(tt)=frecuencias(tt)+1.0d0
-    END DO
-    
-
-    IF (opt_norm==1) THEN
-       total=SUM(frecuencias)*delta_x
-       frecuencias=frecuencias/total
-    END IF
-    
-    !! Output
-
-    CALL free_mem()
-    ALLOCATE(histo_y(bins),histo_x(bins))
-    histo_y=frecuencias
-    IF (opt_cumul==1) THEN
-       DO i=1,bins-1
-          histo_y(i+1)=histo_y(i+1)+histo_y(i)
-       END DO
-    END IF
-
-    DO i=1,bins
-       histo_x(i)=min+(i*1.0d0-0.50d0)*delta_x
-    END DO
-    
-    
-    DEALLOCATE(datos,frecuencias)
-
-  END SUBROUTINE histograma
-  
 
 
 END MODULE AUX

@@ -52,9 +52,6 @@ MODULE stats
     DOUBLE PRECISION::max,min,delta_x,total,sobra
     
     bins=ibins
-    max=imax
-    min=imin
-    delta_x=idelta_x
 
     ALLOCATE(datos(l))
     datos=0.0d0
@@ -80,16 +77,8 @@ MODULE stats
     IF (opt_range==0) THEN
        IF (opt==1) THEN
           bins=CEILING((max-min)/delta_x)
-          sobra=(bins*delta_x-(max-min))/2.0d0
-          bins=bins+1
-          min=min-sobra
-          max=max+sobra
        ELSE
           delta_x=(max-min)/(bins*1.0d0)
-          sobra=delta_x/2.0d0
-          min=min-sobra
-          max=max+sobra
-          bins=bins+1
        END IF
     ELSE
        IF (opt==1) THEN
@@ -103,7 +92,8 @@ MODULE stats
     frecuencias=0.0d0
     
     DO k=1,l
-       tt=FLOOR((datos(k)-min)/delta_x) 
+       tt=CEILING((datos(k)-min)/delta_x) 
+       if (tt==0) tt=1
        frecuencias(tt)=frecuencias(tt)+1.0d0
     END DO
     
@@ -119,6 +109,7 @@ MODULE stats
     ALLOCATE(histo_y(bins),histo_x(bins))
     histo_y=frecuencias
     IF (opt_cumul==1) THEN
+       histo_y=histo_y*delta_x
        DO i=1,bins-1
           histo_y(i+1)=histo_y(i+1)+histo_y(i)
        END DO
@@ -180,18 +171,10 @@ MODULE stats
        IF (opt==1) THEN
           DO i=1,2
              bins(i)=CEILING((omax(i)-omin(i))/delta_x(i))
-             sobra=(bins(i)*delta_x(i)-(omax(i)-omin(i)))/2.0d0
-             bins(i)=bins(i)+1
-             omin(i)=omin(i)-sobra
-             omax(i)=omax(i)+sobra
           END DO
        ELSE
           DO i=1,2
              delta_x(i)=(omax(i)-omin(i))/(bins(i)*1.0d0)
-             sobra=delta_x(i)/2.0d0
-             omin(i)=omin(i)-sobra
-             omax(i)=omax(i)+sobra
-             bins(i)=bins(i)+1
           END DO
        END IF
     ELSE
@@ -212,6 +195,8 @@ MODULE stats
     DO k=1,l
        tt=FLOOR((datos(k,1)-omin(1))/delta_x(1)) 
        qq=FLOOR((datos(k,2)-omin(2))/delta_x(2))
+       IF (tt==0) tt=1
+       IF (qq==0) qq=1
        frecuencias(tt,qq)=frecuencias(tt,qq)+1
     END DO
     
