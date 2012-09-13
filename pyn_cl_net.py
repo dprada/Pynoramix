@@ -1,6 +1,6 @@
 from numpy import *
 import pyn_fort_net as f_net
-import pyn_fort_prov as faux
+import pyn_fort_anal_trajs as ftrajs
 import pyn_math as pymath
 import copy
 
@@ -1113,41 +1113,41 @@ class network():
 #    print ' # New network file:', output
 #    return None
 
-class traj2net():
-
-    def __init__(self,traj=None,num_frames=0,num_parts=0,dimension=0,optimized=False):
-
-        self.optimized=False
-        self.init=False
-        self.num_frames=0
-        self.num_parts=0
-        self.dimension=0
-        self.keys=[]
-        self.coors=[]
-        self.nodes=[]
-
-        if traj!=None:
-            self.init=True
-            self.coors=traj
-            self.num_frames=len(traj)
-            self.dimension=len(traj[0])
-
-        if num_frames!=0 and num_parts!=0 and dimension!=0:
-            self.init=True
-            if optimized:
-                self.optimized=True
-
-    def append_frame(self,frame=None):
-
-        #if self.init:
-        #    for ii in range(num_parts):
-        #        for jj in range(dim):
-            
-        pass
-
-    def append_frame(self):
-
-        pass
+#class traj2net():
+# 
+#    def __init__(self,traj=None,num_frames=0,num_parts=0,dimension=0,optimized=False):
+# 
+#        self.optimized=False
+#        self.init=False
+#        self.num_frames=0
+#        self.num_parts=0
+#        self.dimension=0
+#        self.keys=[]
+#        self.coors=[]
+#        self.nodes=[]
+# 
+#        if traj!=None:
+#            self.init=True
+#            self.coors=traj
+#            self.num_frames=len(traj)
+#            self.dimension=len(traj[0])
+# 
+#        if num_frames!=0 and num_parts!=0 and dimension!=0:
+#            self.init=True
+#            if optimized:
+#                self.optimized=True
+# 
+#    def append_frame(self,frame=None):
+# 
+#        #if self.init:
+#        #    for ii in range(num_parts):
+#        #        for jj in range(dim):
+#            
+#        pass
+# 
+#    def append_frame(self):
+# 
+#        pass
 
 class kinetic_network(network):
 
@@ -1161,16 +1161,48 @@ class kinetic_network(network):
             traj=array(traj,order='Fortran')
             rango_traj=traj.shape
 
+        try:
+            rango_ranges=ranges.shape
+        except:
+            ranges=array(ranges,order='Fortran')
+            rango_ranges=ranges.shape
+
+        ###
+
+        if len(rango_ranges)==1:
+            ranges=[ranges]
+            ranges=array(ranges,order='Fortran')
+            rango_ranges=ranges.shape
+
+        dimensions=rango_ranges[0]
+        if (rango_ranges[1]!=2):
+            print '# Error with ranges'
+            pass
+
+        if len(rango_traj)==1:
+            if dimensions==1:
+                traj=[expand_dims(traj,1)]
+                traj=array(traj,order='Fortran')
+                rango_traj=traj.shape
+            else:
+                print '# Error with dimension of traj and ranges'
+                pass
+
         if len(rango_traj)==2:
-            traj=[traj]
-            traj=array(traj,order='Fortran')
-            rango_traj=traj.shape
+            if dimensions>1:
+                traj=[traj]
+                traj=array(traj,order='Fortran')
+                rango_traj=traj.shape
+            else:
+                traj=expand_dims(traj,2)
+                traj=array(traj,order='Fortran')
+                rango_traj=traj.shape
 
         num_parts=rango_traj[0]
         num_frames=rango_traj[1]
-        dimensions=rango_traj[2]
-        
-        print rango_traj
+        if (rango_traj[2]!=dimensions):
+            print '# Error with dimension of traj and ranges'
+            pass
 
         len_str=0
         for aa in ranges:
@@ -1182,14 +1214,18 @@ class kinetic_network(network):
                 len_str=bb 
                 
         len_str=len_str+1
+
+        #print num_parts,num_frames,dimensions
+        #print ranges
+
         N_nodes,K_tot=ftrajs.aux.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
-        
-        # Ya tenemos ftrajs.aux.T_ind,ftrajs.aux.T_tau,ftrajs.aux.T_start,ftrajs.aux.labels
-
-
-        if verbose:
-            print 'listo'
-
+         
+        ## Ya tenemos ftrajs.aux.T_ind,ftrajs.aux.T_tau,ftrajs.aux.T_start,ftrajs.aux.labels
+        # 
+        # 
+        #if verbose:
+        #    print 'listo'
+         
         print N_nodes,K_tot
 
     

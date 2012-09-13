@@ -26,4 +26,28 @@ def ganna (traj=None,window=None,ksi=0.5,bins=20,segment=None,delta_x=None,prec=
     return clust_trajs
 
 
+def fpt_rao(traj=None,target=0,norm=False):
+    distrib={}
+    ant=traj[-1]
+    counter=0
+    for ii in range(1,len(traj)):
+        act=traj[-(ii+1)]
+        if ant==target:
+            counter=0
+        counter+=1
+        if act!=target:
+            try:
+                distrib[counter]+=1
+            except:
+                distrib[counter]=1
+        ant=act
+    xx=distrib.keys()
+    yy=distrib.values()
+    if norm:
+        lll=sum(yy[:])
+        for ii in range(len(yy)):
+            yy[ii]=(yy[ii]*1.0)/(lll*1.0)
+    return xx,yy
+
+
 #ftrajs.aux.rao_stat_1(tw,result[:,ii,0],bond,len(result),len(bond))

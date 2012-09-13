@@ -47,6 +47,7 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,N_n
      stop
   END IF
 
+
   DO cajon=1,dimensions
      
      IF (cajon==1) THEN
@@ -103,7 +104,6 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,N_n
      
      CLOSE(21)
 
-
      DEALLOCATE(ocupado)
 
      DO ii=1,num_parts
@@ -119,13 +119,12 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,N_n
    
      IF (cajon/=1) CALL SYSTEM('rm trad_aux_old.aux')
      
-     print*,'>>',cajon,llevamos
+     !print*,'>>',cajon,llevamos
   END DO
 
 
   N_nodes=llevamos
   
-  print*,'DENTRO'
   ALLOCATE(C(N_nodes),K_out(N_nodes))
   ALLOCATE(WK_out(N_nodes),SL(N_nodes),W(N_nodes))
   ALLOCATE(aux_puntero(25000),aux_puntero2(25000))
@@ -262,8 +261,8 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,N_n
      IF (switch==.true.) THEN
         ll=ll+1
         T_ind(ll)=ii
-        hh=WK_out(ii)%p1(gg)
-        T_tau(ll)=hh
+        hhh=WK_out(ii)%p1(gg)
+        T_tau(ll)=hhh
         hh=hh+hhh
         DO jj=1,K_out(ii)
            IF (jj/=gg) THEN
