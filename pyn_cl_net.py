@@ -188,7 +188,7 @@ class network():
         self.node=[]
         self.cluster=[]
         self.component=[]
-        self.k=0
+        self.k_total=0
         self.k_max=0
         self.k_out=0
         self.k_in=0
@@ -201,6 +201,10 @@ class network():
         self.file_net=None
         self.file_labels=None
  
+        pass
+
+    def __init_Ts__(self):
+
         self.Ts=False
         self.T_ind=[]
         self.T_start=[]
@@ -212,6 +216,7 @@ class network():
     def __init__(self,file_net=None,file_labels=None,net_format='text',labels_format='text',directed=True,kinetic=False,verbose=True):
 
         self.__init_att__()
+        self.__init_Ts__()
         self.directed=directed
         self.kinetic=kinetic
 
@@ -360,14 +365,24 @@ class network():
 
         pass
 
+    def build_from_Ts(self):
+
+        if self.Ts:
+            self.__init_att__()
+            for ii in range(len(self.T_start)-1):
+                self.add_node()
+                for jj in range(self.T_start[ii],self.T_start[ii+1]):
+                    self.node[ii].link[self.T_ind[jj]]=self.T_wl[jj]
+
+            self.info(update=True,verbose=False)
+            self.kinetic=True
+        else:
+            print '# Ts arrays needed and self.Ts==True.'
+            pass
+
     def remove_Ts(self):
 
-        self.T_ind=[]
-        self.T_start=[]
-        self.T_wl=[]
-        self.T_wn=[]
-        self.Ts=False
-
+        self.__init_Ts__()
         pass
 
     def merge_net(self,net=None,verbose=True):
@@ -1154,6 +1169,7 @@ class kinetic_network(network):
     def __init__(self,traj=None,ranges=None,verbose=True):
 
         self.__init_att__()
+        self.__init_Ts__()
 
         try:
             rango_traj=traj.shape
@@ -1219,14 +1235,22 @@ class kinetic_network(network):
         #print ranges
 
         N_nodes,K_tot=ftrajs.aux.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
-         
-        ## Ya tenemos ftrajs.aux.T_ind,ftrajs.aux.T_tau,ftrajs.aux.T_start,ftrajs.aux.labels
-        # 
-        # 
-        #if verbose:
-        #    print 'listo'
-         
+        
         print N_nodes,K_tot
+        self.Ts=True
+        self.T_ind=ftrajs.aux.t_ind
+        self.T_tau=ftrajs.aux.t_tau
+        self.T_start=ftrajs.aux.t_start
+        self.build_from_Ts()
+        #ftrajs.aux.labels ?
+        print self.num_nodes,self.k_total
+
+        if verbose:
+            self.info(update=False,verbose=True)
+            pass
+        else:
+            pass
+        
 
     
 

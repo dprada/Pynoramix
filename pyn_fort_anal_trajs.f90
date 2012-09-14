@@ -14,6 +14,14 @@ END TYPE darray_pointer
 
 CONTAINS
 
+SUBROUTINE free_memory_ts ()
+
+  IF (ALLOCATED(T_ind))   DEALLOCATE(T_ind)
+  IF (ALLOCATED(T_tau))   DEALLOCATE(T_tau)
+  IF (ALLOCATED(T_start)) DEALLOCATE(T_start)
+  IF (ALLOCATED(labels))  DEALLOCATE(labels)
+
+END SUBROUTINE free_memory_ts
 
 SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,N_nodes,Ktot)
 
@@ -121,6 +129,10 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,N_n
      
      !print*,'>>',cajon,llevamos
   END DO
+
+  !OPEN(21,FILE="trad_aux.aux",status="OLD",ACTION="READ")
+  !DO ii=1,N_nodes
+     
 
 
   N_nodes=llevamos
@@ -240,6 +252,7 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,N_n
   Kmax=maxval(K_out(:))
   Ktot=sum(K_out(:))
 
+  CALL free_memory_ts ()
   ALLOCATE(T_start(N_nodes+1),T_ind(Ktot),T_tau(Ktot))
   T_start=0
   T_ind=0
@@ -288,6 +301,9 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,N_n
   T_start(N_nodes+1)=ll
 
   DEALLOCATE(tray)
+  DEALLOCATE(C,K_out)
+  DEALLOCATE(WK_out,SL,W)
+  DEALLOCATE(aux_puntero,aux_puntero2)
 
 end subroutine traj2net
 
