@@ -259,17 +259,21 @@ class network():
 
         pass
 
-    def add_node(self, new_node, weight=0,iout=False):
+    def add_node(self, label=None, weight=0,iout=False):
         """Description add node"""
 
         node=cl_node()
-        node.label=str(new_node)
         node.weight=weight
         self.weight+=weight
         no=self.num_nodes
-        self.node.append(node)
-        self.labels[node.label]=no
         self.num_nodes+=1
+            
+        if label:
+            node.label=str(label)
+            self.labels[node.label]=no
+
+        self.node.append(node)
+
         if iout:
             return no
         pass
@@ -372,10 +376,11 @@ class network():
             for ii in range(len(self.T_start)-1):
                 self.add_node()
                 for jj in range(self.T_start[ii],self.T_start[ii+1]):
-                    self.node[ii].link[self.T_ind[jj]]=self.T_wl[jj]
+                    self.node[ii].link[self.T_ind[jj]-1]=self.T_wl[jj]
 
-            self.info(update=True,verbose=False)
             self.kinetic=True
+            self.info(update=True,verbose=False)
+
         else:
             print '# Ts arrays needed and self.Ts==True.'
             pass
@@ -1234,17 +1239,21 @@ class kinetic_network(network):
         #print num_parts,num_frames,dimensions
         #print ranges
 
-        N_nodes,K_tot=ftrajs.aux.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
+        ftrajs.aux.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
         
-        print N_nodes,K_tot
+
         self.Ts=True
         self.T_ind=ftrajs.aux.t_ind
-        self.T_tau=ftrajs.aux.t_tau
+        self.T_wl=ftrajs.aux.t_tau
         self.T_start=ftrajs.aux.t_start
         self.build_from_Ts()
-        #ftrajs.aux.labels ?
-        print self.num_nodes,self.k_total
+        for ii in range(self.num_nodes):
+            label=str(ftrajs.aux.labels[ii][:])
+            self.node[ii].label=label
+            self.labels[label]=ii
 
+
+        ftrajs.aux.free_memory_ts()
         if verbose:
             self.info(update=False,verbose=True)
             pass

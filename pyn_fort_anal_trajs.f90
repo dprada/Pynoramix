@@ -1,7 +1,7 @@
 MODULE AUX
 
 INTEGER,DIMENSION(:),ALLOCATABLE::T_ind,T_tau,T_start
-INTEGER,DIMENSION(:,:),ALLOCATABLE:: labels
+INTEGER,DIMENSION(:,:),ALLOCATABLE::labels
 
 TYPE array_pointer
 INTEGER,DIMENSION(:),POINTER::p1
@@ -23,14 +23,14 @@ SUBROUTINE free_memory_ts ()
 
 END SUBROUTINE free_memory_ts
 
-SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,N_nodes,Ktot)
+SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::len_str,num_parts,num_frames,dimensions
   INTEGER,DIMENSION(num_parts,num_frames,dimensions),INTENT(IN)::traj_full
   INTEGER,DIMENSION(dimensions,2),INTENT(IN)::ranges
-  INTEGER,INTENT(OUT)::N_nodes,Ktot
 
+  INTEGER::N_nodes,Ktot
   INTEGER::index
   INTEGER::ii,jj,gg,kk,ll,hh,hhh,aa,bb
   INTEGER::llevamos,cajon,contador
@@ -47,7 +47,7 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,N_n
   INTEGER,DIMENSION(:),POINTER::aux_puntero,aux_puntero2
   LOGICAL::switch
 
-
+  CALL free_memory_ts ()
   ALLOCATE(tray(num_parts,num_frames))
 
   IF ((dimensions>999999).or.(len_str>999999)) THEN
@@ -130,13 +130,16 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,N_n
      !print*,'>>',cajon,llevamos
   END DO
 
-  !OPEN(21,FILE="trad_aux.aux",status="OLD",ACTION="READ")
-  !DO ii=1,N_nodes
-     
-
-
-  N_nodes=llevamos
-  
+  N_nodes=llevamos  
+  ALLOCATE(labels(N_nodes,dimensions),deantes(dimensions))
+  OPEN(21,FILE="trad_aux.aux",status="OLD",ACTION="READ")
+  DO ii=1,N_nodes
+     READ(21,*) llevamos,deantes(:)
+     labels(ii,:)=deantes(:)
+  END DO
+  CLOSE(21)
+  DEALLOCATE(deantes)
+  CALL SYSTEM('rm trad_aux.aux')
   ALLOCATE(C(N_nodes),K_out(N_nodes))
   ALLOCATE(WK_out(N_nodes),SL(N_nodes),W(N_nodes))
   ALLOCATE(aux_puntero(25000),aux_puntero2(25000))
@@ -252,7 +255,7 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,N_n
   Kmax=maxval(K_out(:))
   Ktot=sum(K_out(:))
 
-  CALL free_memory_ts ()
+
   ALLOCATE(T_start(N_nodes+1),T_ind(Ktot),T_tau(Ktot))
   T_start=0
   T_ind=0

@@ -1,6 +1,6 @@
 
-Tutorials and Examples
-*****************************
+Tutorial Networks
+*****************
 
 First of all, lets load Pynoramix in our script or in a ipython session:
 
@@ -308,7 +308,37 @@ We can now build the kinetic network reading the frames of a trajectory:
 
 A kinetic network 'watnet' has been created analysing the first 100 frames of the trajectory.
 
+----------------------
 
+Encoding a trajectory into a Kinetic Network
+============================================
 
+The trajectory to convert into a Kinetic Network can have the following format:
+- [ Num. Particles, time step, dimension]
+- [time step, dimension]
+- [time step]
+
+To illustrate this section lets take 4 independent particles, or 1
+particle with 4 independent realizations, with a 10 steps dynamics
+each, characterized by a 3D array of integers.
+
+.. sourcecode:: ipython
+
+   In [56]: print traj
+   [[[1, 3, 6], [1, 4, 6], [1, 5, 6], [1, 5, 7], [1, 5, 8], [1, 5, 9], [2, 5, 0], [2, 4, 0], [2, 4, 1], [2, 3, 0]],\
+    [[1, 3, 3], [1, 4, 4], [1, 5, 5], [1, 5, 6], [1, 5, 7], [2, 5, 7], [2, 4, 7], [2, 4, 6], [2, 4, 5], [2, 4, 4]],\
+    [[2, 3, 4], [1, 3, 4], [1, 3, 5], [1, 3, 6], [1, 3, 7], [2, 3, 7], [2, 3, 7], [2, 3, 6], [2, 3, 5], [2, 3, 4]],\
+    [[1, 3, 4], [1, 2, 4], [1, 1, 4], [2, 1, 4], [2, 1, 1], [2, 4, 1], [2, 5, 1], [2, 5, 9], [1, 5, 9], [2, 4, 4]]]
+
+This way, the coordinates of the 3rd particle at time=4 are:
+
+.. sourcecode:: ipython
+
+   In [63]: print traj[2][4][:]
+   [1, 3, 7]
+
+To map it into a kinetic network:
+
+net=kinetic_network(traj,ranges=[[1,2],[0,10],[0,10]])
 
 
