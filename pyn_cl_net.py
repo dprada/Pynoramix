@@ -320,8 +320,8 @@ class network():
             for ii in self.node:
                 alt_k_total+=len(ii.alt_link[ii])
 
-            alt_T_ind=zeros(shape=(alt_k_total),dtype=float,order='Fortran')
-            alt_T_start=zeros(shape=(self.num_nodes+1),dtype=float,order='Fortran')
+            alt_T_ind=zeros(shape=(alt_k_total),dtype=int,order='Fortran')
+            alt_T_start=zeros(shape=(self.num_nodes+1),dtype=int,order='Fortran')
             alt_T_wl=zeros(shape=(alt_k_total),dtype=float,order='Fortran')
 
             kk=0
@@ -345,8 +345,8 @@ class network():
 
             self.info(verbose=False)
             
-            self.T_ind=zeros(shape=(self.k_total),dtype=float,order='Fortran')
-            self.T_start=zeros(shape=(self.num_nodes+1),dtype=float,order='Fortran')
+            self.T_ind=zeros(shape=(self.k_total),dtype=int,order='Fortran')
+            self.T_start=zeros(shape=(self.num_nodes+1),dtype=int,order='Fortran')
             self.T_wl=zeros(shape=(self.k_total),dtype=float,order='Fortran')
             self.T_wn=zeros(shape=(self.num_nodes),dtype=float,order='Fortran')
             
@@ -500,15 +500,15 @@ class network():
             k_max=int(line.split()[1])
             k_total=int(line.split()[2])
             
-            self.T_ind=zeros(shape=(k_total),dtype=float,order='Fortran')
-            self.T_start=zeros(shape=(self.num_nodes+1),dtype=float,order='Fortran')
+            self.T_ind=zeros(shape=(k_total),dtype=int,order='Fortran')
+            self.T_start=zeros(shape=(self.num_nodes+1),dtype=int,order='Fortran')
             self.T_wl=zeros(shape=(k_total),dtype=float,order='Fortran')
             
             data=fff.read()
 
             data2=[]
             for aa in data.split():
-                data2.append(int(aa))
+                data2.append(float(aa))
                 
 
             jj=-1
@@ -517,15 +517,15 @@ class network():
                 jj+=1
 
                 node=cl_node()
-                node_ind=data2[jj]
-                k_out=data2[jj+1]
+                node_ind=int(data2[jj])
+                k_out=int(data2[jj+1])
                 weight=data2[jj+2]
                 self.T_start[ii]=sumk
                 
                 jj=jj+2
                 for kk in range(k_out):
                     jj+=1
-                    neigh=data2[jj]
+                    neigh=int(data2[jj])
                     jj+=1
                     flux=data2[jj]
                     self.T_ind[sumk]=neigh
@@ -608,15 +608,28 @@ class network():
 
         fff.close()
 
+    def write_labels (self,name_file=None,format='text'):
 
-    def write_net(self,name_file=None,format='text',pymol=False,with_index=True,with_cluster=False):
+        if name_file==None:
+            print '# Error: name_file required'
+            pass
+
+        fff=open(name_file,'w')
+        print >> fff,'#','index','label'
+        for ii in range(self.num_nodes):
+            print >> fff, ii,self.node[ii].label
+
+        fff.close()
+        
+
+    def write_net (self,name_file=None,format='text',pymol=False,with_index=True,with_cluster=False):
 
         if name_file==None:
             print '# Error: name_file required'
             pass
 
         #todo: check if the file exists
-
+        
         if format=='native':
 
             fff=open(name_file,'w')
@@ -827,13 +840,15 @@ class network():
 
         return vect_out
 
-    def symmetrize(self,new_net=False,verbose=True):
+    def symmetrize(self,new_net=True,verbose=True):
 
-        temp=network(verbose=False)
-        temp.labels=copy.deepcopy(self.labels)
-        temp.file_net=copy.deepcopy(self.file_net)
-        temp.file_labels=copy.deepcopy(self.file_labels)
-        temp.num_nodes=copy.deepcopy(self.num_nodes)
+        temp             = network(verbose=False)
+        temp.labels      = copy.deepcopy(self.labels)
+        temp.file_net    = copy.deepcopy(self.file_net)
+        temp.file_labels = copy.deepcopy(self.file_labels)
+        temp.num_nodes   = copy.deepcopy(self.num_nodes)
+        temp.directed    = copy.deepcopy(self.directed)
+        temp.kinetic     = copy.deepcopy(self.kinetic)
 
         aux={}
         for ii in range(self.num_nodes):
@@ -844,10 +859,8 @@ class network():
         del(aux)        
 
         if self.Ts==False :
-
             self.build_Ts()
             
-
         pfff=f_net.funcs.symmetrize_net(temp.k_total,self.T_ind,self.T_wl,self.T_start,self.num_nodes,self.k_total)
         temp.k_max=pfff[0]
         temp.T_wl=pfff[1]
@@ -866,7 +879,7 @@ class network():
             node.label=self.node[ii].label
             temp.node.append(node)
 
-        temp.directed=False
+        
 
         if verbose==True :
             temp.info()
@@ -1243,9 +1256,9 @@ class kinetic_network(network):
         
 
         self.Ts=True
-        self.T_ind=ftrajs.aux.t_ind
-        self.T_wl=ftrajs.aux.t_tau
-        self.T_start=ftrajs.aux.t_start
+        self.T_ind=copy.deepcopy(ftrajs.aux.t_ind)
+        self.T_wl=copy.deepcopy(ftrajs.aux.t_tau)
+        self.T_start=copy.deepcopy(ftrajs.aux.t_start)
         self.build_from_Ts()
         for ii in range(self.num_nodes):
             label=str(ftrajs.aux.labels[ii][:])

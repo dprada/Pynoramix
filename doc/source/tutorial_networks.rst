@@ -1,4 +1,3 @@
-
 Tutorial Networks
 *****************
 
@@ -115,6 +114,56 @@ And using an extra file for the labels, :download:`labels_ex3.inp
 
 .. note:: Describe the parameters needed in the text input files, and make a call to the subroutines of this part (like read_labels()).
 
+The native format reduces the size of the file writting the topology of the network in a compact way.
+The labels must be loaded from a secondary file.
+
+.. sourcecode:: ipython
+
+   In [3]: net=network(file_net='net.pyn',net_format='native')
+   # Network:
+   # 979 nodes
+   # 22572 links out
+   # 9998950 total weight nodes
+
+   In [4]: net.read_labels('labels.pyn',format='text')
+
+or
+
+.. sourcecode:: ipython
+
+   In [2]: net=network(file_net='net.pyn',file_labels='labels.pyn',net_format='native',labels_format='text')
+   # Network:
+   # 979 nodes
+   # 22572 links out
+   # 9998950 total weight nodes
+
+
+Writting networks
++++++++++++++++++
+
+There are three formats of output: 'native', 'labels', 'text'.
+
+The 'native format' is a compact format not readable for other
+programs.  This format is recommended to work with pynoramix since the
+size of the file is smaller than the file created with 'text'.
+
+.. sourcecode:: ipython
+
+   In [10]: net.write_net(name_file='net.pyn',format='native')
+
+
+.. sourcecode:: ipython
+
+   In [10]: net.write_net(name_file='net.net',format='text')
+
+The labels can also be written in an independent file.
+
+.. sourcecode:: ipython
+
+   In [10]: net.write_labels(name_file='labels.pyn',format='text')
+
+
+
 Merging networks
 ++++++++++++++++
 
@@ -204,6 +253,21 @@ particle along x:
 
 .. plot:: ../pyplots/2w_1D_fig1.py
 
+Symmetrize Network (detailed balance)
++++++++++++++++++++++++++++++++++++++
+
+Detailed balance can be impossed in a kinetic network in the following
+way: if pij and pi are the original transition and stationary
+probabilities, the symmetric network has Pij=(pij+pji)/2.0 and
+Pi=sum(Pji).  The following rule is applied for all nodes and
+links. Note that the factor 1/2.0 is not applied. In this way the
+symmetric network as a twofold total weight.
+
+.. sourcecode:: ipython
+
+
+
+
 cFEPs
 ++++++
 
@@ -233,6 +297,7 @@ Weight-core
 K-core
 ++++++
 
+eeeee
 
 ----------------------
 
@@ -339,6 +404,15 @@ This way, the coordinates of the 3rd particle at time=4 are:
 
 To map it into a kinetic network:
 
-net=kinetic_network(traj,ranges=[[1,2],[0,10],[0,10]])
+.. sourcecode:: ipython
+
+   In [3]: net=kinetic_network(traj,ranges=[[1,2],[0,10],[0,10]])
+   # Network:
+   # 31 nodes
+   # 35 links out
+   # 36.0 total weight nodes
+
+
+
 
 
