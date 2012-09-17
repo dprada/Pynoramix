@@ -251,19 +251,33 @@ particle along x:
     
    In [8]: pylab.show()
 
-.. plot:: ../pyplots/2w_1D_fig1.py
+.. plot:: pyplots/2w_1D_fig1.py
 
 Symmetrize Network (detailed balance)
 +++++++++++++++++++++++++++++++++++++
 
 Detailed balance can be impossed in a kinetic network in the following
-way: if pij and pi are the original transition and stationary
-probabilities, the symmetric network has Pij=(pij+pji)/2.0 and
+way: if pji and pi are the original transition and stationary
+probabilities, the symmetric network has PiPji=(pjpij+pipji)/2.0 and
 Pi=sum(Pji).  The following rule is applied for all nodes and
 links. Note that the factor 1/2.0 is not applied. In this way the
 symmetric network as a twofold total weight.
 
+The function creates a new network but there is an option not to do it.
+
 .. sourcecode:: ipython
+
+   In [10]: net.info()
+   # Network:
+   # 979 nodes
+   # 22572 links out
+   # 9998950.0 total weight nodes
+
+   In [11]: net_s=net.symmetrize()
+   # Network:
+   # 979 nodes
+   # 26887 links out
+   # 19997900.0 total weight nodes
 
 
 
@@ -281,6 +295,29 @@ MFPT
 
 MCL
 +++
+
+The Markov Clustering Algorithm is applied to the network with two
+different criteriums: convergence (eps) or number of iterations (iterations).
+
+.. sourcecode:: ipython
+
+   In [5]: net.mcl(granularity=1.2,eps=0.005,pruning=False,verbose=True)
+   # Number of clusters:  3
+
+   In [5]: net.mcl(granularity=1.2,iterations=5000,pruning=False,verbose=True)
+   # Number of clusters:  3
+
+
+The pruning option executes an approximation to MCL which is faster.
+When this pruning option is activated the algorithm is run via an external program (mcl).
+In the future the pruning option will be included in the code of Pynoramix.
+In this case no additional parameters are needed.
+
+.. sourcecode:: ipython
+
+   In [5]: net.mcl(granularity=1.2,pruning=True,verbose=True)
+   # Number of clusters:  3
+
 
 Components
 ++++++++++

@@ -3,6 +3,7 @@ import pyn_fort_net as f_net
 import pyn_fort_anal_trajs as ftrajs
 import pyn_math as pymath
 import copy
+from os import system
 
 #####################################################################################
 ##### Networks
@@ -1038,7 +1039,7 @@ class network():
             pass
 
 
-    def mcl(self,granularity=1.5,eps=0.005,iterations=0,alt_links=False,verbose=True):
+    def mcl(self,granularity=1.5,eps=0.005,iterations=0,pruning=True,alt_links=False,verbose=True):
 
         ## I have to reset previous clusters
 
@@ -1049,20 +1050,51 @@ class network():
             del(alt_k_total, alt_T_start, alt_T_ind, alt_T_wl)
 
         else:
-            if self.Ts==False :
-                self.build_Ts()
+            if pruning:
 
-            self.num_clusters,pfff=f_net.funcs.mcl(granularity,eps,iterations,self.T_start,self.T_ind,self.T_wl,self.num_nodes,self.k_total)
+                fff=open('.input_mcl','w')
+                for ii in range(self.num_nodes):
+                    for jj,kk in self.node[ii].link.iteritems():
+                        print >> fff, ii,jj,kk
+                fff.close()
+
+                comando='mcl .input_mcl --abc -I '+str(granularity)+' -o .output_mcl > /dev/null 2>&1'
+                salida=system(comando)
+
+                if salida!=0:
+                    print '#Error'
+                    exit()
+                
+                fff=open('.output_mcl','r')
+                Clust={}
+
+                cl=0
+                for line in fff:    
+                    line=line.split()
+                    Clust[cl]=[]
+                    for aa in line:
+                        Clust[cl].append(int(aa))
+                    cl+=1
+
+                self.num_clusters=cl
+                fff.close()
+                salida=system('rm .output_mcl .input_mcl')
 
 
-        Clust={}
+            else:
+                if self.Ts==False :
+                    self.build_Ts()
+                    
+                self.num_clusters,pfff=f_net.funcs.mcl(granularity,eps,iterations,self.T_start,self.T_ind,self.T_wl,self.num_nodes,self.k_total)
 
-        for ii in range(self.num_nodes):
-            try:
-                Clust[pfff[ii]].append(ii)
-            except:
-                Clust[pfff[ii]]=[]
-                Clust[pfff[ii]].append(ii)
+                Clust={}
+                 
+                for ii in range(self.num_nodes):
+                    try:
+                        Clust[pfff[ii]].append(ii)
+                    except:
+                        Clust[pfff[ii]]=[]
+                        Clust[pfff[ii]].append(ii)
 
 
         a=0
