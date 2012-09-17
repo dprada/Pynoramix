@@ -6,9 +6,9 @@ f90_libs='-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_def -lpthread' # 64
 #f90_libs='-lmkl_sequential -lmkl_core -lmkl_def -lpthread' # ??
 #f90_libs='-lmkl_intel -lmkl_sequential -lmkl_core -lpthread -lm' # 32 bits
 #f90_libs=-llapack
-#f90_opt='-fast'
+f90_opt='-fast'
 #f90_opt='-check all'
-f90_opt='-check'
+#f90_opt='-check'
 
 f2py_exe='none'
 if [ $f2py_exe = 'none' ]; then which f2py > /dev/null 2> /dev/null ; if [ $? -eq 0 ]; then f2py_exe=f2py; fi; fi

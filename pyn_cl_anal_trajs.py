@@ -23,6 +23,7 @@ def ganna (traj=None,window=None,ksi=0.5,bins=20,segment=None,delta_x=None,prec=
         delta_x=1.0
         opt=2
     clust_trajs=ftrajs.aux.ganna(opt_range,opt,bins,mmn,mmx,delta_x,traj,ksi,window,leng)
+    clust_trajs=clust_trajs-1
     return clust_trajs
 
 
@@ -49,5 +50,12 @@ def fpt_rao(traj=None,target=0,norm=False):
             yy[ii]=(yy[ii]*1.0)/(lll*1.0)
     return xx,yy
 
+def rao(traj=None,window=None,separators=None):
 
-#ftrajs.aux.rao_stat_1(tw,result[:,ii,0],bond,len(result),len(bond))
+    if traj==None or window==None or separators==None:
+        print 'Not enough input variables.'
+        pass
+
+    salida=ftrajs.aux.rao_stat_1(window,traj,separators,len(traj),len(separators))
+
+    return salida

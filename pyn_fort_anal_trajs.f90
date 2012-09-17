@@ -24,19 +24,20 @@ SUBROUTINE free_memory_ts ()
 
 END SUBROUTINE free_memory_ts
 
-SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions)
+SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tray)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::len_str,num_parts,num_frames,dimensions
   INTEGER,DIMENSION(num_parts,num_frames,dimensions),INTENT(IN)::traj_full
   INTEGER,DIMENSION(dimensions,2),INTENT(IN)::ranges
+  INTEGER,DIMENSION(num_parts,num_frames),INTENT(OUT)::tray
 
   INTEGER::N_nodes,Ktot
   INTEGER::index
   INTEGER::ii,jj,gg,kk,ll,hh,hhh,aa,bb
   INTEGER::llevamos,cajon,contador
   INTEGER::x,x2
-  INTEGER,DIMENSION(:,:),ALLOCATABLE::tray
+
   INTEGER,DIMENSION(:,:),ALLOCATABLE::indice
   LOGICAL,DIMENSION(:,:),ALLOCATABLE::ocupado
   INTEGER,DIMENSION(:),ALLOCATABLE::deantes,aux
@@ -49,7 +50,7 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions)
   LOGICAL::switch
 
   CALL free_memory_ts ()
-  ALLOCATE(tray(num_parts,num_frames))
+
 
   IF ((dimensions>999999).or.(len_str>999999)) THEN
      print*, 'ERROR in fortran traj2net'
@@ -304,7 +305,7 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions)
 
   T_start(N_nodes+1)=ll
 
-  DEALLOCATE(tray)
+  tray=tray-1
   DEALLOCATE(C,K_out)
   DEALLOCATE(WK_out,SL,W)
   DEALLOCATE(aux_puntero,aux_puntero2)
@@ -318,7 +319,7 @@ subroutine rao_stat_1(tw,traj_dists,limits,frames,len_lims,traj_bins)
   INTEGER,INTENT(IN)::frames,len_lims,tw
   DOUBLE PRECISION,DIMENSION(frames),INTENT(IN)::traj_dists
   DOUBLE PRECISION,DIMENSION(len_lims),INTENT(IN)::limits
-  INTEGER,DIMENSION(frames,len_lims+1),INTENT(OUT)::traj_bins
+  INTEGER,DIMENSION(frames-2*tw,len_lims+1),INTENT(OUT)::traj_bins
 
   INTEGER::ii,jj,kk,gg
 
@@ -333,8 +334,8 @@ subroutine rao_stat_1(tw,traj_dists,limits,frames,len_lims,traj_bins)
         END IF
      END DO
      DO gg=jj-tw,jj+tw
-        IF ((0<gg).and.(gg<=frames)) THEN
-           traj_bins(gg,kk)=traj_bins(gg,kk)+1
+        IF ((tw<gg).and.(gg<=(frames-tw))) THEN
+           traj_bins(gg-tw,kk)=traj_bins(gg-tw,kk)+1
         END IF
      END DO
   END DO

@@ -16,6 +16,7 @@ Contents:
    tutorial_molecular_systems.rst
    networks.rst
    tutorial_networks.rst
+   tutorial_anal_trajs.rst
 
 Indices and tables
 ==================
