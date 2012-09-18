@@ -27,6 +27,14 @@ Indices and tables
 
 -----------------------------
 
+My projects
+===========
+
+.. toctree::
+   :maxdepth: 2
+
+   my_projects/ion_solvation.rst
+
 Examples to write the doc
 =========================
 
