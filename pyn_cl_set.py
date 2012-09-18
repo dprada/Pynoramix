@@ -696,12 +696,17 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             natoms_B=self.num_atoms
 
         if frame in ['ALL','All','all']:
-            dists=[]
-            for frame in self.traj[traj].frame:
-                dist_frame=f.dist(diff_system,pbc,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
-                dists.append(dist_frame)
+            ll=len(self.traj[traj].frame)
+            dists=zeros(shape=(n_A,n_B,ll),order='Fortran')
+            for ii in range(ll):
+                frame=self.traj[traj].frame[ii]
+                dists[:,:,ii]=f.dist(diff_system,pbc,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
 
-        return array(dists,order='Fortran')
+
+        if ll==1:
+            return dists[:,:][0]
+        else:
+            return dists
             
     def rdf(self,setA=None,setB=None,traj=0,frame='ALL',pbc=True,bins=100,segment=None):
 

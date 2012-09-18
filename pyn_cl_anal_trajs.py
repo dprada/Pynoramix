@@ -1,6 +1,9 @@
 import pyn_fort_anal_trajs as ftrajs
 
 def ganna (traj=None,window=None,ksi=0.5,bins=20,segment=None,delta_x=None,prec=None):    
+
+    
+
     leng=len(traj)
     opt_norm=1 #(norm=True)
     opt_cumul=1 #(cumul=True)

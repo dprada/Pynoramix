@@ -65,12 +65,16 @@ Rao's method
    # 2618 links out
    # 9998950.0 total weight nodes
 
-   In [7]: traj_mcl_clusts=[[] for ii in range(net_s.num_clusters)]
+   In [7]: net_s=net.symmetrize(verbose=False)
+
+   In [8]: net_s.mcl(granularity=1.2,pruning=True,verbose=True)
+
+   In [9]: traj_mcl_clusts=[[] for ii in range(net_s.num_clusters)]
     
-   In [8]: for ii in range(len(traj_nodes[0])):
-     ....:       cluster=net_s.node[traj_nodes[0][ii]].cluster
-     ....:       traj_mcl_clusts[cluster].append(traj1D[tw+ii])
-     ....: 
+   In [10]: for ii in range(len(traj_nodes[0])):
+      ....:       cluster=net_s.node[traj_nodes[0][ii]].cluster
+      ....:       traj_mcl_clusts[cluster].append(traj1D[tw+ii])
+      ....: 
 
 
 

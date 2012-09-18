@@ -277,7 +277,16 @@ We can also make use of the expression 'within X of', X is a float number indica
 Computing distances
 ===================
 
+The distance between a set of n1 atoms, list1, and a set of n2 atoms,
+list2.  If only one frame is analysed the output is a 2D matrix
+[n1,n2].  This way the distance between the i-th atom in list1 and
+j-th in list2 correspond to output[i,j].
+
+If more than one frame is analysed the output is a 3D matrix
+[n1,n2,number_frames] (following the previous notation).
+
 It is faster if len(list1)<len(list2).
+
 
 .. sourcecode:: ipython
 
@@ -292,7 +301,7 @@ It is faster if len(list1)<len(list2).
    In [6]: result=GSGS.distance(list1,list2)
  
    In [7]: for ii in range(GSGS.traj[0].num_frames):
-      ....:    print 'The distance between atoms index',list1[1],'and',list2[3],'is',result[ii][1,3],'in frame',ii
+      ....:    print 'The distance between atoms index',list1[1],'and',list2[3],'is',result[1,3][ii],'in frame',ii
       ....: 
    The distance between atoms index 1 and 48 is 24.8435076017 in frame 0
    The distance between atoms index 1 and 48 is 23.6529328175 in frame 1
@@ -308,8 +317,14 @@ It is faster if len(list1)<len(list2).
 Radial Distribution Funcions
 ============================
 
+The radial distribution function g_{a,b}(r) represents the radial
+concentration of atoms "b" around atoms "a", normalized by the
+concentration of "b".
+
+
 It is more efficient (fast and no memory consumming) when the trajectorie is read frame by frame, and
 not loaded at a time.
+As it happens with the distance function, when len(list1)<len(list2) it is faster.
 
 .. warning:: Right now the function does not work properly if
    setA=setB. In addition, this should be efficient including the
@@ -321,9 +336,9 @@ not loaded at a time.
     
    In [3]: ion.load_traj('traj.dcd',frame='ALL',verbose=False)
     
-   In [4]: list1=ion.selection('atom.name OW')
+   In [4]: list1=ion.selection('atom.resid.type Ion')
     
-   In [5]: list2=ion.selection('atom.resid.type Ion')
+   In [5]: list2=ion.selection('atom.name OW')
     
    In [6]: rdf_xx,rdf_yy=ion.rdf(setA=list1,setB=list2,bins=1500,segment=[0.0,30.0])
 
@@ -352,7 +367,6 @@ not loaded at a time.
    In [10]: rdf_yy=rdf_yy/(1.0*num_frames)
 
 
-xxx
 
 
 

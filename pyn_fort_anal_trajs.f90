@@ -313,11 +313,11 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
 end subroutine traj2net
 
 
-subroutine rao_stat_1(tw,traj_dists,limits,frames,len_lims,traj_bins)
+subroutine rao_stat_1(tw,traj_dists,limits,num_parts,frames,len_lims,traj_bins)
 
   IMPLICIT NONE
-  INTEGER,INTENT(IN)::frames,len_lims,tw
-  DOUBLE PRECISION,DIMENSION(frames),INTENT(IN)::traj_dists
+  INTEGER,INTENT(IN)::frames,len_lims,tw,num_parts
+  DOUBLE PRECISION,DIMENSION(num_parts,frames),INTENT(IN)::traj_dists
   DOUBLE PRECISION,DIMENSION(len_lims),INTENT(IN)::limits
   INTEGER,DIMENSION(frames-2*tw,len_lims+1),INTENT(OUT)::traj_bins
 

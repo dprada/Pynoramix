@@ -215,8 +215,8 @@ SUBROUTINE rdf_frame(distances,box,segment_min,segment_max,bins,n_A,n_B,rdf)
   factor=density/factor
   rdf=0.0d0
 
-  DO ii=1,n_B
-     DO jj=1,n_A
+  DO jj=1,n_A
+     DO ii=1,n_B
         
         aux=(distances(jj,ii)-segment_min)/delta_x
         tt=FLOOR(aux)+1

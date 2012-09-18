@@ -1098,6 +1098,7 @@ class network():
 
 
         a=0
+        self.cluster=[]
         for ii in Clust.keys():
             temp=cl_cluster()
             temp.label=self.node[int(ii)].label
