@@ -1214,7 +1214,7 @@ class network():
 # 
 #        pass
 
-def kkinetic_network(traj=None,ranges=None,traj_out=False,verbose=True):
+def kinetic_network(traj=None,ranges=None,traj_out=False,verbose=True):
 
     prov_net=network(directed=True,kinetic=True,verbose=False)
 
