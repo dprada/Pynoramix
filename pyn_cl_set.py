@@ -772,12 +772,10 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         diff_system=1
 
         if dist==None:
-            
             if frame==0:
                 frame=self.traj[traj].frame[frame]
                 neighbs=f.neighbs_ranking(diff_system,pbc,ranking,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
                 return neighbs
-        
         else:
             if frame==0:
                 frame=self.traj[traj].frame[frame]
@@ -860,6 +858,17 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 ####
 #### Functions
 ####
+
+def process_frame_opt(system,traj=0,frame=None):
+
+    #Options: integer,list,tuple,'ALL'
+
+    frames_out=[]
+    if frame=='ALL':
+        return range(system.traj[traj].num_frames)
+    elif type(frame) in ['int']:
+        return
+        
 
 #def min_distance(system,set_a,set_b=None,pbc=True,type_b='atoms'):
 # 

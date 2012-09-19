@@ -1,17 +1,8 @@
 import pyn_fort_anal_trajs as ftrajs
+from numpy import *
 
-def ganna (traj=None,window=None,ksi=0.5,bins=20,segment=None,delta_x=None,prec=None):    
+def ganna (traj=None,window=None,ksi=0.5,bins=20,segment=None,delta_x=None):    
 
-    
-
-    leng=len(traj)
-    opt_norm=1 #(norm=True)
-    opt_cumul=1 #(cumul=True)
-    if prec==None:
-        opt_prec=0
-        prec=1.0
-    else:
-        opt_prec=1
     if segment==None:
         opt_range=0
         mmx=max(traj)
@@ -25,9 +16,22 @@ def ganna (traj=None,window=None,ksi=0.5,bins=20,segment=None,delta_x=None,prec=
     else:
         delta_x=1.0
         opt=2
-    clust_trajs=ftrajs.aux.ganna(opt_range,opt,bins,mmn,mmx,delta_x,traj,ksi,window,leng)
-    clust_trajs=clust_trajs-1
-    return clust_trajs
+
+    traj_i=traj
+    if type(traj_i) not in ['numpy.ndarray']:
+        traj_i=array(traj_i,order='Fortran')
+
+    if len(traj_i.shape)==1:
+        traj_i=array([traj_i],order='Fortran')
+
+    num_parts=traj_i.shape[0]
+    frames=traj_i.shape[1]
+    clust_trajs=ftrajs.aux.ganna(opt_range,opt,bins,mmn,mmx,delta_x,traj_i,ksi,window,num_parts,frames)
+
+    if num_parts==1:
+        return clust_trajs[0]
+    else:
+        return clust_trajs
 
 
 def fpt_rao(traj=None,target=0,norm=False):
@@ -59,6 +63,18 @@ def rao(traj=None,window=None,separators=None):
         print 'Not enough input variables.'
         pass
 
-    salida=ftrajs.aux.rao_stat_1(window,traj,separators,len(traj),len(separators))
+    traj_i=traj
+    if type(traj_i) not in ['numpy.ndarray']:
+        traj_i=array(traj_i,order='Fortran')
 
-    return salida
+    if len(traj_i.shape)==1:
+        traj_i=array([traj_i],order='Fortran')
+
+    num_parts=traj_i.shape[0]
+    frames=traj_i.shape[1]
+    salida=ftrajs.aux.rao_stat_1(window,traj,separators,num_parts,frames,len(separators))
+
+    if num_parts==1:
+        return salida[0]
+    else:
+        return salida

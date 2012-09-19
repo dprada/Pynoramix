@@ -222,9 +222,9 @@ class network():
         self.kinetic=kinetic
 
         if file_net!=None:
-            self.read_net(file_net,net_format,verbose)
+            self.load_net(file_net,net_format,verbose)
             if file_labels!=None:
-                self.read_labels(file_labels,labels_format)
+                self.load_labels(file_labels,labels_format)
         else:
             if verbose:
                 self.info()
@@ -441,7 +441,7 @@ class network():
         temp_net.info(update=True,verbose=verbose)
         return temp_net
          
-    def read_net(self,name_file,format='text',verbose=True):
+    def load_net(self,name_file,format='text',verbose=True):
         """format:['text','native']"""
 
         self.file_net=name_file
@@ -556,7 +556,7 @@ class network():
         fff.close()
         pass
 
-    def read_labels(self,name_file,format='text'):
+    def load_labels(self,name_file,format='text'):
 
         """format=[text,water]"""
 
@@ -598,8 +598,10 @@ class network():
                     nlab=ind
             for line in fff.readlines():
                 line=line.split()
-                self.node[int(line[nind])].label=line[nlab]
-                self.labels[line[nlab]]=int(line[nind])
+                ind=int(line.pop(nind))
+                lab=str(' ').join(line)
+                self.node[ind].label=lab
+                self.labels[lab]=ind
 
         if len(self.labels)>self.num_nodes:
             print '# Some labels have no node'
@@ -843,7 +845,16 @@ class network():
 
     def symmetrize(self,new_net=True,verbose=True):
 
-        temp             = network(verbose=False)
+        if self.Ts==False :
+            self.build_Ts()
+
+        aux_k_total=copy.deepcopy(self.k_total)
+
+        if new_net:
+            temp             = network(verbose=False)
+        else:
+            temp             = self
+
         temp.labels      = copy.deepcopy(self.labels)
         temp.file_net    = copy.deepcopy(self.file_net)
         temp.file_labels = copy.deepcopy(self.file_labels)
@@ -859,16 +870,14 @@ class network():
         temp.k_total=len(aux)
         del(aux)        
 
-        if self.Ts==False :
-            self.build_Ts()
-            
-        pfff=f_net.funcs.symmetrize_net(temp.k_total,self.T_ind,self.T_wl,self.T_start,self.num_nodes,self.k_total)
+        pfff=f_net.funcs.symmetrize_net(temp.k_total,self.T_ind,self.T_wl,self.T_start,self.num_nodes,aux_k_total)
         temp.k_max=pfff[0]
         temp.T_wl=pfff[1]
         temp.T_ind=pfff[2]
         temp.T_start=pfff[3]
         temp.Ts=True
         temp.weight=0
+        temp.node=[]
         for ii in range(temp.num_nodes):
             node=cl_node()
             node.weight=pfff[4][ii]
@@ -877,17 +886,21 @@ class network():
                 node.link[neigh-1]=temp.T_wl[jj]
             node.k_out=temp.T_start[ii+1]-temp.T_start[ii]
             temp.weight+=node.weight
-            node.label=self.node[ii].label
             temp.node.append(node)
 
-        
+        for kk,vv in temp.labels.iteritems():
+            temp.node[vv].label=kk
 
         if verbose==True :
             temp.info()
 
         del(pfff)
 
-        return temp
+        if new_net:
+            return temp
+        else:
+            print 'si'
+            pass
 
 
     def gradient_clusters(self,verbose=True):

@@ -314,6 +314,23 @@ It is faster if len(list1)<len(list2).
    The distance between atoms index 1 and 48 is 21.6473615840 in frame 8
    The distance between atoms index 1 and 48 is 18.5862638499 in frame 9
 
+Neighbors and Ranked contacts
++++++++++++++++++++++++++++++
+
+The function neighbs can help with its different options to approach this problems.
+Notice that the cut-off here is the limit in the ranked list of closest neighbors or a given distance.
+In the former case the output can be sorted or not by distance. 
+If only contact map is need, maybe the following section is suitable because of its efficience.
+
+Neighbors with a distance lower or equal than a certain threshold:
+
+
+
+Contact Maps
+============
+
+
+
 Radial Distribution Funcions
 ============================
 
