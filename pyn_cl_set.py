@@ -644,7 +644,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             for ii in range(self.num_atoms):
                 del(self.atom[ii].coors); self.atom[ii].coors=[]
 
-        elif type(index) in ['int']:
+        elif type(index) in [int]:
             self.traj.__delitem__(index)
             if self.which_traj==index:
                 del(self.box);self.box=[]
@@ -676,155 +676,114 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 return
             pbc=1
 
-        if setA=='ALL' and setB in [None,'ALL','All','all']:
-            diff_system=0
+        setA,n_A,natoms_A,setB,n_B,natoms_B,diff_system=__read_sets_opt__(self,setA,None,setB)
+        num_frames=__length_frame_opt__(self,traj,frame)
+        dists=empty(shape=(n_A,n_B,num_frames),order='Fortran')
 
-        if setA in ['ALL','All','all']:
-            setA=[ii in range(self.num_atoms)]
-            n_A=self.num_atoms
-            natoms_A=self.num_atoms
-        else:
-            n_A=len(setA)
-            natoms_A=self.num_atoms
+        num_frames=0
+        for iframe in __read_frame_opt__(self,traj,frame):
+            dists[:,:,num_frames]=f.dist(diff_system,pbc,setA,iframe.coors,iframe.box,setB,iframe.coors,n_A,n_B,natoms_A,natoms_B)
+            num_frames+=1
 
-        if setB in [None,'ALL','All','all']:
-            setB=[ii in range(self.num_atoms)]
-            n_B=self.num_atoms
-            natoms_B=self.num_atoms
-        else:
-            n_B=len(setB)
-            natoms_B=self.num_atoms
-
-        if frame in ['ALL','All','all']:
-            ll=len(self.traj[traj].frame)
-            dists=zeros(shape=(n_A,n_B,ll),order='Fortran')
-            for ii in range(ll):
-                frame=self.traj[traj].frame[ii]
-                dists[:,:,ii]=f.dist(diff_system,pbc,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
-
-
-        if ll==1:
+        if num_frames==1:
             return dists[:,:][0]
         else:
             return dists
             
     def rdf(self,setA=None,setB=None,traj=0,frame='ALL',pbc=True,bins=100,segment=None):
 
-        if setA==None or setB==None:
-            return
+        setA,n_A,natoms_A,setB,n_B,natoms_B,diff_system=__read_sets_opt__(self,setA,None,setB)
 
-        if type(setA) not in [int32,int,list,tuple]:
-            print type(setA)
-            setA=self.selection(setA)
-        elif type(setA) in [int,int32]:
-            setA=[setA]
-
-        if type(setB) not in [int32,int,list,tuple]:
-            setB=self.selection(setB)
-        elif type(setB) in [int,int32]:
-            setB=[setB]
-
-        n_A=len(setA)
-        n_B=len(setB)
-        natoms_A=self.num_atoms
-        natoms_B=self.num_atoms
-
-        if frame==0:
-            frame=self.traj[traj].frame[frame]
-            dist_frame=f.dist(1,pbc,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
+        xxx=pyn_math.binning(None,bins,segment,None,None)
+        rdf_tot=zeros(shape=(bins),dtype=float,order='Fortran')
+        num_frames=0
+        for iframe in __read_frame_opt__(self,traj,frame):
+            dist_frame=f.dist(1,pbc,setA,iframe.coors,iframe.box,setB,iframe.coors,n_A,n_B,natoms_A,natoms_B)
             rdf_frame=f.rdf_frame(dist_frame,frame.box,segment[0],segment[1],bins,n_A,n_B)
-            return rdf_frame
+            rdf_tot+=rdf_frame
+            num_frames+=1.0
 
-        elif frame in ['ALL','All','all']:
-            xxx=pyn_math.binning(None,bins,segment,None,None)
-            rdf_tot=zeros(shape=(bins),dtype=float,order='Fortran')
-            num_frames=0.0
-            for frame in self.traj[traj].frame:
-                dist_frame=f.dist(1,pbc,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
-                rdf_frame=f.rdf_frame(dist_frame,frame.box,segment[0],segment[1],bins,n_A,n_B)
-                rdf_tot+=rdf_frame
-                num_frames+=1.0
-            rdf_tot=rdf_tot/num_frames
-            return xxx,rdf_tot
+        rdf_tot=rdf_tot/(num_frames*1.0)
+        return xxx,rdf_tot
 
-        
 
     def neighbs(self,setA=None,setB=None,ranking=1,dist=None,traj=0,frame=0,pbc=True):
      
-        if setA==None or setB==None:
-            return
-
-        if type(setA) not in [int,list,tuple]:
-            setA=self.selection(setA)
-        elif type(setA) in [int]:
-            setA=[setA]
-
-        if type(setB) not in [int,list,tuple]:
-            setB=self.selection(setB)
-        elif type(setB) in [int]:
-            setB=[setB]
-
-        n_A=len(setA)
-        n_B=len(setB)
-        natoms_A=self.num_atoms
-        natoms_B=self.num_atoms
-
-        diff_system=1
+        setA,n_A,natoms_A,setB,n_B,natoms_B,diff_system=__read_sets_opt__(self,setA,None,setB)
+        num_frames=__length_frame_opt__(self,traj,frame)
 
         if dist==None:
-            if frame==0:
-                frame=self.traj[traj].frame[frame]
-                neighbs=f.neighbs_ranking(diff_system,pbc,ranking,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
+            neighbs=[]
+            neighbs=empty(shape=(n_A,ranking,num_frames),dtype=int,order='Fortran')
+            num_frames=0
+            for iframe in __read_frame_opt__(self,traj,frame):
+                neighbs[:,:][num_frames]=f.neighbs_ranking(diff_system,pbc,ranking,setA,iframe.coors,iframe.box,setB,iframe.coors,n_A,n_B,natoms_A,natoms_B)
+                num_frames+=1
+            if num_frames==1:
+                return neighbs[:,:][0]
+            else:
                 return neighbs
+            
         else:
-            if frame==0:
-                frame=self.traj[traj].frame[frame]
-                contact_map,num_neighbs,dist_matrix=f.neighbs_dist(diff_system,pbc,dist,setA,frame.coors,frame.box,setB,frame.coors,n_A,n_B,natoms_A,natoms_B)
-                neighbs=[]
+            neighbs=[]
+            sort_opt=0
+            if ranking:
+                sort_opt=1
+            for iframe in __read_frame_opt__(self,traj,frame):
+                contact_map,num_neighbs,dist_matrix=f.neighbs_dist(diff_system,pbc,dist,setA,iframe.coors,iframe.box,setB,iframe.coors,n_A,n_B,natoms_A,natoms_B)
+                aux_neighbs=[]
                 if ranking:
                     for ii in range(n_A):
                         if num_neighbs[ii]:
-                            neighbs_A=f.translate_list(1,setB,contact_map[ii,:],dist_matrix[ii,:],num_neighbs[ii],n_B)
-                            neighbs.append(neighbs_A)
+                            neighbs_A=f.translate_list(sort_opt,setB,contact_map[ii,:],dist_matrix[ii,:],num_neighbs[ii],n_B)
+                            aux_neighbs.append(neighbs_A)
                         else:
-                            neighbs.append([])
-                else:
-                    for ii in range(n_A):
-                        if num_neighbs[ii]:
-                            neighbs_A=f.translate_list(0,setB,contact_map[ii,:],dist_matrix[ii,:],num_neighbs[ii],n_B)
-                            neighbs.append(neighbs_A)
-                        else:
-                            neighbs.append([])
+                            aux_neighbs.append([])
+                neighbs.append(aux_neighbs)
+            if num_frames==1:
+                return neighbs[0]
+            else:
                 return neighbs
 
-        print 'Not Implemented' 
-        pass
-        
-    #def plot_contact_map(contact_map):
-    #    
-    #    pylab.gray()
-    #    pylab.imshow(contact_map==False,origin='lower',interpolation=None) # Would be better not to interpolate
-    #    #pylab.matshow(contact_map==False)
-    #    return pylab.show()
+    #def contact_map (self,setA=None,setB=None,dist=None,traj=0,frame=0,pbc=True):
     # 
-    #def rms_fit(self,set_reference=None,selection='all',new=False):
-    #    
-    #    coors_original=make_selection(self,selection).frame[0].coors
-    #    coors_reference=make_selection(set_reference,selection).frame[0].coors
+    #    setA,n_A,natoms_A,setB,n_B,natoms_B,diff_system=__read_sets_opt__(self,setA,None,setB)
+    #    num_frames=__length_frame_opt__(self,traj,frame)
     # 
-    #    if len(coors_original)!=len(coors_reference):
+    #    contact_map=empty(shape=(n_A,n_B,num_frames),dtype=int,order='Fortran')
+    #    num_frames=0
+    #    for iframe in __read_frame_opt__(self,traj,frame):
+    #        contact_map[:,:][num_frames]=f.contact_map(diff_system,pbc,dist,setA,iframe.coors,iframe.box,setB,iframe.coors,n_A,n_B,natoms_A,natoms_B)
+    #        num_frames+=1
+    # 
+    #    if num_frames==1:
+    #        return contact_map[:,:][0]
+    #    else:
+    #        return contact_map
+    # 
+    #    #def plot_contact_map(contact_map):
+    #    #    
+    #    #    pylab.gray()
+    #    #    pylab.imshow(contact_map==False,origin='lower',interpolation=None) # Would be better not to interpolate
+    #    #    #pylab.matshow(contact_map==False)
+    #    #    return pylab.show()
+
+    #def lrmsd_fit(self,set_ref=None,traj_ref=None,frame_ref=None,selection=None,traj=None,frame=None,new=False):
+    # 
+    #    setA,n_A,natoms_A,setB,n_B,natoms_B,diff_system=__read_sets_opt__(self,set_ref,None,selection)
+    # 
+    #    if n_A!=n_B :
     #        print '# Error: Different number of atoms'
     #        return
-    #    
+    # 
     #    rot,center_ref,center_orig,rmsd,g=f.aux_funcs_general.min_rmsd(coors_reference,coors_original,len(coors_original))
-    #    
-    #    coors_original=self.frame[0].coors
     #    coors_new=f.aux_funcs_general.rot_trans(coors_original,rot,center_orig,center_ref,len(coors_original))
     # 
+    #    
     #    if new:
     #        fitted_set=copy.deepcopy(self)
     #        fitted_set.frame[0].coors=coors_new
-#   #         fitted_set.pdb_header="Mensaje del fitteo"
+    #         fitted_set.pdb_header="Mensaje del fitteo"
     #        fitted_set.rmsd=rmsd
     # 
     #        return fitted_set
@@ -836,13 +795,10 @@ class molecule(labels_set):               # The suptra-estructure: System (water
     #        # Use coors_new
     # 
     #    return
-    # 
+
     #def displ_vector(self,set_reference=None):
     # 
     #    self.d_vector=set_reference.frame[0].coors - self.frame[0].coors
-
-
-
 
 
 #### END CLASSES
@@ -859,16 +815,74 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 #### Functions
 ####
 
-def process_frame_opt(system,traj=0,frame=None):
+def __read_frame_opt__ (syst=None,traj=0,frame=None):
 
     #Options: integer,list,tuple,'ALL'
 
-    frames_out=[]
-    if frame=='ALL':
-        return range(system.traj[traj].num_frames)
-    elif type(frame) in ['int']:
-        return
-        
+    if frame in ['ALL','All','all']:
+        return syst.traj[traj].frame
+    elif type(frame) in [int32,int]:
+        return [syst.traj[0].frame[ii] for ii in [frame]]
+    elif type(frame) in [list,tuple]:
+        return [syst.traj[0].frame[ii] for ii in frame]
+
+def __length_frame_opt__ (syst=None,traj=0,frame=None):
+
+    #Options: integer,list,tuple,'ALL'
+
+    if frame in ['ALL','All','all']:
+        return syst.traj[traj].num_frames
+    elif type(frame) in [int32,int]:
+        return 1
+    elif type(frame) in [list,tuple]:
+        return len(frame)
+
+def __read_sets_opt__(systA=None,setA=None,systB=None,setB=None):
+
+    if setA==None:
+        print '# SetA needed.'
+        pass
+
+    diff_system=1
+    if systB==None:
+
+        nsysa=systA.num_atoms
+        nsysb=systA.num_atoms
+
+        if setA in ['ALL','All','all']:
+            setA=[ii in range(systA.num_atoms)]
+            nlista=systA.num_atoms
+        elif type(setA) in [int32,int]:
+            setA=[setA]
+            nlista=1
+        elif type(setA) in [list,tuple]:
+            nlista=len(setA)
+        else:
+            setA=systA.selection(setA)
+
+        if setB in [None]:
+            setB=[ii in range(systA.num_atoms)]
+            nlistb=systA.num_atoms
+        elif setB in ['ALL','All','all']:
+            setB=[ii in range(systA.num_atoms)]
+            nlistb=systA.num_atoms
+        elif type(setB) in [int32,int]:
+            setB=[setB]
+            nlistb=1
+        elif type(setB) in [list,tuple]:
+            nlistb=len(setB)
+        else:
+            setB=systA.selection(setB)
+
+        if (setA==setB): diff_system=0
+
+        return setA,nlista,nsysa,setB,nlistb,nsysb,diff_system
+
+    else:
+        print 'Different systems: Not implemented yet'
+        pass
+          
+
 
 #def min_distance(system,set_a,set_b=None,pbc=True,type_b='atoms'):
 # 
