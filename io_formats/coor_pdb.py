@@ -54,7 +54,7 @@ def read_all(file_unit,io_vars=None,io_pos=None):
             if (ii[0] in ['ATOM','HETATM']):
                 aux=(float(line[30:38]),float(line[38:46]),float(line[46:54]))
                 frame.coors.append(aux)
-            if ii[0] in ['MODEL','END']:
+            if ii[0] in ['MODEL','END','ENDMDL']:
                 break
 
         frame.coors=array(frame.coors,order='Fortran')
