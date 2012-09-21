@@ -3,25 +3,15 @@
 
 residue_atoms={}
 covalent_bonds={}
+terminal_atoms={}
+terminal_bonds={}
 
-### ACE:
+###############################
+###############################
 
-residue_atoms['ACE']=[
-'atCH3',
-'atHH31',
-'atHH32',
-'atHH33',
-'atC',
-'atO'
-]
+############ PEPTIDES::
 
-covalent_bonds['ACE']=[
-['atCH3' , 'atHH31' ],
-['atCH3' , 'atHH32' ],
-['atCH3' , 'atHH33' ],
-['atCH3' , 'atC'    ],
-['atC'   , 'atO'    ] 
-]
+######## Aminoacids
 
 ### ALA:
 
@@ -171,7 +161,6 @@ covalent_bonds['ASP']=[
 ['atC'   ,'atO'    ] 
 ]
 
-
 ### CYS:
 
 residue_atoms['CYS']=[
@@ -235,7 +224,6 @@ covalent_bonds['GLU']=[
 ['atCD'  , 'atOE2' ], 
 ['atC'   , 'atO'   ] 
 ]
-
 
 ### GLN:
 
@@ -345,7 +333,6 @@ covalent_bonds['HIS']=[
 ['atNE2' ,'atHE2'  ], 
 ['atC'   ,'atO'    ] 
 ]
-
 
 ### ILE:
 
@@ -525,57 +512,6 @@ covalent_bonds['MET']=[
 ['atCE',  'atHE2'  ], 
 ['atCE',  'atHE3'  ], 
 ['atC',   'atO'    ] 
-]
-
-### NME:
-
-residue_atoms['NME']=[
-'atN',
-'atH',
-'atCH3',
-'atHH31',
-'atHH32',
-'atHH33'
-]
-
-covalent_bonds['NME']=[
-['atN'   ,'atH'    ],
-['atN'   ,'atCH3'  ],
-['atCH3' ,'atHH31' ],
-['atCH3' ,'atHH32' ],
-['atCH3' ,'atHH33' ] 
-]
-
-### NAC:
-
-residue_atoms['NAC']=[
-'atN',
-'atH',
-'atCH3',
-'atHH31',
-'atHH32',
-'atHH33'
-]
-
-covalent_bonds['NAC']=[
-['atN'   ,'atH'    ],
-['atN'   ,'atCH3'  ],
-['atCH3' ,'atHH31' ],
-['atCH3' ,'atHH32' ],
-['atCH3' ,'atHH33' ] 
-]
-
-### NHE:
-
-residue_atoms['NHE']=[
-'atN',
-'atH1',
-'atH2'
-]
-
-covalent_bonds['NHE']=[
-['atN'   ,'atH1'   ],
-['atN'   ,'atH2'   ]
 ]
 
 ### PHE:
@@ -872,6 +808,93 @@ covalent_bonds['VAL']=[
 ['atC',   'atO'     ] 
 ]
 
+######## Terminals
+
+### ACE:
+
+residue_atoms['ACE']=[
+'atCH3',
+'atHH31',
+'atHH32',
+'atHH33',
+'atC',
+'atO'
+]
+
+covalent_bonds['ACE']=[
+['atCH3' , 'atHH31' ],
+['atCH3' , 'atHH32' ],
+['atCH3' , 'atHH33' ],
+['atCH3' , 'atC'    ],
+['atC'   , 'atO'    ] 
+]
+
+### NME:
+
+residue_atoms['NME']=[
+'atN',
+'atH',
+'atCH3',
+'atHH31',
+'atHH32',
+'atHH33'
+]
+
+covalent_bonds['NME']=[
+['atN'   ,'atH'    ],
+['atN'   ,'atCH3'  ],
+['atCH3' ,'atHH31' ],
+['atCH3' ,'atHH32' ],
+['atCH3' ,'atHH33' ] 
+]
+
+### NAC:
+
+residue_atoms['NAC']=[
+'atN',
+'atH',
+'atCH3',
+'atHH31',
+'atHH32',
+'atHH33'
+]
+
+covalent_bonds['NAC']=[
+['atN'   ,'atH'    ],
+['atN'   ,'atCH3'  ],
+['atCH3' ,'atHH31' ],
+['atCH3' ,'atHH32' ],
+['atCH3' ,'atHH33' ] 
+]
+
+### NHE:
+
+residue_atoms['NHE']=[
+'atN',
+'atH1',
+'atH2'
+]
+
+covalent_bonds['NHE']=[
+['atN'   ,'atH1'   ],
+['atN'   ,'atH2'   ]
+]
+
+### NHE:
+
+residue_atoms['NH2']=[
+'atN',
+'atH1',
+'atH2'
+]
+
+covalent_bonds['NH2']=[
+['atN'   ,'atH1'   ],
+['atN'   ,'atH2'   ]
+]
+
+
+
 ##### WATER:
 
 ### SOL:
@@ -981,9 +1004,3 @@ covalent_bonds['CL']=[
 ]
 
 
-
-
-##### LINKERS DIFFERENT RESIDUES:
-inter_residues={
-'C':'N'
-}

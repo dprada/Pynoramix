@@ -256,30 +256,28 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 atom.resid.type=tp.residue_type[atom.resid.name]
             ### Setting up the subsets: residues, waters, chains.
 
-            # Auxiliary dictionary to build resids and waters.
+            # Residues:
 
-            aux={}
-
+            aux_dict={}
             for atom in self.atom[:]:
                 ii=atom.resid.index
                 try: 
-                    aux[ii][atom.name]=atom.index
+                    aux_dict[ii][atom.name]=atom.index
                 except:
-                    aux[ii]={}
-                    aux[ii][atom.name]=atom.index
+                    aux_dict[ii]={}
+                    aux_dict[ii][atom.name]=atom.index
 
-            # Residues:
-
-            for ii in aux.keys():
+            for ii in aux_dict.keys():
                 temp_residue=cl_residue()
                 temp_residue.index=ii
-                temp_residue.list_atoms=aux[ii].values()
+                temp_residue.list_atoms=aux_dict[ii].values()
                 jj=temp_residue.list_atoms[0]
                 temp_residue.pdb_index=self.atom[jj].resid.pdb_index
                 temp_residue.name=self.atom[jj].resid.name
                 temp_residue.type=tp.residue_type[temp_residue.name]
                 self.resid.append(temp_residue)
 
+            del(aux_dict)
 
             # Waters
 
@@ -344,16 +342,24 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                     temp_residue.name=atom.resid.name
                     self.ion.append(temp_residue)
 
-            # Deleting the auxiliary dictionary:
-            del(aux)
 
             ### Setting up the local attributes
 
             # Topology and Covalent bonds
 
+            aux_dict={}
+            for atom in self.atom[:]:
+                ii=atom.resid.index
+                try: 
+                    aux_dict[ii][tp.atom[atom.name]]=atom.index
+                except:
+                    aux_dict[ii]={}
+                    aux_dict[ii][tp.atom[atom.name]]=atom.index
+
             missing_atoms=[]
             if with_bonds:
                 for residue in self.resid[:]:
+                    jj=residue.index
                     # Missing atoms in the residue topology
                     found_atoms={}
                     for ii in residue.list_atoms:
@@ -361,12 +367,26 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                     for ii in tp.residue_atoms[residue.name]:
                         if ii not in found_atoms.keys():
                             missing_atoms.append([ii,residue.name,residue.pdb_index])
-                    # Covalent bonds
-                    #for ii in tp.covalent_bonds[residue.name]:
-                    #    aa=aux_name[ii[0]]
-                    #    bb=aux_name[ii[1]]
-                    #    self.atom[aa].covalent_bonds.append(bb)
-                    #    self.atom[bb].covalent_bonds.append(aa)
+                    # Covalent bonds: Topology residue
+                    for ii in tp.covalent_bonds[residue.name]:
+                        aa=aux_dict[jj][ii[0]]
+                        bb=aux_dict[jj][ii[1]]
+                        self.atom[aa].covalent_bonds.append(bb)
+                        self.atom[bb].covalent_bonds.append(aa)
+                    # Covalent bonds: Peptide bond [C(i)->N(i+1)]
+                    try:
+                        next_residue=self.resid[jj+1]
+                        if residue.type=='Protein' and next_residue.type=='Protein':
+                            if residue.chain.name==next_residue.chain.name :
+                                aa=aux_dict[jj]['atC']
+                                bb=aux_dict[jj+1]['atN']
+                                self.atom[aa].covalent_bonds.append(bb)
+                                self.atom[bb].covalent_bonds.append(aa)
+                    except:
+                        pass
+                    # Covalent bonds: Terminals
+
+            del(aux_dict)
 
             # Charge
 
@@ -432,6 +452,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             self.num_chains=len(self.chains)
             self.num_ions=len(self.ion)
             self.list_atoms=[ii for ii in range(self.num_atoms)]
+
 
             ### Loading coordinates
             if coors:
