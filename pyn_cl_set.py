@@ -157,7 +157,7 @@ class cl_water(labels_set):             # Attributes of a water molecule
 class molecule(labels_set):               # The suptra-estructure: System (waters+cofactors+proteins...)
 
     
-    def __init__(self,input_file=None,download=None,coors=True,verbose=True,with_bonds=False):
+    def __init__(self,input_file=None,download=None,coors=True,verbose=True,with_bonds=True):
 
         # From labels_set: .name, .index, .pdb_index, .num_atoms, .list_atoms
 
@@ -180,8 +180,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         # > Physical and Chemical properties
         self.acceptors=[]               # list of acceptors
-        self.donors=[]                  # list of donnors
-        self.donors_hydrogen={}         # dict. (index donor atom : index H)
+        self.donors=[[],[]]             # list of [donors,donor_hydrogen]
         self.dimensionality=0           # dimensionality (num_atoms*3)
 
         # > Coordinates and Trajectory
@@ -377,55 +376,51 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
             # Acceptors-Donors
 
-                # Default:
             for atom in self.atom[:]:
-                if tp.atom[atom.name] in tp.donors: atom.donor=True
-                if tp.atom[atom.name] in tp.acceptors: atom.acceptor=True
+                # Donors default
+                if tp.atom[atom.name] in tp.donors: 
+                    atom.donor=True
+                # Donors exceptions
+                if tp.atom[atom.name] in tp.donors_with_exceptions:
+                    try:
+                        exception=donors_exception[atom.name][atom.resid.name]
+                        if exception[0]=='Always':
+                            atom.donor=exception[1]
+                        elif exception[0]=='Without H':
+                            if 'H' not in [self.atom[ii].type for ii in atom.covalent_bonds]:
+                                atom.donor=exception[1]
+                        else:
+                            print '# Error with donors exceptions:', atom.name, atom.resid.name
+                    except:
+                        pass
+                # Acceptors default
+                if tp.atom[atom.name] in tp.acceptors: 
+                    atom.acceptor=True
+                # Donors exceptions
+                if tp.atom[atom.name] in tp.acceptors_with_exceptions:
+                    try:
+                        exception=acceptors_exception[atom.name][atom.resid.name]
+                        if exception[0]=='Always':
+                            atom.acceptor=exception[1]
+                        elif exception[0]=='With H':
+                            if 'H' in [self.atom[ii].type for ii in atom.covalent_bonds]:
+                                atom.acceptor=exception[1]
+                        else:
+                            print '# Error with acceptors exceptions:', atom.name, atom.resid.name
+                    except:
+                        pass
+                
+                if atom.acceptor:
+                    self.acceptors.append(atom.index)
 
-                # Exceptions: (This needs to be polished)
-            exc_res_don=[ii[0] for ii in tp.donors_exception]
-            exc_res_acc=[ii[0] for ii in tp.acceptors_exception]
-            for residue in self.resid[:]:
-                if residue.name in exc_res_don:
-                    for exception in tp.donors_exception:
-                        if residue.name == exception[0]:
-                            for ii in residue.list_atoms:
-                                if tp.atom[self.atom[ii].name]==exception[1]:
-                                    cov=0
-                                    for jj in self.atom[ii].covalent_bonds:
-                                        if tp.atom_nature[self.atom[jj].name]=='H': 
-                                            cov=1
-                                            break
-                                        if exception[2]=='Always': self.atom[ii].donor=exception[2]
-                                        elif exception[2]=='Hbonded' and cov==1: self.atom[ii].donor=exception[2]
-                                        elif exception[2]=='Not Hbonded' and cov==0: self.atom[ii].donor=exception[2]
-                if residue.name in exc_res_acc:
-                    for exception in tp.acceptors_exception:
-                        if residue.name == exception[0]:
-                            for ii in residue.list_atoms:
-                                if tp.atom[self.atom[ii].name]==exception[1]:
-                                    cov=0
-                                    for jj in self.atom[ii].covalent_bonds:
-                                        if tp.atom_nature[self.atom[jj].name]=='H': 
-                                            cov=1
-                                            break
-                                        if exception[2]=='Always': self.atom[ii].acceptor=exception[2]
-                                        elif exception[2]=='Hbonded' and cov==1: self.atom[ii].acceptor=exception[2]
-                                        elif exception[2]=='Not Hbonded' and cov==0: self.atom[ii].acceptor=exception[2]
-
-            for atom in self.atom[:]:
-                if atom.acceptor: self.acceptors.append(atom.index)
                 if atom.donor:
-                    self.donors.append(atom.index)
-                    for ind_cov in atom.covalent_bonds:
-                        if tp.atom_nature[tp.atom[self.atom[ind_cov].name]]=='H':
-                            try: 
-                                self.donors_hydrogen[atom.index].append(ind_cov)
-                            except:
-                                self.donors_hydrogen[atom.index]=[ind_cov]
+                    for ii in atom.covalent_bonds:
+                        if self.atom[ii].type=='H':
+                            self.donors[0].append(atom.index)
+                            self.donors[1].append(ii)
 
-            self.acceptors=array(self.acceptors,order='Fortran')
-            self.donors=array(self.donors,order='Fortran')
+                self.acceptors=array(self.acceptors,type=int,order='Fortran')
+                self.donors=array(self.donors,type=int,order='Fortran')
 
             ### Setting up the global attributes
 
@@ -661,6 +656,15 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         list_condition=selection(self,condition,traj,frame,pbc)
         return list_condition
 
+    #def hbonds_selection(self,setA='ALL',setB=None,verbose=True):
+    # 
+    #    setA,n_A,natoms_A,setB,n_B,natoms_B,diff_system=__read_sets_opt__(self,setA,None,setB)
+    #    num_donors_A=0
+    #    num_accetp_A=0
+    #    for ii in setA:
+    #        if 
+    #    num_donors_B=
+    #    num_accept_B=
 
 ###############################################################
 ###############################################################

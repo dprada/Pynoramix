@@ -32,10 +32,12 @@ donors=[
 'atSG'      # S for CYS
 ]
 
-donors_exception=[
-['HIS'  , 'atNE2'  , 'Not Hbonded'  , False],
-['HIS'  , 'atND1'  , 'Not Hbonded'  , False]
-]
+donors_exception={
+'atNE2' : { 'HIS' : [ 'Without H' , False ]},
+'atND1' : { 'HIS' : [ 'Without H' , False ]}
+}
+donors_with_exceptions=donors_exception.keys()
+
 
 ### Acceptors
 
@@ -54,9 +56,10 @@ acceptors=[
 'atSD'      # S for MET
 ]
 
-acceptors_exception=[
-['GLN'  , 'atNE2'  , 'Always'       , False],
-['CYH'  , 'atSG'   , 'Always'       , True ],
-['HIS'  , 'atNE2'  , 'Hbonded'      , False],
-['HIS'  , 'atND1'  , 'Hbonded'      , False]
-]
+acceptors_exception={
+'atNE2' : { 'GLN' : [ 'Always'   , False ], 'HIS' : [ 'With H' , False ]},
+'atSG'  : { 'CYH' : [ 'Always'   , True  ]},
+'atND1' : { 'HIS' : [ 'With H', False ]}
+}
+acceptors_with_exceptions=acceptors_exception.keys()
+
