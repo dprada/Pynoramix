@@ -419,8 +419,8 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                             self.donors[0].append(atom.index)
                             self.donors[1].append(ii)
 
-                self.acceptors=array(self.acceptors,type=int,order='Fortran')
-                self.donors=array(self.donors,type=int,order='Fortran')
+            self.acceptors=array(self.acceptors,dtype=int,order='Fortran')
+            self.donors=array(self.donors,dtype=int,order='Fortran')
 
             ### Setting up the global attributes
 
