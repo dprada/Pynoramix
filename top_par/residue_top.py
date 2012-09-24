@@ -3,7 +3,7 @@
 residue={
 ## residues
 'ALA'     : 'reALA'    ,
-'ARG'     : 'reALA'    ,
+'ARG'     : 'reARG'    ,
 'ASN'     : 'reASN'    ,
 'ASP'     : 'reASP'    ,
 'CYS'     : 'reCYS'    ,
@@ -15,6 +15,7 @@ residue={
 'ILE'     : 'reILE'    ,
 'LEU'     : 'reLEU'    ,
 'LYS'     : 'reLYS'    ,
+'LYSH'    : 'reLYS'    ,
 'MET'     : 'reMET'    ,
 'PHE'     : 'rePHE'    ,
 'PRO'     : 'rePRO'    ,
@@ -209,7 +210,7 @@ covalent_bonds['reASP']=[
 ['atC'   ,'atO'    ] 
 ]
 
-### CYS:
+### CYS and CYSH [HG1]:
 
 residue_atoms['reCYS']=[
 'atN',
@@ -219,7 +220,8 @@ residue_atoms['reCYS']=[
 'atCB',
 'atHB1',
 'atHB2',
-'atHB3',
+'atSG',
+'atHG1',
 'atC',
 'atO'
 ]
@@ -232,7 +234,8 @@ covalent_bonds['reCYS']=[
 ['atCA'  ,'atC'    ],
 ['atCB'  ,'atHB1'  ],
 ['atCB'  ,'atHB2'  ],
-['atCB'  ,'atHB3'  ],
+['atCB'  ,'atSG'   ],
+['atSG'  ,'atHG1'  ],
 ['atC'   ,'atO'    ] 
 ]
 
@@ -438,7 +441,7 @@ residue_atoms['reLEU']=[
 'atHB1',
 'atHB2',
 'atCG',
-'atHG',
+'atHG1',
 'atCD1',
 'atHD11', 
 'atHD12', 
@@ -460,7 +463,7 @@ covalent_bonds['reLEU']=[
 ['atCB',  'atHB1'  ], 
 ['atCB',  'atHB2'  ], 
 ['atCB',  'atCG'   ], 
-['atCG',  'atHG'   ], 
+['atCG',  'atHG1'   ], 
 ['atCG',  'atCD1'  ], 
 ['atCG',  'atCD2'  ], 
 ['atCD1', 'atHD11' ], 
@@ -472,7 +475,7 @@ covalent_bonds['reLEU']=[
 ['atC',   'atO'    ] 
 ]
 
-### LYS:
+### LYS with LYSH (HZ3):
 
 residue_atoms['reLYS']=[
 'atN',
@@ -494,6 +497,7 @@ residue_atoms['reLYS']=[
 'atNZ', 
 'atHZ1',
 'atHZ2',
+'atHZ3',
 'atC',
 'atO'
 ]
@@ -518,6 +522,7 @@ covalent_bonds['reLYS']=[
 ['atCE',  'atNZ'  ], 
 ['atNZ',  'atHZ1' ], 
 ['atNZ',  'atHZ2' ], 
+['atNZ',  'atHZ3' ], 
 ['atC',   'atO'   ] 
 ]
 
@@ -657,7 +662,7 @@ residue_atoms['reSER']=[
 'atHB1',
 'atHB2',
 'atOG', 
-'atHG', 
+'atHG1', 
 'atC',
 'atO'
 ]
@@ -671,7 +676,7 @@ covalent_bonds['reSER']=[
 ['atCB', 'atHB1'  ], 
 ['atCB', 'atHB2'  ], 
 ['atCB', 'atOG'   ], 
-['atOG', 'atHG'   ], 
+['atOG', 'atHG1'  ], 
 ['atC',  'atO'    ] 
 ]
 

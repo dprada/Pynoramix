@@ -56,6 +56,7 @@ class labels_unit():                           # Every unit (atom) has at least 
         self.covalent_bonds=[]                 # List of atoms covalently bonded.
         self.hbonds=[]                         # Atom h-bonded: [[atom_index][strength]]
         self.type=None                         # for residues: protein,ion,solv. for atom: atom_nature (H,O,...)
+        self.__int_type=None                   # internal name of atom
 
 class labels_set(labels_unit):                 # Every set of units (chain, residue, molecule) has at least these attributes
     def __init__(self):
@@ -68,6 +69,7 @@ class labels_parent(labels_unit):               # A selection always keep memory
             self.name=parent.name
             self.index=parent.index
             self.pdb_index=parent.pdb_index
+            self.__int_type=parent.__int_type
         else:
             self.name=parent.name
             self.condition=argument
@@ -120,7 +122,7 @@ class cl_residue(labels_set):           # Attributes of a residue (inherits from
 
     def __init__( self ):
 
-        # From labels_set: .name, .index, .pdb_index, .num_atoms, .list_atoms
+        # From labels_set: .name, .index, .pdb_index, .num_atoms, .list_atoms, .__int_type
 
         self.chain=labels_unit()         # Chain which this residue belongs to.
 
@@ -252,7 +254,9 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 atom.resid.index=jj             # resid index for pynoramix
                 atom.chain.index=kk
                 atom.hbonds=[]
-                atom.type=tp.atom_nature[tp.atom[atom.name]]
+                atom.__int_type=tp.atom[atom.name]
+                atom.type=tp.atom_nature[atom.__int_type]
+                atom.resid.__int_type=tp.residue[atom.resid.name]
                 atom.resid.type=tp.residue_type[atom.resid.name]
             ### Setting up the subsets: residues, waters, chains.
 
@@ -274,7 +278,8 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 jj=temp_residue.list_atoms[0]
                 temp_residue.pdb_index=self.atom[jj].resid.pdb_index
                 temp_residue.name=self.atom[jj].resid.name
-                temp_residue.type=tp.residue_type[temp_residue.name]
+                temp_residue.type=self.atom[jj].resid.type
+                temp_residue.__int_type=self.atom[jj].resid.__int_type
                 self.resid.append(temp_residue)
 
             del(aux_dict)
@@ -347,26 +352,34 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
             # Topology and Covalent bonds
 
-            aux_dict={}
-            for atom in self.atom[:]:
-                ii=atom.resid.index
-                try: 
-                    aux_dict[ii][tp.atom[atom.name]]=atom.index
-                except:
-                    aux_dict[ii]={}
-                    aux_dict[ii][tp.atom[atom.name]]=atom.index
-
             if with_bonds:
+
+                aux_dict={}
+                without_hs=True
+                for atom in self.atom[:]:
+                    if atom.type=='H':
+                        without_hs=False
+                    ii=atom.resid.index
+                    try: 
+                        aux_dict[ii][tp.atom[atom.name]]=atom.index
+                    except:
+                        aux_dict[ii]={}
+                        aux_dict[ii][tp.atom[atom.name]]=atom.index
+
                 for residue in self.resid[:]:
                     jj=residue.index
                     tp_residue_name=tp.residue[residue.name]
                     tp_residue_atoms=tp.residue_atoms[tp_residue_name]
+                    if without_hs:
+                        for ii in tp_residue_atoms:
+                            if ii.startswith('atH'):
+                                tp_residue_atoms.remove(ii)
                     # Missing or unknown atoms in the residue topology
                     found_atoms=[]
                     for ii in residue.list_atoms:
                         found_atoms.append(tp.atom[self.atom[ii].name])
-                    missing_atoms=set(tp_residue_atoms).difference(found_atoms)
-                    unknown_atoms=set(found_atoms).difference(tp_residue_atoms)
+                    missing=set(tp_residue_atoms).difference(found_atoms)
+                    unknown=set(found_atoms).difference(tp_residue_atoms)
                     # Covalent bonds: Topology residue
                     for ii in tp.covalent_bonds[tp_residue_name]:
                         try:
@@ -388,15 +401,25 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                     except:
                         pass
                     # Covalent bonds: Terminals
+                    terms=[]
+                    if unknown:
+                        if 'atO' in missing:
+                            if ('atOT1' in unknown) and ('atOT2' in unknown):
+                                terms.append(['atC','atOT1']); terms.append(['atC','atOT2'])
+                                missing.remove('atO'); unknown.remove('atOT1'); unknown.remove('atOT2')
+                        if 'atH' in missing:
+                            if ('atH1' in unknown) and ('atH2' in unknown) and ('atH3' in unknown):
+                                terms.append(['atN','atH1']); terms.append(['atN','atH2']); terms.append(['atN','atH3'])
+                                missing.remove('atH'); unknown.remove('atH1'); unknown.remove('atH2'); unknown.remove('atH3')
 
                     # Listing missing or unknown atoms
                     if missing_atoms:
-                        for ii in missing_atoms:
+                        for ii in missing:
                             print '# No atom type',ii,'in', residue.name, residue.pdb_index
-                        for ii in unknown_atoms:
+                        for ii in unknown:
                             print '# Unknown atom type',ii,'in', residue.name, residue.pdb_index
 
-            del(aux_dict)
+                del(aux_dict)
 
             # Charge
 
@@ -413,7 +436,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 # Donors exceptions
                 if tp.atom[atom.name] in tp.donors_with_exceptions:
                     try:
-                        exception=donors_exception[atom.name][atom.resid.name]
+                        exception=donors_exception[atom.name][tp.resid[atom.resid.name]]
                         if exception[0]=='Always':
                             atom.donor=exception[1]
                         elif exception[0]=='Without H':
@@ -426,10 +449,10 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 # Acceptors default
                 if tp.atom[atom.name] in tp.acceptors: 
                     atom.acceptor=True
-                # Donors exceptions
+                # Acceptors exceptions
                 if tp.atom[atom.name] in tp.acceptors_with_exceptions:
                     try:
-                        exception=acceptors_exception[atom.name][atom.resid.name]
+                        exception=acceptors_exception[atom.name][tp.resid[atom.resid.name]]
                         if exception[0]=='Always':
                             atom.acceptor=exception[1]
                         elif exception[0]=='With H':

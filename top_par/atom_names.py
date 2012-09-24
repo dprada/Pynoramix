@@ -46,14 +46,13 @@ atom={
 'HE21' : 'atHE21' ,    # opls.gro
 '2HE2' : 'atHE22' ,
 'HE22' : 'atHE22' ,    # opls.gro
-'HG'   : 'atHG'   ,
-'HG1'  : 'atHG1'  ,
-'1HG'  : 'atHG1'  ,    # pymol.pdb
-'HG2'  : 'atHG2'  ,
-'2HG'  : 'atHG1'  ,    # pymol.pdb
-'3HG'  : 'atHG2'  ,    # pymol.pdb
-'HG2'  : 'atHG1'  ,    # PDB
-'HG3'  : 'atHG2'  ,    # PDB
+'HG'   : 'atHG1'  ,                                 #Watch hg3 
+'HG1'  : 'atHG1'  ,                                 #Watch hg3 
+'1HG'  : 'atHG1'  ,    # pymol.pdb                  #Watch hg3 
+'HG2'  : 'atHG2'  ,                                 #Watch hg3 
+'2HG'  : 'atHG2'  ,    # pymol.pdb                  #Watch hg3 
+'3HG'  : 'atHG1'  ,    # pymol.pdb                  #Watch hg3 
+'HG3'  : 'atHG1'  ,    # PDB  ### Da problemas      #Watch hg3 
 '1HG1' : 'atHG11' ,
 'HG11' : 'atHG11' ,    # opls.gro
 '2HG1' : 'atHG12' ,
