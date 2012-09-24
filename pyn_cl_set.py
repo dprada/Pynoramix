@@ -157,7 +157,7 @@ class cl_water(labels_set):             # Attributes of a water molecule
 class molecule(labels_set):               # The suptra-estructure: System (waters+cofactors+proteins...)
 
     
-    def __init__(self,input_file=None,download=None,coors=True,verbose=True,with_bonds=True):
+    def __init__(self,input_file=None,download=None,coors=True,verbose=True,with_bonds=True,missing_atoms=True):
 
         # From labels_set: .name, .index, .pdb_index, .num_atoms, .list_atoms
 
@@ -356,23 +356,26 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                     aux_dict[ii]={}
                     aux_dict[ii][tp.atom[atom.name]]=atom.index
 
-            missing_atoms=[]
             if with_bonds:
                 for residue in self.resid[:]:
                     jj=residue.index
-                    # Missing atoms in the residue topology
-                    found_atoms={}
+                    tp_residue_name=tp.residue[residue.name]
+                    tp_residue_atoms=tp.residue_atoms[tp_residue_name]
+                    # Missing or unknown atoms in the residue topology
+                    found_atoms=[]
                     for ii in residue.list_atoms:
-                        found_atoms[tp.atom[self.atom[ii].name]]=ii
-                    for ii in tp.residue_atoms[residue.name]:
-                        if ii not in found_atoms.keys():
-                            missing_atoms.append([ii,residue.name,residue.pdb_index])
+                        found_atoms.append(tp.atom[self.atom[ii].name])
+                    missing_atoms=set(tp_residue_atoms).difference(found_atoms)
+                    unknown_atoms=set(found_atoms).difference(tp_residue_atoms)
                     # Covalent bonds: Topology residue
-                    for ii in tp.covalent_bonds[residue.name]:
-                        aa=aux_dict[jj][ii[0]]
-                        bb=aux_dict[jj][ii[1]]
-                        self.atom[aa].covalent_bonds.append(bb)
-                        self.atom[bb].covalent_bonds.append(aa)
+                    for ii in tp.covalent_bonds[tp_residue_name]:
+                        try:
+                            aa=aux_dict[jj][ii[0]]
+                            bb=aux_dict[jj][ii[1]]
+                            self.atom[aa].covalent_bonds.append(bb)
+                            self.atom[bb].covalent_bonds.append(aa)
+                        except:
+                            pass
                     # Covalent bonds: Peptide bond [C(i)->N(i+1)]
                     try:
                         next_residue=self.resid[jj+1]
@@ -385,6 +388,13 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                     except:
                         pass
                     # Covalent bonds: Terminals
+
+                    # Listing missing or unknown atoms
+                    if missing_atoms:
+                        for ii in missing_atoms:
+                            print '# No atom type',ii,'in', residue.name, residue.pdb_index
+                        for ii in unknown_atoms:
+                            print '# Unknown atom type',ii,'in', residue.name, residue.pdb_index
 
             del(aux_dict)
 
@@ -460,8 +470,6 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
 
             if verbose:
-                for ii in missing_atoms:
-                    print '#',ii[0],ii[1],ii[2]
                 self.info()
                 if coors:
                     self.traj[0].info(index=0)
@@ -509,7 +517,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                     temp_atom.pdb_index=int(line[6:11])
                     temp_atom.name=(line[12:16].split())[0]
                     temp_atom.alt_loc=line[16]
-                    temp_atom.resid.name=(line[17:20]).replace(' ', '')
+                    temp_atom.resid.name=(line[17:21]).replace(' ', '') # real format: 17:20
                     temp_atom.chain.name=line[21]
                     temp_atom.resid.pdb_index=int(line[22:26])
                     temp_atom.code_ins_res=line[26]
