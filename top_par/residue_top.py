@@ -2,49 +2,49 @@
 
 residue={
 ## residues
-'ALA'     : 'reALA'    ,
-'ARG'     : 'reARG'    ,
-'ASN'     : 'reASN'    ,
-'ASP'     : 'reASP'    ,
-'CYS'     : 'reCYS'    ,
-'GLU'     : 'reGLU'    ,
-'GLN'     : 'reGLN'    ,
-'GLY'     : 'reGLY'    ,
-'HIS'     : 'reHIS'    ,
-'HSD'     : 'reHIS'    ,
-'ILE'     : 'reILE'    ,
-'LEU'     : 'reLEU'    ,
-'LYS'     : 'reLYS'    ,
-'LYSH'    : 'reLYS'    ,
-'MET'     : 'reMET'    ,
-'PHE'     : 'rePHE'    ,
-'PRO'     : 'rePRO'    ,
-'SER'     : 'reSER'    ,
-'THR'     : 'reTHR'    ,
-'TRP'     : 'reTRP'    ,
-'TYR'     : 'reTYR'    ,
-'VAL'     : 'reVAL'    ,
+'ALA'     : 'ALA'    ,
+'ARG'     : 'ARG'    ,
+'ASN'     : 'ASN'    ,
+'ASP'     : 'ASP'    ,
+'CYS'     : 'CYS'    ,
+'GLU'     : 'GLU'    ,
+'GLN'     : 'GLN'    ,
+'GLY'     : 'GLY'    ,
+'HIS'     : 'HIS'    ,
+'HSD'     : 'HIS'    ,
+'ILE'     : 'ILE'    ,
+'LEU'     : 'LEU'    ,
+'LYS'     : 'LYS'    ,
+'LYSH'    : 'LYS'    ,
+'MET'     : 'MET'    ,
+'PHE'     : 'PHE'    ,
+'PRO'     : 'PRO'    ,
+'SER'     : 'SER'    ,
+'THR'     : 'THR'    ,
+'TRP'     : 'TRP'    ,
+'TYR'     : 'TYR'    ,
+'VAL'     : 'VAL'    ,
 # terminals
-'ACE'     : 'reACE'    ,
-'NME'     : 'reNME'    ,
-'NAC'     : 'reNME'    ,
-'NHE'     : 'reNHE'    ,
-'NH2'     : 'reNHE'    ,
+'ACE'     : 'ACE'    ,
+'NME'     : 'NME'    ,
+'NAC'     : 'NME'    ,
+'NHE'     : 'NHE'    ,
+'NH2'     : 'NHE'    ,
 # water
-'SOL'     : 'reSOL3'    ,
-'HOH'     : 'reSOL3'    ,
-'TIP'     : 'reSOL3'    ,
-'TIP3'    : 'reSOL3'    ,
-'HO4'     : 'reSOL4'    ,
-'TIP4'    : 'reSOL4'    ,
-'HO5'     : 'reSOL5'    ,
-'TIP5'    : 'reSOL5'    ,
-'SWM'     : 'reSOL5'    ,
+'SOL'     : 'SOL3'    ,
+'HOH'     : 'SOL3'    ,
+'TIP'     : 'SOL3'    ,
+'TIP3'    : 'SOL3'    ,
+'HO4'     : 'SOL4'    ,
+'TIP4'    : 'SOL4'    ,
+'HO5'     : 'SOL5'    ,
+'TIP5'    : 'SOL5'    ,
+'SWM'     : 'SOL5'    ,
 # ions
-'NA'      : 'reNA'      ,
-'K'       : 'reK'       ,
-'LI'      : 'reLI'      ,
-'CL'      : 'reCL'      
+'NA'      : 'NA'      ,
+'K'       : 'K'       ,
+'LI'      : 'LI'      ,
+'CL'      : 'CL'      
 }
 
 #residue_atoms={'amino':[A,B,C],...}
@@ -52,7 +52,6 @@ residue={
 
 residue_atoms={}
 covalent_bonds={}
-terminal_atoms={}
 terminal_bonds={}
 
 ###############################
@@ -64,7 +63,7 @@ terminal_bonds={}
 
 ### ALA:
 
-residue_atoms['reALA']=[
+residue_atoms['ALA']=[
 'atN',
 'atH',
 'atCA',
@@ -77,7 +76,7 @@ residue_atoms['reALA']=[
 'atO'
 ]
  
-covalent_bonds['reALA']=[
+covalent_bonds['ALA']=[
 ['atN'   ,'atH'    ],
 ['atN'   ,'atCA'   ],
 ['atCA'  ,'atHA'   ],
@@ -91,7 +90,7 @@ covalent_bonds['reALA']=[
 
 ### ARG:
 
-residue_atoms['reARG']=[
+residue_atoms['ARG']=[
 'atN',
 'atH',
 'atCA',
@@ -118,7 +117,7 @@ residue_atoms['reARG']=[
 'atO'
 ]
 
-covalent_bonds['reARG']=[
+covalent_bonds['ARG']=[
 ['atN'   ,'atH'    ], 
 ['atN'   ,'atCA'   ], 
 ['atCA'  ,'atHA'   ], 
@@ -146,7 +145,7 @@ covalent_bonds['reARG']=[
 
 ### ASN:
 
-residue_atoms['reASN']=[
+residue_atoms['ASN']=[
 'atN',
 'atH',
 'atCA',
@@ -163,7 +162,7 @@ residue_atoms['reASN']=[
 'atO'
 ]
 
-covalent_bonds['reASN']=[
+covalent_bonds['ASN']=[
 ['atN'   ,'atH'     ], 
 ['atN'   ,'atCA'    ], 
 ['atCA'  ,'atHA'    ], 
@@ -181,7 +180,7 @@ covalent_bonds['reASN']=[
 
 ### ASP:
 
-residue_atoms['reASP']=[
+residue_atoms['ASP']=[
 'atN',
 'atH',
 'atCA',
@@ -196,7 +195,7 @@ residue_atoms['reASP']=[
 'atO'
 ]
 
-covalent_bonds['reASP']=[
+covalent_bonds['ASP']=[
 ['atN'   ,'atH'    ], 
 ['atN'   ,'atCA'   ], 
 ['atCA'  ,'atHA'   ], 
@@ -212,7 +211,7 @@ covalent_bonds['reASP']=[
 
 ### CYS and CYSH [HG1]:
 
-residue_atoms['reCYS']=[
+residue_atoms['CYS']=[
 'atN',
 'atH',
 'atCA',
@@ -226,7 +225,7 @@ residue_atoms['reCYS']=[
 'atO'
 ]
  
-covalent_bonds['reCYS']=[
+covalent_bonds['CYS']=[
 ['atN'   ,'atH'    ],
 ['atN'   ,'atCA'   ],
 ['atCA'  ,'atHA'   ],
@@ -241,7 +240,7 @@ covalent_bonds['reCYS']=[
 
 ### GLU:
 
-residue_atoms['reGLU']=[
+residue_atoms['GLU']=[
 'atN',
 'atH',
 'atCA',
@@ -259,7 +258,7 @@ residue_atoms['reGLU']=[
 'atO'
 ]
 
-covalent_bonds['reGLU']=[
+covalent_bonds['GLU']=[
 ['atN'   , 'atH'   ], 
 ['atN'   , 'atCA'  ], 
 ['atCA'  , 'atHA'  ], 
@@ -278,7 +277,7 @@ covalent_bonds['reGLU']=[
 
 ### GLN:
 
-residue_atoms['reGLN']=[
+residue_atoms['GLN']=[
 'atN',
 'atH',
 'atCA',
@@ -298,7 +297,7 @@ residue_atoms['reGLN']=[
 'atO'
 ]
 
-covalent_bonds['reGLN']=[
+covalent_bonds['GLN']=[
 ['atN'   , 'atH'   ], 
 ['atN'   , 'atCA'  ], 
 ['atCA'  , 'atHA'  ], 
@@ -319,7 +318,7 @@ covalent_bonds['reGLN']=[
 
 ### GLY:
 
-residue_atoms['reGLY']=[
+residue_atoms['GLY']=[
 'atN',
 'atH',
 'atCA',
@@ -329,7 +328,7 @@ residue_atoms['reGLY']=[
 'atO'
 ]
 
-covalent_bonds['reGLY']=[
+covalent_bonds['GLY']=[
 ['atN'   , 'atH'   ],
 ['atN'   , 'atCA'  ],
 ['atCA'  , 'atHA1' ],
@@ -343,7 +342,7 @@ covalent_bonds['reGLY']=[
 ### HISH (ND1 with H, NE2 with H),
 ### All included in HIS:
 
-residue_atoms['reHIS']=[
+residue_atoms['HIS']=[
 'atN',
 'atH',
 'atCA',
@@ -364,7 +363,7 @@ residue_atoms['reHIS']=[
 'atO'
 ]
 
-covalent_bonds['reHIS']=[
+covalent_bonds['HIS']=[
 ['atN'   ,'atH'    ], 
 ['atN'   ,'atCA'   ], 
 ['atCA'  ,'atHA'   ], 
@@ -387,7 +386,7 @@ covalent_bonds['reHIS']=[
 
 ### ILE:
 
-residue_atoms['reILE']=[
+residue_atoms['ILE']=[
 'atN', 
 'atH', 
 'atCA', 
@@ -409,7 +408,7 @@ residue_atoms['reILE']=[
 'atO' 
 ]
 
-covalent_bonds['reILE']=[
+covalent_bonds['ILE']=[
 ['atN',   'atH'    ], 
 ['atN',   'atCA'   ], 
 ['atCA',  'atHA'   ], 
@@ -432,7 +431,7 @@ covalent_bonds['reILE']=[
 
 ### LEU:
 
-residue_atoms['reLEU']=[
+residue_atoms['LEU']=[
 'atN',
 'atH',
 'atCA',
@@ -454,7 +453,7 @@ residue_atoms['reLEU']=[
 'atO'
 ]
 
-covalent_bonds['reLEU']=[
+covalent_bonds['LEU']=[
 ['atN',   'atH'    ], 
 ['atN',   'atCA'   ], 
 ['atCA',  'atHA'   ], 
@@ -477,7 +476,7 @@ covalent_bonds['reLEU']=[
 
 ### LYS with LYSH (HZ3):
 
-residue_atoms['reLYS']=[
+residue_atoms['LYS']=[
 'atN',
 'atH',
 'atCA', 
@@ -502,7 +501,7 @@ residue_atoms['reLYS']=[
 'atO'
 ]
 
-covalent_bonds['reLYS']=[
+covalent_bonds['LYS']=[
 ['atN',   'atH'   ], 
 ['atN',   'atCA'  ], 
 ['atCA',  'atHA'  ], 
@@ -528,7 +527,7 @@ covalent_bonds['reLYS']=[
 
 ### MET:
 
-residue_atoms['reMET']=[
+residue_atoms['MET']=[
 'atN',
 'atH', 
 'atCA', 
@@ -548,7 +547,7 @@ residue_atoms['reMET']=[
 'atO'
 ]
 
-covalent_bonds['reMET']=[
+covalent_bonds['MET']=[
 ['atN',   'atH'    ], 
 ['atN',   'atCA'   ], 
 ['atCA',  'atHA'   ], 
@@ -569,7 +568,7 @@ covalent_bonds['reMET']=[
 
 ### PHE:
 
-residue_atoms['rePHE']=[
+residue_atoms['PHE']=[
 'atN',
 'atH',
 'atCA',
@@ -592,7 +591,7 @@ residue_atoms['rePHE']=[
 'atO'
 ]
 
-covalent_bonds['rePHE']=[
+covalent_bonds['PHE']=[
 ['atN',   'atH'    ], 
 ['atN',   'atCA'   ], 
 ['atCA',  'atHA'   ], 
@@ -617,7 +616,7 @@ covalent_bonds['rePHE']=[
 
 ### PRO:
 
-residue_atoms['rePRO']=[
+residue_atoms['PRO']=[
 'atN',
 'atCA', 
 'atHA', 
@@ -634,7 +633,7 @@ residue_atoms['rePRO']=[
 'atO'
 ]
 
-covalent_bonds['rePRO']=[
+covalent_bonds['PRO']=[
 ['atN',   'atCA'   ], 
 ['atCA',  'atHA'   ], 
 ['atCA',  'atCB'   ], 
@@ -653,7 +652,7 @@ covalent_bonds['rePRO']=[
 
 ### SER:
 
-residue_atoms['reSER']=[
+residue_atoms['SER']=[
 'atN',
 'atH',
 'atCA', 
@@ -667,7 +666,7 @@ residue_atoms['reSER']=[
 'atO'
 ]
 
-covalent_bonds['reSER']=[
+covalent_bonds['SER']=[
 ['atN',  'atH'    ], 
 ['atN',  'atCA'   ], 
 ['atCA', 'atHA'   ], 
@@ -682,7 +681,7 @@ covalent_bonds['reSER']=[
 
 ### THR:
 
-residue_atoms['reTHR']=[
+residue_atoms['THR']=[
 'atN',
 'atH',
 'atCA',
@@ -699,7 +698,7 @@ residue_atoms['reTHR']=[
 'atO'
 ]
 
-covalent_bonds['reTHR']=[
+covalent_bonds['THR']=[
 ['atN',   'atH'     ], 
 ['atN',   'atCA'    ], 
 ['atCA',  'atHA'    ], 
@@ -717,7 +716,7 @@ covalent_bonds['reTHR']=[
 
 ### TRP:
 
-residue_atoms['reTRP']=[
+residue_atoms['TRP']=[
 'atN',
 'atH',
 'atCA',
@@ -744,7 +743,7 @@ residue_atoms['reTRP']=[
 'atO'
 ]
 
-covalent_bonds['reTRP']=[
+covalent_bonds['TRP']=[
 ['atN',   'atH'   ], 
 ['atN',   'atCA'  ], 
 ['atCA',  'atHA'  ], 
@@ -774,7 +773,7 @@ covalent_bonds['reTRP']=[
 
 ### TYR:
 
-residue_atoms['reTYR']=[
+residue_atoms['TYR']=[
 'atN',
 'atH',
 'atCA', 
@@ -798,7 +797,7 @@ residue_atoms['reTYR']=[
 'atO'
 ]
 
-covalent_bonds['reTYR']=[
+covalent_bonds['TYR']=[
 ['atN',   'atH'    ], 
 ['atN',   'atCA'   ], 
 ['atCA',  'atHA'   ], 
@@ -824,7 +823,7 @@ covalent_bonds['reTYR']=[
 
 ### VAL:
 
-residue_atoms['reVAL']=[
+residue_atoms['VAL']=[
 'atN',
 'atH', 
 'atCA',
@@ -843,7 +842,7 @@ residue_atoms['reVAL']=[
 'atO'
 ]
 
-covalent_bonds['reVAL']=[
+covalent_bonds['VAL']=[
 ['atN',   'atH'     ], 
 ['atN',   'atCA'    ], 
 ['atCA',  'atHA'    ], 
@@ -865,7 +864,7 @@ covalent_bonds['reVAL']=[
 
 ### ACE:
 
-residue_atoms['reACE']=[
+residue_atoms['ACE']=[
 'atCH3',
 'atHH31',
 'atHH32',
@@ -874,7 +873,7 @@ residue_atoms['reACE']=[
 'atO'
 ]
 
-covalent_bonds['reACE']=[
+covalent_bonds['ACE']=[
 ['atCH3' , 'atHH31' ],
 ['atCH3' , 'atHH32' ],
 ['atCH3' , 'atHH33' ],
@@ -884,7 +883,7 @@ covalent_bonds['reACE']=[
 
 ### NME:
 
-residue_atoms['reNME']=[
+residue_atoms['NME']=[
 'atN',
 'atH',
 'atCH3',
@@ -893,7 +892,7 @@ residue_atoms['reNME']=[
 'atHH33'
 ]
 
-covalent_bonds['reNME']=[
+covalent_bonds['NME']=[
 ['atN'   ,'atH'    ],
 ['atN'   ,'atCH3'  ],
 ['atCH3' ,'atHH31' ],
@@ -903,50 +902,61 @@ covalent_bonds['reNME']=[
 
 ### NHE:
 
-residue_atoms['reNHE']=[
+residue_atoms['NHE']=[
 'atN',
 'atH1',
 'atH2'
 ]
 
-covalent_bonds['reNHE']=[
+covalent_bonds['NHE']=[
 ['atN'   ,'atH1'   ],
 ['atN'   ,'atH2'   ]
 ]
+
+## Terminals
+
+terminal_bonds['atO']={}
+terminal_bonds['atH']={}
+
+terminal_bonds['atO']['OT1']  = 'atC'
+terminal_bonds['atO']['OT2']  = 'atC'
+terminal_bonds['atH']['atH1'] = 'atN'
+terminal_bonds['atH']['atH2'] = 'atN'
+terminal_bonds['atH']['atH3'] = 'atN'
 
 
 ##### WATER:
 
 ### SOL3:
 
-residue_atoms['reSOL3']=[
+residue_atoms['SOL3']=[
 'atOW',
 'atHW1',
 'atHW2'
 ]
 
-covalent_bonds['reSOL3']=[
+covalent_bonds['SOL3']=[
 ['atOW'  ,'atHW1' ],
 ['atOW'  ,'atHW2' ]
 ]
 
 ### SOL4:
 
-residue_atoms['reSOL4']=[
+residue_atoms['SOL4']=[
 'atOW',
 'atHW1',
 'atHW2',
 'atvir'
 ]
 
-covalent_bonds['reSOL4']=[
+covalent_bonds['SOL4']=[
 ['atOW'  ,'atHW1' ],
 ['atOW'  ,'atHW2' ]
 ]
 
 ### SOL5:
 
-residue_atoms['reSOL5']=[
+residue_atoms['SOL5']=[
 'atOW',
 'atHW1',
 'atHW2',
@@ -954,7 +964,7 @@ residue_atoms['reSOL5']=[
 'atvir'
 ]
 
-covalent_bonds['reSOL5']=[
+covalent_bonds['SOL5']=[
 ['atOW'  ,'atHW1' ],
 ['atOW'  ,'atHW2' ]
 ]
@@ -963,35 +973,35 @@ covalent_bonds['reSOL5']=[
 ##### IONS:
 
 ## NA:
-residue_atoms['reNA']=[
+residue_atoms['NA']=[
 'itNA'
 ]
 
-covalent_bonds['reNA']=[
+covalent_bonds['NA']=[
 ]
 
 ## K:
-residue_atoms['reK']=[
+residue_atoms['K']=[
 'itK'
 ]
 
-covalent_bonds['reK']=[
+covalent_bonds['K']=[
 ]
 
 ## LI:
-residue_atoms['reLI']=[
+residue_atoms['LI']=[
 'itLI'
 ]
 
-covalent_bonds['reLI']=[
+covalent_bonds['LI']=[
 ]
 
 ## CL:
-residue_atoms['reCL']=[
+residue_atoms['CL']=[
 'itCL'
 ]
 
-covalent_bonds['reCL']=[
+covalent_bonds['CL']=[
 ]
 
 

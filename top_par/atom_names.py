@@ -156,7 +156,7 @@ atom={
 }
 
 
-atom_nature={
+atom_type={
 'atH'   : 'H'   , 
 'atH1'  : 'H'   , 
 'atH2'  : 'H'   , 

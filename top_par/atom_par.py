@@ -33,8 +33,8 @@ donors=[
 ]
 
 donors_exception={
-'atNE2' : { 'reHIS' : [ 'Without H' , False ]},
-'atND1' : { 'reHIS' : [ 'Without H' , False ]}
+'atNE2' : { 'HIS' : [ 'Without H' , False ]},
+'atND1' : { 'HIS' : [ 'Without H' , False ]}
 }
 donors_with_exceptions=donors_exception.keys()
 
@@ -57,9 +57,9 @@ acceptors=[
 ]
 
 acceptors_exception={
-'atNE2' : { 'reGLN' : [ 'Always'   , False ], 'reHIS' : [ 'With H' , False ]},
-'atSG'  : { 'reCYH' : [ 'Always'   , True  ]},    ## Corregir esto!!!
-'atND1' : { 'reHIS' : [ 'With H', False ]}
+'atNE2' : { 'GLN' : [ 'Always'   , False ], 'HIS' : [ 'With H' , False ]},
+'atSG'  : { 'CYH' : [ 'Always'   , True  ]},    ## Corregir esto!!!
+'atND1' : { 'HIS' : [ 'With H', False ]}
 }
 acceptors_with_exceptions=acceptors_exception.keys()
 
