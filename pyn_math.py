@@ -1,5 +1,5 @@
 import numpy as npy
-import copy
+import copy as ccopy
 import pylab
 import pyn_fort_math as f
 
@@ -57,8 +57,8 @@ def histogram(traj,bins=20,segment=None,delta_x=None,prec=None,norm=False,cumul=
 
     f.stats.histograma(opt_norm,opt_prec,opt_range,opt,opt_cumul,traj,bins,mmn,mmx,delta_x,prec,leng)
 
-    h_x=copy.deepcopy(f.stats.histo_x)
-    h_y=copy.deepcopy(f.stats.histo_y)
+    h_x=ccopy.deepcopy(f.stats.histo_x)
+    h_y=ccopy.deepcopy(f.stats.histo_y)
     f.stats.free_mem()
     if plot:
         pylab.plot(h_x,h_y,'ro-')
@@ -101,9 +101,9 @@ def histogram2d(traj,bins=[20,20],segment=None,delta_x=None,prec=None,norm=False
 
     f.stats.histograma_2d(opt_norm,opt_prec,opt_range,opt,traj,bins,[mmn0,mmn1],[mmx0,mmx1],delta_x,prec,leng)
 
-    h_x=copy.deepcopy(f.stats.histo_x)
-    h_y=copy.deepcopy(f.stats.histo_y)
-    h_z=copy.deepcopy(f.stats.histo_z)
+    h_x=ccopy.deepcopy(f.stats.histo_x)
+    h_y=ccopy.deepcopy(f.stats.histo_y)
+    h_z=ccopy.deepcopy(f.stats.histo_z)
     f.stats.free_mem()
     if plot:
         pylab.plot(h_x,h_y,'ro-')
@@ -137,7 +137,7 @@ def binning(traj=None,bins=20,segment=None,delta_x=None,prec=None):
     if traj==None:
 
         o_delta_x=f.stats.binning_x(opt_range,opt,bins,mmn,mmx,delta_x,prec)
-        h_x=copy.deepcopy(f.stats.histo_x)
+        h_x=ccopy.deepcopy(f.stats.histo_x)
         f.stats.free_mem()
         
         return h_x
@@ -146,7 +146,7 @@ def binning(traj=None,bins=20,segment=None,delta_x=None,prec=None):
 
         tray_bins=f.stats.binning(opt_prec,opt_range,opt,traj,bins,mmn,mmx,delta_x,prec,len(traj))
 
-        h_x=copy.deepcopy(f.stats.histo_x)
+        h_x=ccopy.deepcopy(f.stats.histo_x)
     
         f.stats.free_mem()
 

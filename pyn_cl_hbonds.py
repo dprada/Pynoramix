@@ -2,7 +2,7 @@ from numpy import *
 #import pyn_water as f_water
 from pyn_cl_set import *
 #from pyn_cl_net import *
-import copy
+import copy as ccopy
 import pickle as pic
 import pyn_hbonds as f_hb
 
@@ -124,10 +124,10 @@ def hbonds(system1=None,select1=None,system2=None,select2=None,box=None,r_param=
 
         f_hb.hbonds.same_set(r_param,ang_param)
         
-        output1=copy.deepcopy(f_hb.hbonds.salida1)
-        output2=copy.deepcopy(f_hb.hbonds.salida2)
-        output3=copy.deepcopy(f_hb.hbonds.salida3)
-        output4=copy.deepcopy(f_hb.hbonds.salida4)
+        output1=ccopy.deepcopy(f_hb.hbonds.salida1)
+        output2=ccopy.deepcopy(f_hb.hbonds.salida2)
+        output3=ccopy.deepcopy(f_hb.hbonds.salida3)
+        output4=ccopy.deepcopy(f_hb.hbonds.salida4)
          
         if pack==None:
             f_hb.hbonds.free_memory_in()
@@ -155,8 +155,8 @@ def hbonds(system1=None,select1=None,system2=None,select2=None,box=None,r_param=
 
         f_hb.hbonds.diff_set(r_param,ang_param)
 
-        output1=copy.deepcopy(f_hb.hbonds.salida1)
-        output2=copy.deepcopy(f_hb.hbonds.salida2)
+        output1=ccopy.deepcopy(f_hb.hbonds.salida1)
+        output2=ccopy.deepcopy(f_hb.hbonds.salida2)
 
         if pack==None:
             f_hb.hbonds.free_memory_in()
@@ -305,8 +305,8 @@ def hbonds(system1=None,select1=None,system2=None,select2=None,box=None,r_param=
 ### 
 ###    f_hb.hbonds.diff_set(r_param,ang_param)
 ### 
-###    output1=copy.deepcopy(f_hb.hbonds.salida1)
-###    output2=copy.deepcopy(f_hb.hbonds.salida2)
+###    output1=ccopy.deepcopy(f_hb.hbonds.salida1)
+###    output2=ccopy.deepcopy(f_hb.hbonds.salida2)
 ### 
 ###    if pack==None:
 ###        f_hb.hbonds.free_memory_in()

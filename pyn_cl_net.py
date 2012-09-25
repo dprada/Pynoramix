@@ -2,7 +2,7 @@ from numpy import *
 import pyn_fort_net as f_net
 import pyn_fort_anal_trajs as ftrajs
 import pyn_math as pymath
-import copy
+import copy as ccopy
 from os import system
 
 #####################################################################################
@@ -396,7 +396,7 @@ class network():
         # merging the labels and weights of nodes
          
         net_to_total=[]
-        labels_aux=copy.deepcopy(self.labels)
+        labels_aux=ccopy.deepcopy(self.labels)
         for ii in range(net.num_nodes):
             try :
                 no=labels_aux[net.node[ii].label]
@@ -848,19 +848,19 @@ class network():
         if self.Ts==False :
             self.build_Ts()
 
-        aux_k_total=copy.deepcopy(self.k_total)
+        aux_k_total=ccopy.deepcopy(self.k_total)
 
         if new_net:
             temp             = network(verbose=False)
         else:
             temp             = self
 
-        temp.labels      = copy.deepcopy(self.labels)
-        temp.file_net    = copy.deepcopy(self.file_net)
-        temp.file_labels = copy.deepcopy(self.file_labels)
-        temp.num_nodes   = copy.deepcopy(self.num_nodes)
-        temp.directed    = copy.deepcopy(self.directed)
-        temp.kinetic     = copy.deepcopy(self.kinetic)
+        temp.labels      = ccopy.deepcopy(self.labels)
+        temp.file_net    = ccopy.deepcopy(self.file_net)
+        temp.file_labels = ccopy.deepcopy(self.file_labels)
+        temp.num_nodes   = ccopy.deepcopy(self.num_nodes)
+        temp.directed    = ccopy.deepcopy(self.directed)
+        temp.kinetic     = ccopy.deepcopy(self.kinetic)
 
         aux={}
         for ii in range(self.num_nodes):
@@ -1298,9 +1298,9 @@ def kinetic_network(traj=None,ranges=None,traj_out=False,verbose=True):
     traj_net=ftrajs.aux.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
 
     prov_net.Ts=True
-    prov_net.T_ind=copy.deepcopy(ftrajs.aux.t_ind)
-    prov_net.T_wl=copy.deepcopy(ftrajs.aux.t_tau)
-    prov_net.T_start=copy.deepcopy(ftrajs.aux.t_start)
+    prov_net.T_ind=ccopy.deepcopy(ftrajs.aux.t_ind)
+    prov_net.T_wl=ccopy.deepcopy(ftrajs.aux.t_tau)
+    prov_net.T_start=ccopy.deepcopy(ftrajs.aux.t_start)
     prov_net.build_from_Ts()
     for ii in range(prov_net.num_nodes):
         label=str(ftrajs.aux.labels[ii][:])
@@ -1396,9 +1396,9 @@ def kinetic_network(traj=None,ranges=None,traj_out=False,verbose=True):
 ##        
 ## 
 ##        self.Ts=True
-##        self.T_ind=copy.deepcopy(ftrajs.aux.t_ind)
-##        self.T_wl=copy.deepcopy(ftrajs.aux.t_tau)
-##        self.T_start=copy.deepcopy(ftrajs.aux.t_start)
+##        self.T_ind=ccopy.deepcopy(ftrajs.aux.t_ind)
+##        self.T_wl=ccopy.deepcopy(ftrajs.aux.t_tau)
+##        self.T_start=ccopy.deepcopy(ftrajs.aux.t_start)
 ##        self.build_from_Ts()
 ##        for ii in range(self.num_nodes):
 ##            label=str(ftrajs.aux.labels[ii][:])

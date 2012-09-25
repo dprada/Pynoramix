@@ -2,7 +2,7 @@ from numpy import *
 import pyn_water as f_water
 from pyn_cl_set import *
 from pyn_cl_net import *
-import copy
+import copy as ccopy
 import pickle as pic
 
 #####################################################################################

@@ -6,6 +6,7 @@ residue={
 'ARG'     : 'ARG'    ,
 'ASN'     : 'ASN'    ,
 'ASP'     : 'ASP'    ,
+'ASPH'    : 'ASP'    ,
 'CYS'     : 'CYS'    ,
 'GLU'     : 'GLU'    ,
 'GLN'     : 'GLN'    ,
@@ -190,7 +191,8 @@ residue_atoms['ASP']=[
 'atHB2', 
 'atCG',
 'atOD1', 
-'atOD2', 
+'atOD2',
+'atHD2',
 'atC',
 'atO'
 ]
@@ -205,7 +207,8 @@ covalent_bonds['ASP']=[
 ['atCB'  ,'atHB2'  ], 
 ['atCB'  ,'atCG'   ], 
 ['atCG'  ,'atOD1'  ], 
-['atCG'  ,'atOD2'  ], 
+['atCG'  ,'atOD2'  ],
+['atOD2' ,'atHD2'  ],
 ['atC'   ,'atO'    ] 
 ]
 
@@ -441,7 +444,7 @@ residue_atoms['LEU']=[
 'atHB2',
 'atCG',
 'atHG1',
-'atCD1',
+'atCD',
 'atHD11', 
 'atHD12', 
 'atHD13', 
@@ -463,11 +466,11 @@ covalent_bonds['LEU']=[
 ['atCB',  'atHB2'  ], 
 ['atCB',  'atCG'   ], 
 ['atCG',  'atHG1'   ], 
-['atCG',  'atCD1'  ], 
+['atCG',  'atCD'  ], 
 ['atCG',  'atCD2'  ], 
-['atCD1', 'atHD11' ], 
-['atCD1', 'atHD12' ], 
-['atCD1', 'atHD13' ], 
+['atCD', 'atHD11' ], 
+['atCD', 'atHD12' ], 
+['atCD', 'atHD13' ], 
 ['atCD2', 'atHD21' ], 
 ['atCD2', 'atHD22' ], 
 ['atCD2', 'atHD23' ], 
@@ -577,7 +580,7 @@ residue_atoms['PHE']=[
 'atHB1', 
 'atHB2', 
 'atCG',
-'atCD1', 
+'atCD', 
 'atHD1', 
 'atCD2', 
 'atHD2', 
@@ -600,10 +603,10 @@ covalent_bonds['PHE']=[
 ['atCB',  'atHB1'  ], 
 ['atCB',  'atHB2'  ], 
 ['atCB',  'atCG'   ], 
-['atCG',  'atCD1'  ], 
+['atCG',  'atCD'  ], 
 ['atCG',  'atCD2'  ], 
-['atCD1', 'atHD1'  ], 
-['atCD1', 'atCE1'  ], 
+['atCD', 'atHD1'  ], 
+['atCD', 'atCE1'  ], 
 ['atCD2', 'atHD2'  ], 
 ['atCD2', 'atCE2'  ], 
 ['atCE1', 'atHE1'  ], 
@@ -725,7 +728,7 @@ residue_atoms['TRP']=[
 'atHB1', 
 'atHB2', 
 'atCG',
-'atCD1', 
+'atCD', 
 'atHD1', 
 'atCD2', 
 'atNE1', 
@@ -752,10 +755,10 @@ covalent_bonds['TRP']=[
 ['atCB',  'atHB1' ], 
 ['atCB',  'atHB2' ], 
 ['atCB',  'atCG'  ], 
-['atCG',  'atCD1' ], 
+['atCG',  'atCD' ], 
 ['atCG',  'atCD2' ], 
-['atCD1', 'atHD1' ], 
-['atCD1', 'atNE1' ], 
+['atCD', 'atHD1' ], 
+['atCD', 'atNE1' ], 
 ['atCD2', 'atCE2' ], 
 ['atCD2', 'atCE3' ], 
 ['atNE1', 'atHE1' ], 
@@ -782,7 +785,7 @@ residue_atoms['TYR']=[
 'atHB1',
 'atHB2',
 'atCG', 
-'atCD1',
+'atCD',
 'atHD1', 
 'atCD2', 
 'atHD2', 
@@ -806,10 +809,10 @@ covalent_bonds['TYR']=[
 ['atCB',  'atHB1'  ], 
 ['atCB',  'atHB2'  ], 
 ['atCB',  'atCG'   ], 
-['atCG',  'atCD1'  ], 
+['atCG',  'atCD'  ], 
 ['atCG',  'atCD2'  ], 
-['atCD1', 'atHD1'  ], 
-['atCD1', 'atCE1'  ], 
+['atCD', 'atHD1'  ], 
+['atCD', 'atCE1'  ], 
 ['atCD2', 'atHD2'  ], 
 ['atCD2', 'atCE2'  ], 
 ['atCE1', 'atHE1'  ], 
@@ -917,9 +920,11 @@ covalent_bonds['NHE']=[
 
 terminal_bonds['atO']={}
 terminal_bonds['atH']={}
+terminal_bonds['none']={}
 
-terminal_bonds['atO']['OT1']  = 'atC'
-terminal_bonds['atO']['OT2']  = 'atC'
+terminal_bonds['atO']['atOT1']  = 'atC'
+terminal_bonds['atO']['atOT2']  = 'atC'
+terminal_bonds['none']['atOXT']  = 'atC'
 terminal_bonds['atH']['atH1'] = 'atN'
 terminal_bonds['atH']['atH2'] = 'atN'
 terminal_bonds['atH']['atH3'] = 'atN'
