@@ -1,16 +1,14 @@
-SUBROUTINE open_read(len_ch,file_name,funit,o_natom,o_cell,o_box,pos_o)
+SUBROUTINE open_read(len_ch,file_name,funit,o_natom,o_cell,pos_o)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::len_ch
   CHARACTER(80),INTENT(IN)::file_name
   INTEGER,INTENT(OUT)::funit,o_natom
   INTEGER(KIND=8),INTENT(OUT)::pos_o
-  DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::o_box,o_cell
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::o_cell
 
   LOGICAL:: UNITOP
-  REAL::box(9)
-
-
+  REAL::cell(9)
 
   UNITOP=.False.
   funit=500
@@ -26,13 +24,11 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_natom,o_cell,o_box,pos_o)
 
   OPEN (unit=funit,name=TRIM(file_name),status='old',action='read',form='binary',access='stream')
 
-  READ(funit) o_natom,box
+  READ(funit) o_natom,cell
 
-  o_box=0.0d0
-  o_box(1,:)=10.0d0*dble(box(1:3))
-  o_box(2,:)=10.0d0*dble(box(4:6))
-  o_box(3,:)=10.0d0*dble(box(7:9))
-  o_cell=o_box
+  o_cell(1,:)=10.0d0*dble(cell(1:3))
+  o_cell(2,:)=10.0d0*dble(cell(4:6))
+  o_cell(3,:)=10.0d0*dble(cell(7:9))
   o_cell(1,2)=90.0d0
   o_cell(1,3)=90.0d0
   o_cell(2,3)=90.0d0
@@ -41,7 +37,7 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_natom,o_cell,o_box,pos_o)
 
 END SUBROUTINE open_read
 
-SUBROUTINE read (funit,natom,pos_i,pos_o,step,time,prec,cell,box,coors,io_err,io_end)
+SUBROUTINE read (funit,natom,pos_i,pos_o,step,time,prec,cell,coors,io_err,io_end)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::funit,natom
@@ -49,7 +45,7 @@ SUBROUTINE read (funit,natom,pos_i,pos_o,step,time,prec,cell,box,coors,io_err,io
   INTEGER,INTENT(OUT)::io_err,io_end
   INTEGER(KIND=8),INTENT(OUT)::pos_o
   DOUBLE PRECISION,DIMENSION(natom,3),INTENT(OUT)::coors
-  DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::cell,box
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::cell
   INTEGER,INTENT(OUT)::step
   DOUBLE PRECISION,INTENT(OUT)::prec,time
 
@@ -69,10 +65,9 @@ SUBROUTINE read (funit,natom,pos_i,pos_o,step,time,prec,cell,box,coors,io_err,io
   time=dble(time_buffer)
   prec=dble(prec_buffer)
   
-  box(1,:)=10.0d0*dble(box_buffer(1:3))
-  box(2,:)=10.0d0*dble(box_buffer(4:6))
-  box(3,:)=10.0d0*dble(box_buffer(7:9))
-  cell=box
+  cell(1,:)=10.0d0*dble(box_buffer(1:3))
+  cell(2,:)=10.0d0*dble(box_buffer(4:6))
+  cell(3,:)=10.0d0*dble(box_buffer(7:9))
   cell(1,2)=90.0d0
   cell(1,3)=90.0d0
   cell(2,3)=90.0d0

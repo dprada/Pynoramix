@@ -127,7 +127,7 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_vars,o_natom,o_delta_t,pos_o)
 END SUBROUTINE open_read
 
 
-SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,box,coors,io_err,io_end)
+SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_err,io_end)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::funit,natom
@@ -136,7 +136,7 @@ SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,box,coors,io_err,io_end)
   INTEGER,INTENT(OUT)::io_err,io_end
   INTEGER(KIND=8),INTENT(OUT)::pos_o
 
-  DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::cell,box
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::cell
   DOUBLE PRECISION,DIMENSION(natom,3),INTENT(OUT)::coors
 
   REAL*8::buffer_cell(3,3)
@@ -145,7 +145,6 @@ SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,box,coors,io_err,io_end)
 
 
   cell=0.0d0
-  box=0.0d0
   pos_o=pos_i
   io_err=0
   io_end=1
@@ -157,14 +156,6 @@ SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,box,coors,io_err,io_end)
      READ(funit,pos=pos_o,end=600) HD,buffer_cell(1,1), buffer_cell(1,2), buffer_cell(2,2), buffer_cell(1,3), buffer_cell(2,3), buffer_cell(3,3)
      cell=dble(buffer_cell)
      INQUIRE(funit,pos=pos_o)
-     IF (buffer_cell(1,2)==0) THEN
-        box=cell
-        cell(1,2)=90.0d0
-        cell(1,3)=90.0d0
-        cell(2,3)=90.0d0
-     ELSE
-        CALL TRICLINIC (cell,box)
-     END IF
   END IF
 
   coors=0.0d0
@@ -293,33 +284,5 @@ SUBROUTINE close_write(funit,i_vars,i_natom,i_delta_t,io_err)
 
 END SUBROUTINE close_write
 
-SUBROUTINE TRICLINIC (cell,box)
-
-  IMPLICIT NONE
-  DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::cell
-  DOUBLE PRECISION,DIMENSION(3,3),INTENT(OUT)::box
-  DOUBLE PRECISION::alpha,beta,gamma,x,y,z
-
-  box=0.0d0
-  alpha=cell(1,2)
-  beta=cell(1,3)
-  gamma=cell(2,3)
-  x=cell(1,1)
-  y=cell(2,2)
-  z=cell(3,3)
-
-  box(1,1)=x
-  IF ((alpha==90).and.(beta==90).and.(gamma==90)) THEN
-     box(2,2)=y
-     box(3,3)=z
-  ELSE
-     box(2,1)=y*cosd(gamma)
-     box(2,2)=y*sind(gamma)
-     box(3,1)=z*cosd(beta)
-     box(3,2)=z*(cosd(alpha)-cosd(beta)*cosd(gamma))/sind(gamma)
-     box(3,3)=sqrt(z*z-box(3,1)**2-box(3,2)**2)
-  END IF
-
-END SUBROUTINE TRICLINIC
 
   

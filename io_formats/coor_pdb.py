@@ -89,9 +89,6 @@ def read_all(file_unit,io_vars=None,io_pos=None):
                 aux=(float(line[30:38]),float(line[38:46]),float(line[46:54]))
                 frame.coors.append(aux)
             if (ii[0] in ['END','ENDMDL']):
-                frame.box [0,0] = box_pdb [0]
-                frame.box [1,1] = box_pdb [1]
-                frame.box [2,2] = box_pdb [2]
                 frame.cell[0,0] = box_pdb [0]
                 frame.cell[1,1] = box_pdb [1]
                 frame.cell[2,2] = box_pdb [2]
@@ -99,14 +96,12 @@ def read_all(file_unit,io_vars=None,io_pos=None):
                 frame.cell[0,2] = cell_pdb[1]
                 frame.cell[1,2] = cell_pdb[2]
                 frame.coors=array(frame.coors,order='Fortran')
+                frame.cell2box()
                 temp.append(frame)
                 read_new=False
                 frame=cl_frame()
         else:
             if read_new:
-                frame.box [0,0] = box_pdb [0]
-                frame.box [1,1] = box_pdb [1]
-                frame.box [2,2] = box_pdb [2]
                 frame.cell[0,0] = box_pdb [0]
                 frame.cell[1,1] = box_pdb [1]
                 frame.cell[2,2] = box_pdb [2]
@@ -114,6 +109,7 @@ def read_all(file_unit,io_vars=None,io_pos=None):
                 frame.cell[0,2] = cell_pdb[1]
                 frame.cell[1,2] = cell_pdb[2]
                 frame.coors=array(frame.coors,order='Fortran')
+                frame.cell2box()
                 temp.append(frame)
             else:
                 del(frame)

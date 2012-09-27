@@ -91,6 +91,7 @@ def read_next (file_unit,io_vars=None,io_pos=None):
         temp_frame.coors=10.0*temp_frame.coors
         temp_frame.box=array(temp_frame.box,order='Fortran')
         temp_frame.box=10.0*temp_frame.box
+        temp_frame.volume=temp_frame.box[0,0]*temp_frame.box[1,1]*temp_frame.box[2,2]
 
     return temp_frame,io_pos,io_err,io_end
 

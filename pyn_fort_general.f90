@@ -2,11 +2,11 @@
 
 !CONTAINS
 
-SUBROUTINE dist (diff_system,pbc_opt,list1,coors1,box1,list2,coors2,n1,n2,natom1,natom2,matrix)
+SUBROUTINE dist (diff_system,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,matrix)
 
 IMPLICIT NONE
 
-INTEGER,INTENT(IN)::diff_system,pbc_opt
+INTEGER,INTENT(IN)::diff_system,pbc_opt,ortho1
 integer,intent(in)::n1,n2,natom1,natom2
 INTEGER,DIMENSION(n1),INTENT(IN)::list1
 INTEGER,DIMENSION(n2),INTENT(IN)::list2
@@ -34,7 +34,7 @@ IF (diff_system) THEN
          do j=1,n2
             aj=llist2(j)
             vect=(vect_aux-coors2(aj,:))
-            CALL PBC (vect,box1)
+            CALL PBC (vect,box1,ortho1)
             val_aux=sqrt(dot_product(vect,vect))
             matrix(i,j)=val_aux
          end do
@@ -60,7 +60,7 @@ ELSE
             aj=llist2(j)
             if (aj>ai) then
                vect=(vect_aux-coors1(aj,:))
-               CALL PBC (vect,box1)
+               CALL PBC (vect,box1,ortho1)
                val_aux=sqrt(dot_product(vect,vect))
                matrix(i,j)=val_aux
                matrix(j,i)=val_aux
@@ -109,10 +109,10 @@ SUBROUTINE within (list_dists,cutoff,dim_list,ISIN)
 
 END SUBROUTINE within
 
-SUBROUTINE min_dist_atoms (pbc_opt,eq_opt,coors,box,list_a,list_b,N_tot,N_a,N_b,ind_a,ind_b,min_dist)
+SUBROUTINE min_dist_atoms (pbc_opt,eq_opt,coors,box,ortho,list_a,list_b,N_tot,N_a,N_b,ind_a,ind_b,min_dist)
 
   IMPLICIT NONE
-  integer,intent(in)::N_tot,N_a,N_b,pbc_opt,eq_opt
+  integer,intent(in)::N_tot,N_a,N_b,pbc_opt,eq_opt,ortho
   real,dimension(N_tot,3),intent(in)::coors
   REAL,DIMENSION(3,3),INTENT(IN)::box
   INTEGER,DIMENSION(N_a),INTENT(IN)::list_a
@@ -138,7 +138,7 @@ SUBROUTINE min_dist_atoms (pbc_opt,eq_opt,coors,box,list_a,list_b,N_tot,N_a,N_b,
         jb=auxlist_b(j)
         IF ((eq_opt==0).or.(jb>ia)) THEN
            vect=(coors(jb,:)-vect_a(:))
-           IF (pbc_opt==1) CALL PBC (vect,box)
+           IF (pbc_opt==1) CALL PBC (vect,box,ortho)
            aux_dist=sqrt(dot_product(vect,vect))
            IF (aux_dist<min_dist) THEN
               min_dist=aux_dist
@@ -154,7 +154,7 @@ SUBROUTINE min_dist_atoms (pbc_opt,eq_opt,coors,box,list_a,list_b,N_tot,N_a,N_b,
 
 END SUBROUTINE min_dist_atoms
 
-SUBROUTINE min_dist_atoms_ref (pbc_opt,coors,box,list_a,list_coors_b,N_tot,N_a,N_b,ind_a,ind_b,min_dist)
+SUBROUTINE min_dist_atoms_ref (pbc_opt,coors,box,ortho,list_a,list_coors_b,N_tot,N_a,N_b,ind_a,ind_b,min_dist)
 
   IMPLICIT NONE
   integer,intent(in)::N_tot,N_a,N_b,pbc_opt
@@ -179,7 +179,7 @@ SUBROUTINE min_dist_atoms_ref (pbc_opt,coors,box,list_a,list_coors_b,N_tot,N_a,N
      vect_a=coors(ia,:)
      do j=1,N_b
         vect=(list_coors_b(j,:)-vect_a(:))
-        IF (pbc_opt==1) CALL PBC (vect,box)
+        IF (pbc_opt==1) CALL PBC (vect,box,ortho)
         aux_dist=sqrt(dot_product(vect,vect))
         IF (aux_dist<min_dist) THEN
            min_dist=aux_dist
@@ -361,11 +361,11 @@ SUBROUTINE translate_list (sort,list,filter,distance,dim_out,n_list,trans_inds)
 
 END SUBROUTINE translate_list
 
-SUBROUTINE neighbs_dist2(pbc_opt,ident,ii,dist,coors1,box1,coors2,n_atoms2,neighb_list,neighb_dist,neighb_uvect)
+SUBROUTINE neighbs_dist2(pbc_opt,ident,ii,dist,coors1,box1,ortho1,coors2,n_atoms2,neighb_list,neighb_dist,neighb_uvect)
 
   IMPLICIT NONE
   
-  INTEGER,INTENT(IN)::pbc_opt,ident
+  INTEGER,INTENT(IN)::pbc_opt,ident,ortho1
   REAL,INTENT(IN)::dist
   INTEGER,INTENT(IN)::n_atoms2,ii
   REAL,DIMENSION(3),INTENT(IN)::coors1
@@ -407,7 +407,7 @@ SUBROUTINE neighbs_dist2(pbc_opt,ident,ii,dist,coors1,box1,coors2,n_atoms2,neigh
 
   DO j=1,n_atoms2
      aux2=coors2(j,:)-aux
-     IF (lpbc.eqv..true.) CALL PBC (aux2,box1)
+     IF (lpbc.eqv..true.) CALL PBC (aux2,box1,ortho1)
      norm=sqrt(dot_product(aux2,aux2))
      IF (norm<=dist) THEN
         limit=limit+1
@@ -448,11 +448,11 @@ SUBROUTINE neighbs_dist2(pbc_opt,ident,ii,dist,coors1,box1,coors2,n_atoms2,neigh
 END SUBROUTINE NEIGHBS_DIST2
 
 
-SUBROUTINE neighbs_dist1(pbc_opt,ident,dist,coors1,box1,coors2,n_atoms1,n_atoms2,neighb_list,neighb_dist,neighb_uvect)
+SUBROUTINE neighbs_dist1(pbc_opt,ident,dist,coors1,box1,ortho1,coors2,n_atoms1,n_atoms2,neighb_list,neighb_dist,neighb_uvect)
 
   IMPLICIT NONE
   
-  INTEGER,INTENT(IN)::pbc_opt,ident
+  INTEGER,INTENT(IN)::pbc_opt,ident,ortho1
   REAL,INTENT(IN)::dist
   INTEGER,INTENT(IN)::n_atoms1,n_atoms2
   REAL,DIMENSION(n_atoms1,3),INTENT(IN)::coors1
@@ -491,7 +491,7 @@ SUBROUTINE neighbs_dist1(pbc_opt,ident,dist,coors1,box1,coors2,n_atoms1,n_atoms2
      limit=0
      DO j=1,n_atoms2
         aux2=coors2(j,:)-aux
-        IF (lpbc.eqv..true.) CALL PBC (aux2,box1)
+        IF (lpbc.eqv..true.) CALL PBC (aux2,box1,ortho1)
         norm=sqrt(dot_product(aux2,aux2))
         IF (norm<=dist) THEN
            limit=limit+1
@@ -530,28 +530,35 @@ SUBROUTINE neighbs_dist1(pbc_opt,ident,dist,coors1,box1,coors2,n_atoms1,n_atoms2
 END SUBROUTINE NEIGHBS_DIST1
 
 
-SUBROUTINE PBC(vector,box)
+SUBROUTINE PBC(vector,box,ortho)
 
   IMPLICIT NONE
 
   DOUBLE PRECISION,DIMENSION(3),INTENT(INOUT)::vector
   DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::box
+  INTEGER,INTENT(IN)::ortho
   INTEGER::i
   DOUBLE PRECISION::x,L,Lhalf
 
-  DO i=1,3
-     L=box(i,i)
-     Lhalf=0.50d0*L
-     x=vector(i)
-     IF (abs(x)>Lhalf) THEN
-        IF (x>Lhalf) THEN
-           x=x-L
-        ELSE
-           x=x+L
+  IF (ortho) THEN
+     DO i=1,3
+        L=box(i,i)
+        Lhalf=0.50d0*L
+        x=vector(i)
+        IF (abs(x)>Lhalf) THEN
+           IF (x>Lhalf) THEN
+              x=x-L
+           ELSE
+              x=x+L
+           END IF
+           vector(i)=x
         END IF
-        vector(i)=x
-     END IF
-  END DO
+     END DO
+  ELSE
+
+     print 'Not implemented'
+
+  END IF
   
 END SUBROUTINE PBC
 
