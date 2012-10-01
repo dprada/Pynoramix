@@ -73,19 +73,17 @@ def read_aux(file_unit,io_vars=None,io_pos=None):
         temp_frame.coors=10.0*array(temp_frame.coors,order='Fortran')
         line=file_unit.readline().split()                         # Reading the size of the cell
 
-        temp_frame.box[0,0]=float(line[0])         
-        temp_frame.box[1,1]=float(line[1])         
-        temp_frame.box[2,2]=float(line[2])       
-        temp_frame.orthogonal=1
+        temp_frame.box[0,0]=10.0*float(line[0])         
+        temp_frame.box[1,1]=10.0*float(line[1])         
+        temp_frame.box[2,2]=10.0*float(line[2])       
         if len(line)==9:
-            temp_frame.orthogonal=0
-            temp_frame.box[0,1]=float(line[3])
-            temp_frame.box[0,2]=float(line[4])
-            temp_frame.box[1,0]=float(line[5])
-            temp_frame.box[1,2]=float(line[6])
-            temp_frame.box[2,0]=float(line[7])
-            temp_frame.box[2,1]=float(line[8])
-        temp_frame.volume=temp_frame.box[0,0]*temp_frame.box[1,1]*temp_frame.box[2,2]
+            temp_frame.box[0,1]=10.0*float(line[3])
+            temp_frame.box[0,2]=10.0*float(line[4])
+            temp_frame.box[1,0]=10.0*float(line[5])
+            temp_frame.box[1,2]=10.0*float(line[6])
+            temp_frame.box[2,0]=10.0*float(line[7])
+            temp_frame.box[2,1]=10.0*float(line[8])
+        temp_frame.box2cell()
 
         io_pos=file_unit.tell()
 

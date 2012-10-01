@@ -16,4 +16,8 @@ class cl_frame():
         self.volume=0.0
 
     def cell2box(self):
-        self.box,self.volume=libcell.triclinic(cell)
+        self.box,self.volume,self.orthogonal=libcell.cell2box(self.cell)
+
+    def box2cell(self):
+        self.cell,self.volume,self.orthogonal=libcell.cell2box(self.box)
+
