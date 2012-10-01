@@ -19,5 +19,5 @@ class cl_frame():
         self.box,self.volume,self.orthogonal=libcell.cell2box(self.cell)
 
     def box2cell(self):
-        self.cell,self.volume,self.orthogonal=libcell.cell2box(self.box)
+        self.cell,self.volume,self.orthogonal=libcell.box2cell(self.box)
 
