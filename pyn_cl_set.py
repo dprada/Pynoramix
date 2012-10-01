@@ -689,15 +689,23 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         list_condition=selection(self,condition,traj,frame,pbc)
         return list_condition
 
-    #def hbonds_selection(self,setA='ALL',setB=None,verbose=True):
-    # 
-    #    setA,n_A,natoms_A,setB,n_B,natoms_B,diff_system=__read_sets_opt__(self,setA,None,setB)
-    #    num_donors_A=0
-    #    num_accetp_A=0
-    #    for ii in setA:
-    #        if 
-    #    num_donors_B=
-    #    num_accept_B=
+    def hbonds_selection(self,setA='ALL'):
+     
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system=__read_sets_opt__(self,setA,None,None)
+
+        donors_A=[[],[]]
+        accepts_A=[]
+
+        for ii in setA:
+            if self.atom[ii].donor:
+                for jj in self.atom[ii].covalent_bonds:
+                    if self.atom[jj].type=='H':
+                        donors_A[0].append(ii)
+                        donors_A[1].append(jj)
+            if self.atom[ii].acceptor:
+                accepts_A.append(ii)
+
+        return [array(accepts_A,order='Fortran'), array(donors_A,order='Fortran')]
 
 ###############################################################
 ###############################################################
@@ -713,13 +721,13 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 return
             pbc=1
 
-        setA,n_A,natoms_A,setB,n_B,natoms_B,diff_system=__read_sets_opt__(self,setA,None,setB)
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system=__read_sets_opt__(self,setA,None,setB)
         num_frames=__length_frame_opt__(self,traj,frame)
-        dists=empty(shape=(n_A,n_B,num_frames),order='Fortran')
+        dists=empty(shape=(nlist_A,nlist_B,num_frames),order='Fortran')
 
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
-            dists[:,:,num_frames]=f.dist(diff_system,pbc,setA,iframe.coors,iframe.box,setB,iframe.coors,n_A,n_B,natoms_A,natoms_B)
+            dists[:,:,num_frames]=f.dist(diff_system,pbc,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
             num_frames+=1
 
         if num_frames==1:
@@ -729,14 +737,14 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             
     def rdf(self,setA=None,setB=None,traj=0,frame='ALL',pbc=True,bins=100,segment=None):
 
-        setA,n_A,natoms_A,setB,n_B,natoms_B,diff_system=__read_sets_opt__(self,setA,None,setB)
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system=__read_sets_opt__(self,setA,None,setB)
 
         xxx=pyn_math.binning(None,bins,segment,None,None)
         rdf_tot=zeros(shape=(bins),dtype=float,order='Fortran')
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
-            dist_frame=f.dist(1,pbc,setA,iframe.coors,iframe.box,setB,iframe.coors,n_A,n_B,natoms_A,natoms_B)
-            rdf_frame=f.rdf_frame(dist_frame,frame.box,segment[0],segment[1],bins,n_A,n_B)
+            dist_frame=f.dist(1,pbc,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+            rdf_frame=f.rdf_frame(dist_frame,frame.box,segment[0],segment[1],bins,nlist_A,nlist_B)
             rdf_tot+=rdf_frame
             num_frames+=1.0
 
@@ -746,15 +754,15 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
     def neighbs(self,setA=None,setB=None,ranking=1,dist=None,traj=0,frame=0,pbc=True):
      
-        setA,n_A,natoms_A,setB,n_B,natoms_B,diff_system=__read_sets_opt__(self,setA,None,setB)
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system=__read_sets_opt__(self,setA,None,setB)
         num_frames=__length_frame_opt__(self,traj,frame)
 
         if dist==None:
             neighbs=[]
-            neighbs=empty(shape=(n_A,ranking,num_frames),dtype=int,order='Fortran')
+            neighbs=empty(shape=(nlist_A,ranking,num_frames),dtype=int,order='Fortran')
             num_frames=0
             for iframe in __read_frame_opt__(self,traj,frame):
-                neighbs[:,:][num_frames]=f.neighbs_ranking(diff_system,pbc,ranking,setA,iframe.coors,iframe.box,setB,iframe.coors,n_A,n_B,natoms_A,natoms_B)
+                neighbs[:,:][num_frames]=f.neighbs_ranking(diff_system,pbc,ranking,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
                 num_frames+=1
             if num_frames==1:
                 return neighbs[:,:][0]
@@ -767,12 +775,12 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             if ranking:
                 sort_opt=1
             for iframe in __read_frame_opt__(self,traj,frame):
-                contact_map,num_neighbs,dist_matrix=f.neighbs_dist(diff_system,pbc,dist,setA,iframe.coors,iframe.box,setB,iframe.coors,n_A,n_B,natoms_A,natoms_B)
+                contact_map,num_neighbs,dist_matrix=f.neighbs_dist(diff_system,pbc,dist,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
                 aux_neighbs=[]
                 if ranking:
-                    for ii in range(n_A):
+                    for ii in range(nlist_A):
                         if num_neighbs[ii]:
-                            neighbs_A=f.translate_list(sort_opt,setB,contact_map[ii,:],dist_matrix[ii,:],num_neighbs[ii],n_B)
+                            neighbs_A=f.translate_list(sort_opt,setB,contact_map[ii,:],dist_matrix[ii,:],num_neighbs[ii],nlist_B)
                             aux_neighbs.append(neighbs_A)
                         else:
                             aux_neighbs.append([])
@@ -781,6 +789,53 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 return neighbs[0]
             else:
                 return neighbs
+
+    def hbonds (self,definition=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,verbose=False):
+
+        max_hbonds=8
+
+        f_hbonds.hb_def=hbonds_type(definition,verbose=False)
+        if f_water.hbonds.hb_def == 0 : return
+        if f_water.hbonds.hb_def == 1 : f_hbonds.sk_param=sk_param
+        if f_water.hbonds.hb_def == 2 : f_hbonds.roh_param= roh_param
+        if f_water.hbonds.hb_def == 3 : f_hbonds.roo_param, f_hbonds.cos_angooh_param= roo_param, cos(radians(angooh_param))
+        if f_water.hbonds.hb_def == 4 : pass
+        if f_water.hbonds.hb_def == 5 : pass
+        if f_water.hbonds.hb_def == 6 : f_water.hbonds.cos_angooh_param= cos(radians(angooh_param))
+        if f_water.hbonds.hb_def == 7 : pass
+
+        try:
+            num_acc_A=acc_don_A[0].shape[0]
+            num_don_A=acc_don_A[1].shape[1]
+        except:
+            try:
+                if len(acc_don_A[1])==2:
+                    acc_don_A[0]=array(acc_don_A[0],order='Fortran')
+                    acc_don_A[1]=array(acc_don_A[1],order='Fortran')
+            except:
+                acc_don_A=self.hbonds_selection(setA=acc_don_A)
+                num_acc_A=acc_don_A[0].shape[0]
+                num_don_A=acc_don_A[1].shape[1]
+
+        if acc_don_B==None:
+            acc_don_B=acc_don_A
+
+        try:
+            num_acc_B=acc_don_B[0].shape[0]
+            num_don_B=acc_don_B[1].shape[1]
+        except:
+            try:
+                if len(acc_don_B[1])==2:
+                    acc_don_B[0]=array(acc_don_B[0],order='Fortran')
+                    acc_don_B[1]=array(acc_don_B[1],order='Fortran')
+            except:
+                acc_don_B=self.hbonds_selection(setA=acc_don_B)
+                num_acc_B=acc_don_B[0].shape[0]
+                num_don_B=acc_don_B[1].shape[1]
+
+        num_frames=__length_frame_opt__(self,traj,frame)
+        for iframe in __read_frame_opt__(self,traj,frame):
+            pass
 
     #def contact_map (self,setA=None,setB=None,dist=None,traj=0,frame=0,pbc=True):
     # 
@@ -883,37 +938,39 @@ def __read_sets_opt__(systA=None,setA=None,systB=None,setB=None):
     diff_system=1
     if systB==None:
 
-        nsysa=systA.num_atoms
-        nsysb=systA.num_atoms
+        nsys_a=systA.num_atoms
+        nsys_b=systA.num_atoms
 
         if setA in ['ALL','All','all']:
-            setA=[ii in range(systA.num_atoms)]
-            nlista=systA.num_atoms
+            setA=[ii for ii in range(systA.num_atoms)]
+            nlist_a=systA.num_atoms
         elif type(setA) in [int32,int]:
             setA=[setA]
-            nlista=1
+            nlist_a=1
         elif type(setA) in [list,tuple]:
-            nlista=len(setA)
+            nlist_a=len(setA)
         else:
             setA=systA.selection(setA)
+            nlist_a=len(setA)
 
         if setB in [None]:
-            setB=[ii in range(systA.num_atoms)]
-            nlistb=systA.num_atoms
+            setB=setA
+            nlist_b=nlist_a
         elif setB in ['ALL','All','all']:
-            setB=[ii in range(systA.num_atoms)]
-            nlistb=systA.num_atoms
+            setB=[ii for ii in range(systA.num_atoms)]
+            nlist_b=systA.num_atoms
         elif type(setB) in [int32,int]:
             setB=[setB]
-            nlistb=1
+            nlist_b=1
         elif type(setB) in [list,tuple]:
-            nlistb=len(setB)
+            nlist_b=len(setB)
         else:
             setB=systA.selection(setB)
+            nlist_b=len(setB)
 
         if (setA==setB): diff_system=0
 
-        return setA,nlista,nsysa,setB,nlistb,nsysb,diff_system
+        return setA,nlist_a,nsys_a,setB,nlist_b,nsys_b,diff_system
 
     else:
         print 'Different systems: Not implemented yet'
@@ -977,6 +1034,39 @@ def __read_sets_opt__(systA=None,setA=None,systB=None,setB=None):
 #    
 #    return Kt*0.10,'(nm/Kb)'
 
+def hbonds_type(option=None,verbose=True):
+
+    hbs_type={}
+    hbs_info={}
+    hbs_type['Skinner']=1; hbs_info['Skinner']='R.Kumar, J.R. Schmidt and J.L. Skinner. J. Chem. Phys. 126, 204107 (2007)' 
+    hbs_type['R(o,h)']=2;  hbs_info['R(o,h)']='V. J. Buch. J. Chem. Phys. 96, 3814-3823 (1992)'
+    hbs_type['R(o,o)-Ang(o,o,h)']=3; hbs_info['R(o,o)-Ang(o,o,h)']='A. Luzar, D. Chandler. Phys. Rev. Lett. 76, 928-931 (1996)'
+    hbs_type['Donor-Acceptor-Number']=4; hbs_info['Donor-Acceptor-Number']='A. D. Hammerich, V. J. Buch. J. Chem. Phys. 128, 111101 (2008)'
+    hbs_type['Topological']=5; hbs_info['Topological']='R. H. Henchman and S. J. Irudayam. J. Phys. Chem. B. 114, 16792-16810 (2010)'
+    hbs_type['Donor-Number-Ang(o,o,h)']=6; hbs_info['Donor-Number-Ang(o,o,h)']='J. D. Smith, C. D. Cappa, et al. Proc. Natl. Acad. Sci. U.S.A. 102, 14171 (2005).'
+    hbs_type['Nearest-Neighbour']=7; hbs_info['Nearest-Neighbour']='This is not a hydrogen bond definition but just a topological characterization.'
+
+
+    if verbose:
+        if option not in hbs_type.keys():
+            for ii in hbs_type.keys():
+                if len(ii)<=12: tab='\t\t\t'
+                if 12<len(ii)<=18: tab='\t\t'
+                if 18<len(ii): tab='\t'
+                print '  ',ii,tab+'[',hbs_info[ii],']'
+        return
+
+    if option != None :
+        if option not in hbs_type.keys():
+            print option, ': Hbond type not defined.'
+            print 'List of definitions:'
+            for ii in hbs_type.keys():
+                if len(ii)<=12: tab='\t\t\t'
+                if 12<len(ii)<=18: tab='\t\t'
+                if 18<len(ii): tab='\t'
+                print '  ',ii,tab+'[',hbs_info[ii],']'
+            return 0
+        return hbs_type[option]
 
 
 ######################################################
@@ -989,8 +1079,10 @@ def selection(system=None,condition=None,traj=0,frame='ALL',pbc=True):
     # attributes syntaxis:
 
     dict_selects={
-        'backbone': '(atom.name N CA C O)',
+        'backbone':  '(atom.name N CA C O)',
         'sidechain': '(atom.resid.type Protein and not atom.name N CA C O H1 H2)',
+        'protein':   '(atom.resid.type Protein)',
+        'water':     '(atom.resid.type Water)',
         }
 
     for ii,jj in dict_selects.iteritems():
