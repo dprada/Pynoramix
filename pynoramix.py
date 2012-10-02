@@ -13,6 +13,10 @@ from numpy import *
 import pickle as pic
 import sys
 
+workdir=path.dirname(path.abspath(__file__))
+sys.path.append(workdir+'/top_par/')
+sys.path.append(workdir+'/io_formats/')
+
 ##############################
 ######## Internal modules:
 
