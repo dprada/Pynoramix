@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Pynoramix's documentation!
-=====================================
+Welcome to the tentative Pynoramix's documentation!
+===================================================
 
 Contents:
 
@@ -26,21 +26,25 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
------------------------------
-..
-My projects
-===========
 
-.. toctree::
-   :maxdepth: 2
 
-   my_projects/ion_solvation.rst
-
-Examples to write the doc
-=========================
-
-.. toctree::
-   :maxdepth: 2
-
-   getting_started_ex.rst
-   example_edition_ex.rst
+.. Comentado
+   #-----------------------------
+   # 
+   #My projects
+   #===========
+   # 
+   #.. toctree::
+   #   :maxdepth: 2
+   # 
+   #   my_projects/ion_solvation.rst
+   # 
+   #Examples to write the doc
+   #=========================
+   # 
+   #.. toctree::
+   #   :maxdepth: 2
+   # 
+   #   getting_started_ex.rst
+   #   example_edition_ex.rst
+  
