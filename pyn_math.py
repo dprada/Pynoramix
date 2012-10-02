@@ -1,8 +1,11 @@
 import numpy as npy
 import copy as ccopy
-import pylab
 import pyn_fort_math as f
-
+try:
+    import pylab
+    wpylab=1
+except:
+    wpylab=0
 
 def average(a):
 
@@ -60,7 +63,7 @@ def histogram(traj,bins=20,segment=None,delta_x=None,prec=None,norm=False,cumul=
     h_x=ccopy.deepcopy(f.stats.histo_x)
     h_y=ccopy.deepcopy(f.stats.histo_y)
     f.stats.free_mem()
-    if plot:
+    if plot and wpylab:
         pylab.plot(h_x,h_y,'ro-')
 
     return h_x,h_y
@@ -105,7 +108,7 @@ def histogram2d(traj,bins=[20,20],segment=None,delta_x=None,prec=None,norm=False
     h_y=ccopy.deepcopy(f.stats.histo_y)
     h_z=ccopy.deepcopy(f.stats.histo_z)
     f.stats.free_mem()
-    if plot:
+    if plot and wpylab:
         pylab.plot(h_x,h_y,'ro-')
 
     return h_x,h_y,h_z
