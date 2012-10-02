@@ -27,7 +27,7 @@ Indices and tables
 * :ref:`search`
 
 -----------------------------
-
+..
 My projects
 ===========
 
