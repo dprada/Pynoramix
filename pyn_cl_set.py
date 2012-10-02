@@ -20,7 +20,7 @@ import datetime as datetime
 ### pyno libraries:
 from pyn_cl_coors import *
 import top_par as tp
-import pyn_fort_general as f
+import pyn_fort_general as faux
 import pyn_math as pyn_math
 
 #
@@ -727,7 +727,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
-            dists[:,:,num_frames]=f.dist(diff_system,pbc,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+            dists[:,:,num_frames]=faux.glob.distance(diff_system,pbc,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
             num_frames+=1
 
         if num_frames==1:
@@ -743,8 +743,8 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         rdf_tot=zeros(shape=(bins),dtype=float,order='Fortran')
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
-            dist_frame=f.dist(1,pbc,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
-            rdf_frame=f.rdf_frame(dist_frame,frame.box,segment[0],segment[1],bins,nlist_A,nlist_B)
+            dist_frame=faux.glob.distance(1,pbc,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+            rdf_frame=faux.rdf.rdf_frame(dist_frame,frame.box,segment[0],segment[1],bins,nlist_A,nlist_B)
             rdf_tot+=rdf_frame
             num_frames+=1.0
 
@@ -762,7 +762,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             neighbs=empty(shape=(nlist_A,ranking,num_frames),dtype=int,order='Fortran')
             num_frames=0
             for iframe in __read_frame_opt__(self,traj,frame):
-                neighbs[:,:][num_frames]=f.neighbs_ranking(diff_system,pbc,ranking,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+                neighbs[:,:][num_frames]=faux.glob.neighbs_ranking(diff_system,pbc,ranking,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
                 num_frames+=1
             if num_frames==1:
                 return neighbs[:,:][0]
@@ -775,12 +775,12 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             if ranking:
                 sort_opt=1
             for iframe in __read_frame_opt__(self,traj,frame):
-                contact_map,num_neighbs,dist_matrix=f.neighbs_dist(diff_system,pbc,dist,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+                contact_map,num_neighbs,dist_matrix=faux.glob.neighbs_dist(diff_system,pbc,dist,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
                 aux_neighbs=[]
                 if ranking:
                     for ii in range(nlist_A):
                         if num_neighbs[ii]:
-                            neighbs_A=f.translate_list(sort_opt,setB,contact_map[ii,:],dist_matrix[ii,:],num_neighbs[ii],nlist_B)
+                            neighbs_A=faux.glob.translate_list(sort_opt,setB,contact_map[ii,:],dist_matrix[ii,:],num_neighbs[ii],nlist_B)
                             aux_neighbs.append(neighbs_A)
                         else:
                             aux_neighbs.append([])
@@ -792,17 +792,16 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
     def hbonds (self,definition=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,verbose=False):
 
-        max_hbonds=8
 
-        f_hbonds.hb_def=hbonds_type(definition,verbose=False)
-        if f_water.hbonds.hb_def == 0 : return
-        if f_water.hbonds.hb_def == 1 : f_hbonds.sk_param=sk_param
-        if f_water.hbonds.hb_def == 2 : f_hbonds.roh_param= roh_param
-        if f_water.hbonds.hb_def == 3 : f_hbonds.roo_param, f_hbonds.cos_angooh_param= roo_param, cos(radians(angooh_param))
-        if f_water.hbonds.hb_def == 4 : pass
-        if f_water.hbonds.hb_def == 5 : pass
-        if f_water.hbonds.hb_def == 6 : f_water.hbonds.cos_angooh_param= cos(radians(angooh_param))
-        if f_water.hbonds.hb_def == 7 : pass
+        faux.hbonds.definition=hbonds_type(definition,verbose=False)
+        if faux.hbonds.definition == 0 : return
+        if faux.hbonds.definition == 1 : faux.hbonds.sk_param=sk_param
+        if faux.hbonds.definition == 2 : faux.hbonds.roh_param= roh_param
+        if faux.hbonds.definition == 3 : faux.hbonds.roo_param, faux.hbonds.cos_angooh_param= roo_param, cos(radians(angooh_param))
+        if faux.hbonds.definition == 4 : pass
+        if faux.hbonds.definition == 5 : pass
+        if faux.hbonds.definition == 6 : faux.hbonds.cos_angooh_param= cos(radians(angooh_param))
+        if faux.hbonds.definition == 7 : pass
 
         try:
             num_acc_A=acc_don_A[0].shape[0]
@@ -833,9 +832,12 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 num_acc_B=acc_don_B[0].shape[0]
                 num_don_B=acc_don_B[1].shape[1]
 
-        num_frames=__length_frame_opt__(self,traj,frame)
-        for iframe in __read_frame_opt__(self,traj,frame):
-            pass
+        #num_frames=__length_frame_opt__(self,traj,frame)
+        #for iframe in __read_frame_opt__(self,traj,frame):
+        #    pass
+
+        print num_acc_A,num_don_A,num_acc_B,num_don_B
+        pass
 
     #def contact_map (self,setA=None,setB=None,dist=None,traj=0,frame=0,pbc=True):
     # 
@@ -1177,7 +1179,7 @@ def selection(system=None,condition=None,traj=0,frame='ALL',pbc=True):
             for gg in range(len(dists_sels)):
                 list_sel_frame=[]
                 for jj in range(len(sel1)):
-                    if f.within(dists_sels[gg][jj,:],cutoff,len(sel2)):
+                    if faux.glob.within(dists_sels[gg][jj,:],cutoff,len(sel2)):
                         list_sel_frame.append(sel1[jj])
                 list_sel1.append(list_sel_frame)
             #'(atom.resid.type Water and atom.type O) within 3.0 of atom.resid.type Protein'
