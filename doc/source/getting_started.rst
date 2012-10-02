@@ -23,7 +23,9 @@ Git
 ...
 The project can be clone with git with the following command:
 
-git clone git://github.com/dprada/Pynoramix.git
+.. sourcecode:: bash
+
+   git clone git://github.com/dprada/Pynoramix.git
 
 This former option is recommended. The newest corrections and functions can be easily obtained with "git pull".
 
@@ -57,7 +59,9 @@ Pynoramix depends on some packages:
 
 After solving the dependencies, the script INSTALL needs to be executed to compile the fortran core of Pynoramix.
 
-./INSTALL
+.. sourcecode:: bash
+
+   ./INSTALL
 
 .. warning:: Do not forget to add Pynoramix to your python path:
    - export PYTHONPATH=$PYTHONPATH:/path/to/Pynoramix
@@ -71,6 +75,8 @@ The command 'git pull' can be executed over the Python directory to check and ob
 
 Once this has been done, it is recommended to clean old libraries and compile them again:
 
-./CLEAN
-./INSTALL
+.. sourcecode:: bash
+
+   ./CLEAN
+   ./INSTALL
 
