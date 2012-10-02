@@ -12,7 +12,6 @@ from os import system
 from os import path
 from os import sys
 import copy as ccopy
-import pylab
 from numpy import *
 import pickle as pic
 import datetime as datetime
