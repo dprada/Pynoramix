@@ -1,2 +1,0 @@
-rm io_formats/*.so
-rm *.so
