@@ -727,7 +727,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
-            dists[:,:,num_frames]=faux.glob.distance(diff_system,pbc,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+            dists[:,:,num_frames]=faux.glob.distance(diff_system,pbc,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
             num_frames+=1
 
         if num_frames==1:
@@ -743,7 +743,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         rdf_tot=zeros(shape=(bins),dtype=float,order='Fortran')
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
-            dist_frame=faux.glob.distance(1,pbc,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+            dist_frame=faux.glob.distance(1,pbc,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
             rdf_frame=faux.rdf.rdf_frame(dist_frame,frame.box,segment[0],segment[1],bins,nlist_A,nlist_B)
             rdf_tot+=rdf_frame
             num_frames+=1.0
@@ -762,7 +762,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             neighbs=empty(shape=(nlist_A,ranking,num_frames),dtype=int,order='Fortran')
             num_frames=0
             for iframe in __read_frame_opt__(self,traj,frame):
-                neighbs[:,:][num_frames]=faux.glob.neighbs_ranking(diff_system,pbc,ranking,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+                neighbs[:,:][num_frames]=faux.glob.neighbs_ranking(diff_system,pbc,ranking,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
                 num_frames+=1
             if num_frames==1:
                 return neighbs[:,:][0]
@@ -775,7 +775,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             if ranking:
                 sort_opt=1
             for iframe in __read_frame_opt__(self,traj,frame):
-                contact_map,num_neighbs,dist_matrix=faux.glob.neighbs_dist(diff_system,pbc,dist,setA,iframe.coors,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+                contact_map,num_neighbs,dist_matrix=faux.glob.neighbs_dist(diff_system,pbc,dist,setA,iframe.coors,iframe.orthogonal,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
                 aux_neighbs=[]
                 if ranking:
                     for ii in range(nlist_A):

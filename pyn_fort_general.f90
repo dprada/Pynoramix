@@ -122,11 +122,11 @@ DEALLOCATE(llist1,llist2)
 END SUBROUTINE DISTANCE
 
 
-SUBROUTINE neighbs_ranking (diff_system,pbc_opt,limit,list1,coors1,box1,list2,coors2,n1,n2,natom1,natom2,neighb_list) !before: neighb_dist,neighb_uvect
+SUBROUTINE neighbs_ranking (diff_system,pbc_opt,limit,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,neighb_list) !before: neighb_dist,neighb_uvect
 
   IMPLICIT NONE
 
-  INTEGER,INTENT(IN)::diff_system,pbc_opt
+  INTEGER,INTENT(IN)::diff_system,pbc_opt,ortho1
   INTEGER,INTENT(IN)::limit
   integer,intent(in)::n1,n2,natom1,natom2
   INTEGER,DIMENSION(n1),INTENT(IN)::list1
@@ -149,7 +149,7 @@ SUBROUTINE neighbs_ranking (diff_system,pbc_opt,limit,list1,coors1,box1,list2,co
 
   ALLOCATE(dist_matrix(n1,n2),dist_aux(n2),filter(n2),neight_aux(limit))
   filter=.TRUE.
-  CALL distance (diff_system,pbc_opt,list1,coors1,box1,list2,coors2,n1,n2,natom1,natom2,dist_matrix)
+  CALL distance (diff_system,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,dist_matrix)
 
   DO ii=1,n1
      dist_aux=dist_matrix(ii,:)
@@ -170,11 +170,11 @@ SUBROUTINE neighbs_ranking (diff_system,pbc_opt,limit,list1,coors1,box1,list2,co
 END SUBROUTINE neighbs_ranking
 
 
-SUBROUTINE neighbs_dist (diff_system,pbc_opt,limit,list1,coors1,box1,list2,coors2,n1,n2,natom1,natom2,contact_map,num_neighbs,dist_matrix) !before: neighb_dist,neighb_uvect
+SUBROUTINE neighbs_dist (diff_system,pbc_opt,limit,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,contact_map,num_neighbs,dist_matrix) !before: neighb_dist,neighb_uvect
 
   IMPLICIT NONE
 
-  INTEGER,INTENT(IN)::diff_system,pbc_opt
+  INTEGER,INTENT(IN)::diff_system,pbc_opt,ortho1
   DOUBLE PRECISION,INTENT(IN)::limit
   integer,intent(in)::n1,n2,natom1,natom2
   INTEGER,DIMENSION(n1),INTENT(IN)::list1
@@ -192,7 +192,7 @@ SUBROUTINE neighbs_dist (diff_system,pbc_opt,limit,list1,coors1,box1,list2,coors
   !DOUBLE PRECISION,DIMENSION(n_atoms1,limit,3),INTENT(OUT)::neighb_uvect
 
   ! The indexes in list1 and list2 not corrected yet (because of function dist)
-  CALL distance (diff_system,pbc_opt,list1,coors1,box1,list2,coors2,n1,n2,natom1,natom2,dist_matrix)
+  CALL DISTANCE (diff_system,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,dist_matrix)
 
   contact_map=0
   num_neighbs=0
@@ -210,12 +210,12 @@ SUBROUTINE neighbs_dist (diff_system,pbc_opt,limit,list1,coors1,box1,list2,coors
 
 END SUBROUTINE neighbs_dist
 
-SUBROUTINE translate_list (sort,list,filter,distance,dim_out,n_list,trans_inds)
+SUBROUTINE translate_list (sort,list,filter,distances,dim_out,n_list,trans_inds)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::n_list,dim_out,sort
   INTEGER,DIMENSION(n_list),INTENT(IN)::list,filter
-  DOUBLE PRECISION,DIMENSION(n_list),INTENT(IN)::distance
+  DOUBLE PRECISION,DIMENSION(n_list),INTENT(IN)::distances
   INTEGER,DIMENSION(dim_out),INTENT(OUT)::trans_inds
 
   LOGICAL,DIMENSION(:),ALLOCATABLE::ifilter
@@ -227,7 +227,7 @@ SUBROUTINE translate_list (sort,list,filter,distance,dim_out,n_list,trans_inds)
      ifilter=filter
 
      DO ii=1,dim_out
-        gg=MINLOC(distance(:),DIM=1,MASK=ifilter(:))
+        gg=MINLOC(distances(:),DIM=1,MASK=ifilter(:))
         ifilter(gg)=.FALSE.
         trans_inds(ii)=list(gg) ! The indexes were not corrected
      END DO
@@ -743,6 +743,8 @@ END MODULE GLOB
 
 MODULE RDF
 
+CONTAINS
+
 SUBROUTINE rdf_frame(distances,box,segment_min,segment_max,bins,n_A,n_B,rdf)
 
   IMPLICIT NONE
@@ -790,7 +792,7 @@ END MODULE RDF
 
 MODULE HBONDS
 
-USE GLOBAL
+USE GLOB
 
 !! Parameters
 INTEGER::definition
