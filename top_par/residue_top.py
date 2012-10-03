@@ -43,9 +43,11 @@ residue={
 'SWM'     : 'SOL5'    ,
 # ions
 'NA'      : 'NA'      ,
+'SOD'     : 'NA'      ,
 'K'       : 'K'       ,
 'LI'      : 'LI'      ,
-'CL'      : 'CL'      
+'CL'      : 'CL'      ,
+'CLA'     : 'CL'      
 }
 
 #residue_atoms={'amino':[A,B,C],...}
@@ -924,10 +926,27 @@ terminal_bonds['none']={}
 
 terminal_bonds['atO']['atOT1']  = 'atC'
 terminal_bonds['atO']['atOT2']  = 'atC'
+
 terminal_bonds['none']['atOXT']  = 'atC'
-terminal_bonds['atH']['atH1'] = 'atN'
-terminal_bonds['atH']['atH2'] = 'atN'
-terminal_bonds['atH']['atH3'] = 'atN'
+
+terminal_bonds['none']['atNT']  = 'atC'
+terminal_bonds['none']['atHT1']  = 'atNT'
+terminal_bonds['none']['atHT2']  = 'atNT'
+
+#### NHE for ACEMD
+terminal_bonds['atH']['atHT1'] = 'atN'
+terminal_bonds['atH']['atHT2'] = 'atN'
+terminal_bonds['atH']['atHT3'] = 'atN'
+
+#### ACE for ACEMD
+terminal_bonds['none']['atNT']   = 'atC'      
+terminal_bonds['none']['atHY1']  = 'atCAY'
+terminal_bonds['none']['atHY2']  = 'atCAY'
+terminal_bonds['none']['atHY3']  = 'atCAY'
+terminal_bonds['none']['atCAY']  = 'atCY'
+terminal_bonds['none']['atOY']   = 'atCY'
+terminal_bonds['none']['atCY']   = 'atN'
+
 
 
 ##### WATER:

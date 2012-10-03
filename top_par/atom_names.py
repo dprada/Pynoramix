@@ -81,6 +81,9 @@ atom={
 'HH32' : 'atHH32' ,    # opls.gro
 '3HH3' : 'atHH33' ,
 'HH33' : 'atHH33' ,    # opls.gro
+'HY1'  : 'atHY1' ,    # ACEMD (ACE Terminal)
+'HY2'  : 'atHY2' ,    # ACEMD (ACE Terminal)
+'HY3'  : 'atHY3' ,    # ACEMD (ACE Terminal)
 'HZ'   : 'atHZ'   ,
 'HZ1'  : 'atHZ1'  ,
 '1HZ'  : 'atHZ1'  ,    # pymol.pdb
@@ -88,11 +91,12 @@ atom={
 '2HZ'  : 'atHZ2'  ,    # pymol.pdb
 'HZ3'  : 'atHZ3'  ,
 '3HZ'  : 'atHZ3'  ,    # pymol.pdb
-'HT1'  : 'atH1'   ,    # for terminal
-'HT2'  : 'atH2'   ,    # for terminal
-'HT3'  : 'atH3'   ,    # for terminal
+'HT1'  : 'atHT1'  ,    # for terminal
+'HT2'  : 'atHT2'  ,    # for terminal
+'HT3'  : 'atHT3'  ,    # for terminal
 'C'    : 'atC'    ,
 'CA'   : 'atCA'   ,
+'CAY'  : 'atCAY'  ,    # ACEMD (ACE Terminal)
 'CB'   : 'atCB'   ,
 'CD'   : 'atCD'   ,
 'CD1'  : 'atCD'   ,
@@ -106,6 +110,7 @@ atom={
 'CG2'  : 'atCG2'  ,
 'CH2'  : 'atCH2'  ,
 'CH3'  : 'atCH3'  ,
+'CY'   : 'atCY'    ,    # ACEMD (ACE Terminal)
 'CZ'   : 'atCZ'   ,
 'CZ2'  : 'atCZ2'  ,
 'CZ3'  : 'atCZ3'  ,
@@ -117,6 +122,7 @@ atom={
 'NE2'  : 'atNE2'  ,
 'NH1'  : 'atNH1'  ,
 'NH2'  : 'atNH2'  ,
+'NT'   : 'atNT'    ,    # ACEMD (Terminal NH2)
 'NZ'   : 'atNZ'   ,
 'O'    : 'atO'    ,
 'OD1'  : 'atOD1'  ,
@@ -126,6 +132,7 @@ atom={
 'OG'   : 'atOG'   ,
 'OG1'  : 'atOG1'  ,
 'OH'   : 'atOH'   ,
+'OY'   : 'atOY'    ,   # ACEMD (ACE Terminal)
 'O1'   : 'atOT1'  ,    # terminal .pdb
 'O2'   : 'atOT2'  ,    # terminal .pdb
 'OT1'  : 'atOT1'  ,    # terminal charmm.pdb
@@ -144,15 +151,17 @@ atom={
 'MW'   : 'atvir'  ,
 'LP1'  : 'atvir'  ,
 'LP2'  : 'atvir'  ,
-'H1'   : 'atHW1'  ,
-'H2'   : 'atHW2'  ,
+'H1'   : 'atHW1'  ,   # This can be a problem. To be watched. 
+'H2'   : 'atHW2'  ,   # This can be a problem. To be watched. 
 'OM'   : 'atvir'  ,
 'DOH2' : 'atvir'  ,
 
 ## Ions
 'NA'    :  'itNA' ,
+'SOD'   :  'itNA' ,   # ACEMD
 'K'     :  'itK'  ,
 'CL'    :  'itCL' ,
+'CLA'   :  'itCL'     # ACEMD
 }
 
 
@@ -200,13 +209,20 @@ atom_type={
 'atHH22': 'H'   , 
 'atHH31': 'H'   , 
 'atHH32': 'H'   , 
-'atHH33': 'H'   , 
+'atHH33': 'H'   ,
+'atHT1' : 'H'   , 
+'atHT2' : 'H'   , 
+'atHT3' : 'H'   ,
+'atHY1' : 'H'   , 
+'atHY2' : 'H'   , 
+'atHY3' : 'H'   ,
 'atHZ'  : 'H'   , 
 'atHZ1' : 'H'   , 
 'atHZ2' : 'H'   , 
 'atHZ3' : 'H'   , 
 'atC'   : 'C'   , 
-'atCA'  : 'C'   , 
+'atCA'  : 'C'   ,
+'atCAY' : 'C'   ,
 'atCB'  : 'C'   , 
 'atCD'  : 'C'   , 
 'atCD2' : 'C'   , 
@@ -218,7 +234,8 @@ atom_type={
 'atCG1' : 'C'   , 
 'atCG2' : 'C'   , 
 'atCH2' : 'C'   , 
-'atCH3' : 'C'   , 
+'atCH3' : 'C'   ,
+'atCY'  : 'C'   ,
 'atCZ'  : 'C'   , 
 'atCZ2' : 'C'   , 
 'atCZ3' : 'C'   , 
@@ -229,7 +246,8 @@ atom_type={
 'atNE1' : 'N'   , 
 'atNE2' : 'N'   , 
 'atNH1' : 'N'   , 
-'atNH2' : 'N'   , 
+'atNH2' : 'N'   ,
+'atNT'  : 'N'   ,
 'atNZ'  : 'N'   , 
 'atO'   : 'O'   , 
 'atO1'  : 'O'   , 
@@ -244,7 +262,8 @@ atom_type={
 'atOT1' : 'O'   , 
 'atOT2' : 'O'   , 
 'atOTX' : 'O'   , 
-'atOXT' : 'O'   , 
+'atOXT' : 'O'   ,
+'atOY'  : 'O'   ,
 'atSD'  : 'S'   , 
 'atSG'  : 'S'   , 
 
