@@ -3,6 +3,8 @@ Pyno_Back
 
 Real devel version of Pynoramix.
 
+Further information in: http://dprada.github.com/Pynoramix/
+
 -------------------------------------------
 
 Instructions to compile the fortran subroutines:
@@ -39,9 +41,3 @@ Provisional Structure:
    >> pyn_fort_net      (specific fortran subroutines for network analysis) 
 
 ---------------------------------------------
-The file pynoramix.py can be exported in an enviroment variable called PYTHONPATH
-The part:
-import sys
-sys.path.append('/home/diego/Projects/Git_Pynoramix/backdoor_Water2/')
-... must be included.
-
