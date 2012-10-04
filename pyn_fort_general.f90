@@ -65,7 +65,7 @@ IF (diff_system) THEN
          vect_aux=coors1(ai,:)
          do j=1,n2
             aj=llist2(j)
-            vect=(vect_aux-coors2(aj,:))
+            vect=(coors2(aj,:)-vect_aux)
             CALL PBC (vect,box1,ortho1)
             val_aux=sqrt(dot_product(vect,vect))
             matrix(i,j)=val_aux
@@ -77,7 +77,7 @@ IF (diff_system) THEN
          vect_aux=coors1(ai,:)
          do j=1,n2
             aj=llist2(j)
-            vect=(vect_aux-coors2(aj,:))
+            vect=(coors2(aj,:)-vect_aux)
             val_aux=sqrt(dot_product(vect,vect))
             matrix(i,j)=val_aux
          end do
@@ -91,7 +91,7 @@ ELSE
          do j=1,n2
             aj=llist2(j)
             if (aj>ai) then
-               vect=(vect_aux-coors1(aj,:))
+               vect=(coors1(aj,:)-vect_aux)
                CALL PBC (vect,box1,ortho1)
                val_aux=sqrt(dot_product(vect,vect))
                matrix(i,j)=val_aux
@@ -106,7 +106,7 @@ ELSE
          do j=1,n2
             aj=llist2(j)
             if (aj>ai) then
-               vect=(vect_aux-coors1(aj,:))
+               vect=(coors1(aj,:)-vect_aux)
                val_aux=sqrt(dot_product(vect,vect))
                matrix(i,j)=val_aux
                matrix(j,i)=val_aux
@@ -120,6 +120,73 @@ DEALLOCATE(vect,vect_aux)
 DEALLOCATE(llist1,llist2)
 
 END SUBROUTINE DISTANCE
+
+
+SUBROUTINE DISTANCE_IMAGES (diff_system,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,min_dists,ind_atoms_min,min_image)
+
+IMPLICIT NONE
+
+INTEGER,INTENT(IN)::diff_system,ortho1
+integer,intent(in)::n1,n2,natom1,natom2
+INTEGER,DIMENSION(n1),INTENT(IN)::list1
+INTEGER,DIMENSION(n2),INTENT(IN)::list2
+double precision,dimension(natom1,3),intent(in)::coors1
+double precision,DIMENSION(3,3),INTENT(IN)::box1
+double precision,dimension(natom2,3),intent(in)::coors2
+double precision,dimension(n1),intent(out)::min_dists
+integer,dimension(n1),intent(out):: ind_atoms_min
+integer,dimension(n1,3),intent(out):: min_image
+
+integer::ii,jj,ai,aj,im1,im2,im3,ind_aux_min,imin1,imin2,imin3
+double precision,dimension(:),allocatable::vect,vect_aux,vect_aux2
+integer,dimension(:),allocatable::llist1,llist2
+double precision::val_aux,val_aux_min,val_ref_min
+
+val_ref_min=10000.0d0
+DO ii=1,3
+   val_aux=dot_product(box1(ii,:),box1(ii,:))
+   IF (val_ref_min>val_aux) THEN
+      val_ref_min=val_aux
+   END IF
+END DO
+
+
+ALLOCATE(vect(3),vect_aux(3),vect_aux2(3))
+ALLOCATE(llist1(n1),llist2(n2))
+llist1=list1+1
+llist2=list2+1
+
+DO ii=1,n1
+   ai=llist1(ii)
+   vect_aux=coors1(ai,:)
+   val_aux_min=val_ref_min
+   DO jj=1,n2
+      aj=llist2(jj)
+      vect_aux2=coors2(aj,:)-vect_aux
+      DO im1=-1,1
+         DO im2=-1,1
+            DO im3=-1,1
+               IF ((im1/=0).or.(im2/=0).or.(im3/=0)) THEN
+                  vect=vect_aux2+im1*box1(1,:)+im2*box1(2,:)+im3*box1(3,:)
+                  val_aux=dot_product(vect,vect)
+                  IF (val_aux<val_aux_min) THEN
+                     val_aux_min=val_aux
+                     imin1=im1
+                     imin2=im2
+                     imin3=im3
+                     ind_aux_min=jj
+                  END IF
+               END IF
+            END DO
+         END DO
+      END DO
+   END DO
+   min_dists(ii)=sqrt(val_aux_min)
+   ind_atoms_min(ii)=list2(ind_aux_min)
+   min_image(ii,:)=(/imin1,imin2,imin3/)
+END DO
+
+END SUBROUTINE DISTANCE_IMAGES
 
 
 SUBROUTINE neighbs_ranking (diff_system,pbc_opt,limit,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,neighb_list) !before: neighb_dist,neighb_uvect

@@ -730,10 +730,51 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             num_frames+=1
 
         if num_frames==1:
-            return dists[:,:][0]
+            return dists[:,:,0]
         else:
             return dists
-            
+
+    def distance_image_pbc(self,setA='ALL',setB=None,traj=0,frame='ALL'):
+
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system=__read_sets_opt__(self,setA,None,setB)
+        num_frames=__length_frame_opt__(self,traj,frame)
+        min_dists=empty(shape=(nlist_A,num_frames),dtype=float,order='Fortran')
+        ind_atoms_min=empty(shape=(nlist_A,num_frames),dtype=int,order='Fortran')
+        min_image=empty(shape=(nlist_A,3,num_frames),dtype=int,order='Fortran')
+
+        num_frames=0
+        for iframe in __read_frame_opt__(self,traj,frame):
+            min_dists[:,num_frames],ind_atoms_min[:,num_frames],min_image[:,:,num_frames]=faux.glob.distance_images(diff_system,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+            num_frames+=1
+
+        if num_frames==1:
+            return min_dists[:,0],ind_atoms_min[:,0],min_image[:,:,0]
+        else:
+            return min_dists, ind_atoms_min,min_image
+
+
+#def min_distance(system,set_a,set_b=None,pbc=True,type_b='atoms'):
+# 
+#    if set_b==None:
+# 
+#        ind_a1,ind_a2,min_dist = f.aux_funcs_general.min_dist_atoms(pbc,True,system.frame[0].coors,system.frame[0].box,set_a,set_a,system.num_atoms,len(set_a),len(set_a))
+# 
+#    else:
+#        if type_b=='atoms':
+#            ind_a1,ind_a2,min_dist = f.aux_funcs_general.min_dist_atoms(pbc,False,system.frame[0].coors,system.frame[0].box,set_a,set_b,system.num_atoms,len(set_a),len(set_b))
+#        elif type_b=='vectors':
+#            l_vects=shape(set_b)
+#            if len(l_vects)==1:
+#                set_b=[set_b]
+#                l_vects=shape(set_b)
+#            array(set_b,order='Fortran')
+#            ind_a1,ind_a2,min_dist = f.aux_funcs_general.min_dist_atoms_ref(pbc,system.frame[0].coors,system.frame[0].box,set_a,set_b,system.num_atoms,len(set_a),l_vects[0])
+#    
+#    return ind_a1,ind_a2,min_dist
+# 
+# 
+
+
     def rdf(self,setA=None,setB=None,traj=0,frame='ALL',pbc=True,bins=100,segment=None):
 
         setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system=__read_sets_opt__(self,setA,None,setB)
