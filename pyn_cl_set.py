@@ -752,6 +752,39 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         else:
             return min_dists, ind_atoms_min,min_image
 
+    def radius_gyration(self,setA='ALL',traj=0,frame='ALL'):
+
+        setA,nlist_A,nsys_A=__read_set_opt__(self,setA)
+        num_frames=__length_frame_opt__(self,traj,frame)
+        rgs=empty(shape=(num_frames),dtype=float,order='Fortran')
+
+        num_frames=0
+        for iframe in __read_frame_opt__(self,traj,frame):
+            rgs[num_frames]=faux.glob.radius_gyration(setA,iframe.coors,iframe.box,iframe.orthogonal,nlist_A,nsys_A)
+            num_frames+=1
+
+        if num_frames==1:
+            return rgs[0]
+        else:
+            return rgs
+
+
+    def principal_inertia_axis(self,setA='ALL',traj=0,frame='ALL'):
+
+        setA,nlist_A,nsys_A=__read_set_opt__(self,setA)
+        num_frames=__length_frame_opt__(self,traj,frame)
+        piaxis=empty(shape=(3,3,num_frames),dtype=float,order='Fortran')
+
+        num_frames=0
+        for iframe in __read_frame_opt__(self,traj,frame):
+            piaxis[:,:,num_frames]=faux.glob.principal_inertia_axis(setA,iframe.coors,iframe.box,iframe.orthogonal,nlist_A,nsys_A)
+            num_frames+=1
+
+        if num_frames==1:
+            return piaxis[:,:,0]
+        else:
+            return piaxis
+
 
 #def min_distance(system,set_a,set_b=None,pbc=True,type_b='atoms'):
 # 
@@ -1017,6 +1050,30 @@ def __read_sets_opt__(systA=None,setA=None,systB=None,setB=None):
     else:
         print 'Different systems: Not implemented yet'
         pass
+          
+def __read_set_opt__(systA=None,setA=None):
+
+    if setA==None:
+        print '# SetA needed.'
+        pass
+
+    nsys_a=systA.num_atoms
+
+    if setA in ['ALL','All','all']:
+        setA=[ii for ii in range(systA.num_atoms)]
+        nlist_a=systA.num_atoms
+    elif type(setA) in [int32,int]:
+        setA=[setA]
+        nlist_a=1
+    elif type(setA) in [list,tuple]:
+        nlist_a=len(setA)
+    else:
+        setA=systA.selection(setA)
+        nlist_a=len(setA)
+
+    return setA,nlist_a,nsys_a
+
+
           
 
 

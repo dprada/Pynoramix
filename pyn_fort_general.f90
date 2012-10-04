@@ -189,6 +189,98 @@ END DO
 END SUBROUTINE DISTANCE_IMAGES
 
 
+SUBROUTINE RADIUS_GYRATION (list1,coors1,box1,ortho1,n1,natom1,val_Rg)
+
+IMPLICIT NONE
+
+INTEGER,INTENT(IN)::ortho1
+integer,intent(in)::n1,natom1
+INTEGER,DIMENSION(n1),INTENT(IN)::list1
+double precision,dimension(natom1,3),intent(in)::coors1
+double precision,DIMENSION(3,3),INTENT(IN)::box1
+double precision,INTENT(OUT)::val_Rg
+
+integer::ii,ai
+double precision,dimension(:),allocatable:: cdm,vect_aux
+integer,dimension(:),allocatable::llist1
+
+ALLOCATE(llist1(n1),cmd(3),vect_aux(3))
+llist1=list1+1
+
+val_Rg=0.0d0
+cmd=0.0d0
+
+DO ii=1,n1
+   ai=llist1(ii)
+   cdm=cdm+coors1(ai,:)
+END DO
+cdm=cdm/(n1*1.0d0)
+
+DO ii=1,n1
+   ai=llist1(ii)
+   vect_aux=(coors1(ai,:)-cdm)
+   val_Rg=val_Rg+dot_product(vect_aux,vect_aux)
+END DO
+
+DEALLOCATE(llist1,cmd,vect_aux)
+val_Rg=sqrt(val_Rg/(1.0d0*n1))
+
+END SUBROUTINE RADIUS_GYRATION
+
+
+SUBROUTINE PRINCIPAL_INERTIA_AXIS (list1,coors1,box1,ortho1,n1,natom1,axis)
+
+IMPLICIT NONE
+
+INTEGER,INTENT(IN)::ortho1
+integer,intent(in)::n1,natom1
+INTEGER,DIMENSION(n1),INTENT(IN)::list1
+double precision,dimension(natom1,3),intent(in)::coors1
+double precision,DIMENSION(3,3),INTENT(IN)::box1
+double precision,DIMENSION(3,3),INTENT(OUT)::axis
+
+
+integer::ii,ai
+double precision:: dd
+double precision,dimension(:),allocatable:: cdm,vect_aux
+double precision,dimension(:,:),allocatable:: matrix
+integer,dimension(:),allocatable::llist1
+
+
+ALLOCATE(llist1(n1),cmd(3),vect_aux(3),matrix(3,3))
+llist1=list1+1
+
+cmd=0.0d0
+matrix=0.0d0
+
+DO ii=1,n1
+   ai=llist1(ii)
+   cdm=cdm+coors1(ai,:)
+END DO
+cdm=cdm/(n1*1.0d0)
+
+DO ii=1,n1
+   ai=llist1(ii)
+   vect_aux=(coors1(ai,:)-cdm)
+   dd=dot_product(vect_aux,vect_aux)
+   matrix(1,1)=matrix(1,1)+dd-vect_aux(1)**2
+   matrix(2,2)=matrix(2,2)+dd-vect_aux(2)**2
+   matrix(3,3)=matrix(3,3)+dd-vect_aux(3)**2
+   matrix(1,2)=matrix(1,2)-vect_aux(1)*vect_aux(2)
+   matrix(1,3)=matrix(1,3)-vect_aux(1)*vect_aux(3)
+   matrix(2,1)=matrix(2,1)-vect_aux(2)*vect_aux(1)
+END DO
+
+
+
+DEALLOCATE(llist1)
+val_Rg=sqrt(val_Rg/(1.0d0*n1))
+
+END SUBROUTINE PRINCIPAL_INERTIA_AXIS
+
+
+
+
 SUBROUTINE neighbs_ranking (diff_system,pbc_opt,limit,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,neighb_list) !before: neighb_dist,neighb_uvect
 
   IMPLICIT NONE
