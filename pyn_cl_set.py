@@ -881,9 +881,8 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             num_don_A=acc_don_A[1].shape[1]
         except:
             try:
-                if len(acc_don_A[1])==2:
-                    acc_don_A[0]=array(acc_don_A[0],order='Fortran')
-                    acc_don_A[1]=array(acc_don_A[1],order='Fortran')
+                acc_don_A[0]=array(acc_don_A[0],order='Fortran')
+                acc_don_A[1]=array(acc_don_A[1],order='Fortran')
             except:
                 acc_don_A=self.hbonds_selection(setA=acc_don_A)
                 num_acc_A=acc_don_A[0].shape[0]
@@ -897,20 +896,21 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             num_don_B=acc_don_B[1].shape[1]
         except:
             try:
-                if len(acc_don_B[1])==2:
-                    acc_don_B[0]=array(acc_don_B[0],order='Fortran')
-                    acc_don_B[1]=array(acc_don_B[1],order='Fortran')
+                acc_don_B[0]=array(acc_don_B[0],order='Fortran')
+                acc_don_B[1]=array(acc_don_B[1],order='Fortran')
             except:
                 acc_don_B=self.hbonds_selection(setA=acc_don_B)
                 num_acc_B=acc_don_B[0].shape[0]
                 num_don_B=acc_don_B[1].shape[1]
 
-        #num_frames=__length_frame_opt__(self,traj,frame)
-        #for iframe in __read_frame_opt__(self,traj,frame):
-        #    pass
+        num_frames=__length_frame_opt__(self,traj,frame)
+        for iframe in __read_frame_opt__(self,traj,frame):
+            
+            faux.hbonds.get_hbonds(pbc,acc_don_A[0],acc_don_A[1],iframe.coors,iframe.box,iframe.orthogonal,\
+                                       acc_don_B[0],acc_don_B[1],iframe.coors,num_acc_A,num_don_A,num_acc_B,num_don_B)
 
-        print num_acc_A,num_don_A,num_acc_B,num_don_B
-        pass
+            pass
+
 
     #def contact_map (self,setA=None,setB=None,dist=None,traj=0,frame=0,pbc=True):
     # 
