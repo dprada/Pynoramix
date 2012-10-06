@@ -688,7 +688,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         list_condition=selection(self,condition,traj,frame,pbc)
         return list_condition
 
-    def selection_acceptors_donors(self,setA='ALL'):
+    def selection_hbonds(self,setA='ALL'):
      
         setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system=__read_sets_opt__(self,setA,None,None)
 
@@ -901,7 +901,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 acc_don_A[0]=array(acc_don_A[0],order='Fortran')
                 acc_don_A[1]=array(acc_don_A[1],order='Fortran')
             except:
-                acc_don_A=self.selection_acceptors_donors(setA=acc_don_A)
+                acc_don_A=self.selection_hbonds(setA=acc_don_A)
                 num_acc_A=acc_don_A[0].shape[0]
                 num_don_A=acc_don_A[1].shape[1]
 
@@ -916,7 +916,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 acc_don_B[0]=array(acc_don_B[0],order='Fortran')
                 acc_don_B[1]=array(acc_don_B[1],order='Fortran')
             except:
-                acc_don_B=self.selection_acceptors_donors(setA=acc_don_B)
+                acc_don_B=self.selection_hbonds(setA=acc_don_B)
                 num_acc_B=acc_don_B[0].shape[0]
                 num_don_B=acc_don_B[1].shape[1]
 

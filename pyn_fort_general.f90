@@ -1062,8 +1062,7 @@ SUBROUTINE FREE_MEMORY ()
 END SUBROUTINE FREE_MEMORY
 
 
-
-SUBROUTINE GET_HBONDS (hbtype,effic,pbc_opt,acc_A,don_A,coors1,box1,ortho1,acc_B,don_B,coors2,num_acc_A,num_don_A,num_acc_B,num_don_B)
+SUBROUTINE GET_HBONDS (hbtype,effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,coors1,box1,ortho1,acc_B,don_B,coors2,num_acc_A,num_don_A,num_acc_B,num_don_B)
 
   TYPE iarray_pointer
      INTEGER,DIMENSION(:),POINTER::p1
@@ -1072,43 +1071,153 @@ SUBROUTINE GET_HBONDS (hbtype,effic,pbc_opt,acc_A,don_A,coors1,box1,ortho1,acc_B
      DOUBLE PRECISION,DIMENSION(:),POINTER::d1
   END TYPE darray_pointer
 
-  INTEGER,INTENT(IN)::pbc_opt,hbtype
+  INTEGER,INTENT(IN)::hbtype,effic,diff_syst,diff_set
   INTEGER,INTENT(IN)::num_acc_A,num_don_A,num_acc_B,num_don_B
   INTEGER,DIMENSION(num_acc_A),INTENT(IN)::acc_A
   INTEGER,DIMENSION(num_acc_B),INTENT(IN)::acc_B
   INTEGER,DIMENSION(num_don_A,2),INTENT(IN)::don_A
   INTEGER,DIMENSION(num_don_B,2),INTENT(IN)::don_B
+
   TYPE(iarray_pointer),DIMENSION(:),POINTER::hbs_a_ind,hbs_b_ind 
   TYPE(darray_pointer),DIMENSION(:),POINTER::hbs_a_val,hbs_b_val 
+  INTEGER,DIMENSION(:),ALLOCATABLE::aux_box_ind,num_hbs_a,num_hbs_a
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::aux_vox_vel
 
   INTEGER::ii,jj,gg,bound
   INTEGER::don_o,don_h,acc
+  INTEGER::lim_hbs
 
   DOUBLE PRECISION,DIMENSION(3)::vect_don_oh,pos_don_o
 
+  lim_hbs=8
+  ALLOCATE(aux_box_ind(lim_hbs),aux_box_vel(lim_hbs))
+
   ALLOCATE(hbs_a_ind(num_don_A),hbs_a_val(num_don_A))
   ALLOCATE(hbs_b_ind(num_don_B),hbs_b_val(num_don_B))
+  ALLOCATE(num_hbs_a(num_don_A),num_hbs_b(num_don_B))
 
-  DO ii=1,num_don_A
+  IF (diff_syst==0) THEN
 
-     don_o=don_A(ii,1)+1
-     don_h=don_A(ii,2)+1
-     pos_don_o=coors1(don_o,:)
-     vect_don_oh=pos_don_o-coors1(don_h,:)
-     dist_don_oh=sqrt(dot_product(vect_doha,vect_doha))
-     vect_don_oh=vect_don_oh/dist_don_on
+     IF (effic==0) THEN
+        IF (diff_set==0) THEN
+           ALLOCATE(inds_supp_don_A(num_don_A),inds_supp_acc_A(num_acc_A))
+           inds_supp_don_A=0
+           inds_supp_acc_A=0
+           gg=0
+           DO 
 
-     gg=0
-
-     DO jj=1,num_acc_B
-        acc=acc_B(jj)+1
-        vect_don_o_acc=coors2(acc,:)-pos_don_o
-        CALL CHECK_HBOND (hbtype,vect_don_o_acc,vect_don_oh,dist_don_oh,val_out,bound)
-        IF (bound) THEN
-           IF (gg==0) THEN
-              ALLOCATE(hbs_a_ind(ii)%p1(1),hbs_a_val(ii)%d1(1))
-              hbs_a_ind(ii)%p1
+     END IF
+     
+     DO ii=1,num_don_A
+        
+        don_o=don_A(ii,1)+1
+        don_h=don_A(ii,2)+1
+        pos_don_o=coors1(don_o,:)
+        vect_don_oh=pos_don_o-coors1(don_h,:)
+        dist_don_oh=sqrt(dot_product(vect_doh,vect_doh))
+        vect_don_oh=vect_don_oh/dist_don_oh
+        
+        gg=0
+        
+        DO jj=1,num_acc_B
+           acc=acc_B(jj)+1
+           vect_don_o_acc=coors2(acc,:)-pos_don_o
+           IF (pbc_opt) CALL PBC(vect_don_o_acc,box1,ortho1)
+           CALL CHECK_HBOND (hbtype,vect_don_o_acc,vect_don_oh,dist_don_oh,val_out,bound)
+           IF (bound) THEN
+              gg=gg+1
+              IF (gg>lim_hbs) THEN
+                 ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))
+                 aux2_box_ind=aux_box_ind
+                 aux2_box_val=aux_box_val
+                 DEALLOCATE(aux_box_ind,aux_box_val)
+                 ALLOCATE(aux_box_ind(lim_hbs+1),aux_box_val(lim_hbs+1))
+                 aux_box_ind(1:lim_hbs)=aux2_box_ind
+                 aux_box_val(1:lim_hbs)=aux2_box_val
+                 DEALLOCATE(aux2_box_ind,aux2_box_val)
+                 lim_hbs=lim_hbs+1
+              END IF
+              aux_box_ind(gg)=acc_B(jj)
+              aux_box_val(gg)=val_out
+           END IF
+        END DO
+        
+        IF (gg>0) THEN
+           ALLOCATE(hbs_a_ind(ii)%p1(gg),hbs_a_val(ii)%d1(gg))
+           ALLOCATE(filtro(gg))
+           filtro=.TRUE.
+           DO jj=1,gg
+              ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)
+              filtro(ll)=.FALSE.
+              hbs_a_ind(ii)%p1(jj)=aux_box_ind(ll)
+              hbs_a_val(ii)%p1(jj)=aux_box_val(ll)
+           END DO
+           DEALLOCATE(filtro)
+        END IF
+        
+        num_hbs_a(ii)=gg
+        
+     END DO
+     
+     IF (diff_set) THEN
+        DO ii=1,num_don_B
            
+           don_o=don_B(ii,1)+1
+           don_h=don_B(ii,2)+1
+           pos_don_o=coors2(don_o,:)
+           vect_don_oh=pos_don_o-coors2(don_h,:)
+           dist_don_oh=sqrt(dot_product(vect_doh,vect_doh))
+           vect_don_oh=vect_don_oh/dist_don_oh
+           
+           gg=0
+           
+           DO jj=1,num_acc_A
+              acc=acc_A(jj)+1
+              vect_don_o_acc=coors1(acc,:)-pos_don_o
+              IF (pbc_opt) CALL PBC(vect_don_o_acc,box1,ortho1)
+              CALL CHECK_HBOND (hbtype,vect_don_o_acc,vect_don_oh,dist_don_oh,val_out,bound)
+              IF (bound) THEN
+                 gg=gg+1
+                 IF (gg>lim_hbs) THEN
+                    ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))
+                    aux2_box_ind=aux_box_ind
+                    aux2_box_val=aux_box_val
+                    DEALLOCATE(aux_box_ind,aux_box_val)
+                    ALLOCATE(aux_box_ind(lim_hbs+1),aux_box_val(lim_hbs+1))
+                    aux_box_ind(1:lim_hbs)=aux2_box_ind
+                    aux_box_val(1:lim_hbs)=aux2_box_val
+                    DEALLOCATE(aux2_box_ind,aux2_box_val)
+                    lim_hbs=lim_hbs+1
+                 END IF
+                 aux_box_ind(gg)=acc_A(jj)
+                 aux_box_val(gg)=val_out
+              END IF
+           END DO
+           
+           IF (gg>0) THEN
+              ALLOCATE(hbs_b_ind(ii)%p1(gg),hbs_b_val(ii)%d1(gg))
+              ALLOCATE(filtro(gg))
+              filtro=.TRUE.
+              DO jj=1,gg
+                 ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)
+                 filtro(ll)=.FALSE.
+                 hbs_b_ind(ii)%p1(jj)=aux_box_ind(ll)
+                 hbs_b_val(ii)%p1(jj)=aux_box_val(ll)
+              END DO
+              DEALLOCATE(filtro)
+           END IF
+           
+           num_hbs_b(ii)=gg
+           
+        END DO
+     END IF
+  ELSE
+     PRINT*,'NOT IMPLEMENTED YET'
+  END IF
+
+END SUBROUTINE GET_HBONDS
+
+
 
 
 
