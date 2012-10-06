@@ -688,7 +688,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         list_condition=selection(self,condition,traj,frame,pbc)
         return list_condition
 
-    def hbonds_selection(self,setA='ALL'):
+    def selection_acceptors_donors(self,setA='ALL'):
      
         setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system=__read_sets_opt__(self,setA,None,None)
 
@@ -704,7 +704,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             if self.atom[ii].acceptor:
                 accepts_A.append(ii)
 
-        return [array(accepts_A,order='Fortran'), array(donors_A,order='Fortran')]
+        return [array(accepts_A,order='Fortran'),array(donors_A,order='Fortran')]
 
 ###############################################################
 ###############################################################
@@ -784,6 +784,22 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             return piaxis[:,:,0]
         else:
             return piaxis
+
+    def principal_geometric_axis(self,setA='ALL',traj=0,frame='ALL'):
+
+        setA,nlist_A,nsys_A=__read_set_opt__(self,setA)
+        num_frames=__length_frame_opt__(self,traj,frame)
+        pgaxis=empty(shape=(3,3,num_frames),dtype=float,order='Fortran')
+
+        num_frames=0
+        for iframe in __read_frame_opt__(self,traj,frame):
+            pgaxis[:,:,num_frames]=faux.glob.principal_geometric_axis(setA,iframe.coors,iframe.box,iframe.orthogonal,nlist_A,nsys_A)
+            num_frames+=1
+
+        if num_frames==1:
+            return pgaxis[:,:,0]
+        else:
+            return pgaxis
 
 
 #def min_distance(system,set_a,set_b=None,pbc=True,type_b='atoms'):
@@ -865,6 +881,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
     def hbonds (self,definition=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,verbose=False):
 
+        print definition, acc_don_A, acc_don_B
 
         faux.hbonds.definition=hbonds_type(definition,verbose=False)
         if faux.hbonds.definition == 0 : return
@@ -881,11 +898,10 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             num_don_A=acc_don_A[1].shape[1]
         except:
             try:
-                if len(acc_don_A[1])==2:
-                    acc_don_A[0]=array(acc_don_A[0],order='Fortran')
-                    acc_don_A[1]=array(acc_don_A[1],order='Fortran')
+                acc_don_A[0]=array(acc_don_A[0],order='Fortran')
+                acc_don_A[1]=array(acc_don_A[1],order='Fortran')
             except:
-                acc_don_A=self.hbonds_selection(setA=acc_don_A)
+                acc_don_A=self.selection_acceptors_donors(setA=acc_don_A)
                 num_acc_A=acc_don_A[0].shape[0]
                 num_don_A=acc_don_A[1].shape[1]
 
@@ -897,11 +913,10 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             num_don_B=acc_don_B[1].shape[1]
         except:
             try:
-                if len(acc_don_B[1])==2:
-                    acc_don_B[0]=array(acc_don_B[0],order='Fortran')
-                    acc_don_B[1]=array(acc_don_B[1],order='Fortran')
+                acc_don_B[0]=array(acc_don_B[0],order='Fortran')
+                acc_don_B[1]=array(acc_don_B[1],order='Fortran')
             except:
-                acc_don_B=self.hbonds_selection(setA=acc_don_B)
+                acc_don_B=self.selection_acceptors_donors(setA=acc_don_B)
                 num_acc_B=acc_don_B[0].shape[0]
                 num_don_B=acc_don_B[1].shape[1]
 

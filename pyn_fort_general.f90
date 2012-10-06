@@ -204,11 +204,11 @@ integer::ii,ai
 double precision,dimension(:),allocatable:: cdm,vect_aux
 integer,dimension(:),allocatable::llist1
 
-ALLOCATE(llist1(n1),cmd(3),vect_aux(3))
+ALLOCATE(llist1(n1),cdm(3),vect_aux(3))
 llist1=list1+1
 
 val_Rg=0.0d0
-cmd=0.0d0
+cdm=0.0d0
 
 DO ii=1,n1
    ai=llist1(ii)
@@ -222,7 +222,7 @@ DO ii=1,n1
    val_Rg=val_Rg+dot_product(vect_aux,vect_aux)
 END DO
 
-DEALLOCATE(llist1,cmd,vect_aux)
+DEALLOCATE(llist1,cdm,vect_aux)
 val_Rg=sqrt(val_Rg/(1.0d0*n1))
 
 END SUBROUTINE RADIUS_GYRATION
@@ -242,15 +242,19 @@ double precision,DIMENSION(3,3),INTENT(OUT)::axis
 
 integer::ii,ai
 double precision:: dd
-double precision,dimension(:),allocatable:: cdm,vect_aux
+double precision,dimension(:),allocatable:: cdm,vect_aux,values
 double precision,dimension(:,:),allocatable:: matrix
 integer,dimension(:),allocatable::llist1
+integer::num_val,info
+INTEGER, DIMENSION(:), ALLOCATABLE::iwork,ifail
+DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE::work
 
+ALLOCATE(work(8*3),iwork(5*3),ifail(3))
+ALLOCATE(llist1(n1),cdm(3),vect_aux(3),matrix(3,3),values(3))
 
-ALLOCATE(llist1(n1),cmd(3),vect_aux(3),matrix(3,3))
 llist1=list1+1
 
-cmd=0.0d0
+cdm=0.0d0
 matrix=0.0d0
 
 DO ii=1,n1
@@ -268,16 +272,102 @@ DO ii=1,n1
    matrix(3,3)=matrix(3,3)+dd-vect_aux(3)**2
    matrix(1,2)=matrix(1,2)-vect_aux(1)*vect_aux(2)
    matrix(1,3)=matrix(1,3)-vect_aux(1)*vect_aux(3)
-   matrix(2,1)=matrix(2,1)-vect_aux(2)*vect_aux(1)
+   matrix(2,3)=matrix(2,3)-vect_aux(2)*vect_aux(3)
 END DO
+matrix(2,1)=matrix(1,2)
+matrix(3,1)=matrix(1,3)
+matrix(3,2)=matrix(2,3)
 
-
+matrix=matrix/(n1*1.0d0)
 
 DEALLOCATE(llist1)
-val_Rg=sqrt(val_Rg/(1.0d0*n1))
+
+values=0.0d0
+
+CALL dsyevx ('V','I','U',3,matrix,3,0,0,1,3,0.0d0,num_val&
+       &,values,axis,3,work,8*3,iwork,ifail,info)
+
+IF (info/=0) THEN
+   print*,"Error with the diagonalization."
+   print*,"The array 'work' should has the dimension:",work(1)
+END IF
+
+DEALLOCATE(work,iwork,ifail)
+DEALLOCATE(cdm,vect_aux,matrix,values)
+
 
 END SUBROUTINE PRINCIPAL_INERTIA_AXIS
 
+
+SUBROUTINE PRINCIPAL_GEOMETRIC_AXIS (list1,coors1,box1,ortho1,n1,natom1,axis)
+
+IMPLICIT NONE
+
+INTEGER,INTENT(IN)::ortho1
+integer,intent(in)::n1,natom1
+INTEGER,DIMENSION(n1),INTENT(IN)::list1
+double precision,dimension(natom1,3),intent(in)::coors1
+double precision,DIMENSION(3,3),INTENT(IN)::box1
+double precision,DIMENSION(3,3),INTENT(OUT)::axis
+
+
+integer::ii,ai
+double precision:: dd
+double precision,dimension(:),allocatable:: cdm,vect_aux,values
+double precision,dimension(:,:),allocatable:: matrix
+integer,dimension(:),allocatable::llist1
+integer::num_val,info
+INTEGER, DIMENSION(:), ALLOCATABLE::iwork,ifail
+DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE::work
+
+ALLOCATE(work(8*3),iwork(5*3),ifail(3))
+ALLOCATE(llist1(n1),cdm(3),vect_aux(3),matrix(3,3),values(3))
+
+llist1=list1+1
+
+cdm=0.0d0
+matrix=0.0d0
+
+DO ii=1,n1
+   ai=llist1(ii)
+   cdm=cdm+coors1(ai,:)
+END DO
+cdm=cdm/(n1*1.0d0)
+
+DO ii=1,n1
+   ai=llist1(ii)
+   vect_aux=(coors1(ai,:)-cdm)
+   dd=dot_product(vect_aux,vect_aux)
+   matrix(1,1)=matrix(1,1)+vect_aux(1)**2
+   matrix(2,2)=matrix(2,2)+vect_aux(2)**2
+   matrix(3,3)=matrix(3,3)+vect_aux(3)**2
+   matrix(1,2)=matrix(1,2)+vect_aux(1)*vect_aux(2)
+   matrix(1,3)=matrix(1,3)+vect_aux(1)*vect_aux(3)
+   matrix(2,3)=matrix(2,3)+vect_aux(2)*vect_aux(3)
+END DO
+matrix(2,1)=matrix(1,2)
+matrix(3,1)=matrix(1,3)
+matrix(3,2)=matrix(2,3)
+
+matrix=matrix/(n1*1.0d0)
+
+DEALLOCATE(llist1)
+
+values=0.0d0
+
+CALL dsyevx ('V','I','U',3,matrix,3,0,0,1,3,0.0d0,num_val&
+       &,values,axis,3,work,8*3,iwork,ifail,info)
+
+IF (info/=0) THEN
+   print*,"Error with the diagonalization."
+   print*,"The array 'work' should has the dimension:",work(1)
+END IF
+
+DEALLOCATE(work,iwork,ifail)
+DEALLOCATE(cdm,vect_aux,matrix,values)
+
+
+END SUBROUTINE PRINCIPAL_GEOMETRIC_AXIS
 
 
 
