@@ -2,6 +2,7 @@ MODULE GLOB
 
 CONTAINS
 
+
 SUBROUTINE PBC(vector,box,ortho)
  
   IMPLICIT NONE
@@ -277,6 +278,7 @@ END DO
 matrix(2,1)=matrix(1,2)
 matrix(3,1)=matrix(1,3)
 matrix(3,2)=matrix(2,3)
+
 
 matrix=matrix/(n1*1.0d0)
 
@@ -1058,6 +1060,55 @@ SUBROUTINE FREE_MEMORY ()
   IF (ALLOCATED(hbonds_out)) DEALLOCATE(hbonds_out)
 
 END SUBROUTINE FREE_MEMORY
+
+
+
+SUBROUTINE GET_HBONDS (hbtype,effic,pbc_opt,acc_A,don_A,coors1,box1,ortho1,acc_B,don_B,coors2,num_acc_A,num_don_A,num_acc_B,num_don_B)
+
+  TYPE iarray_pointer
+     INTEGER,DIMENSION(:),POINTER::p1
+  END TYPE iarray_pointer
+  TYPE darray_pointer
+     DOUBLE PRECISION,DIMENSION(:),POINTER::d1
+  END TYPE darray_pointer
+
+  INTEGER,INTENT(IN)::pbc_opt,hbtype
+  INTEGER,INTENT(IN)::num_acc_A,num_don_A,num_acc_B,num_don_B
+  INTEGER,DIMENSION(num_acc_A),INTENT(IN)::acc_A
+  INTEGER,DIMENSION(num_acc_B),INTENT(IN)::acc_B
+  INTEGER,DIMENSION(num_don_A,2),INTENT(IN)::don_A
+  INTEGER,DIMENSION(num_don_B,2),INTENT(IN)::don_B
+  TYPE(iarray_pointer),DIMENSION(:),POINTER::hbs_a_ind,hbs_b_ind 
+  TYPE(darray_pointer),DIMENSION(:),POINTER::hbs_a_val,hbs_b_val 
+
+  INTEGER::ii,jj,gg,bound
+  INTEGER::don_o,don_h,acc
+
+  DOUBLE PRECISION,DIMENSION(3)::vect_don_oh,pos_don_o
+
+  ALLOCATE(hbs_a_ind(num_don_A),hbs_a_val(num_don_A))
+  ALLOCATE(hbs_b_ind(num_don_B),hbs_b_val(num_don_B))
+
+  DO ii=1,num_don_A
+
+     don_o=don_A(ii,1)+1
+     don_h=don_A(ii,2)+1
+     pos_don_o=coors1(don_o,:)
+     vect_don_oh=pos_don_o-coors1(don_h,:)
+     dist_don_oh=sqrt(dot_product(vect_doha,vect_doha))
+     vect_don_oh=vect_don_oh/dist_don_on
+
+     gg=0
+
+     DO jj=1,num_acc_B
+        acc=acc_B(jj)+1
+        vect_don_o_acc=coors2(acc,:)-pos_don_o
+        CALL CHECK_HBOND (hbtype,vect_don_o_acc,vect_don_oh,dist_don_oh,val_out,bound)
+        IF (bound) THEN
+           IF (gg==0) THEN
+              ALLOCATE(hbs_a_ind(ii)%p1(1),hbs_a_val(ii)%d1(1))
+              hbs_a_ind(ii)%p1
+           
 
 
 
