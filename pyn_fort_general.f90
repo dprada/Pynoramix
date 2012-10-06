@@ -1,5 +1,12 @@
 MODULE GLOB
 
+  TYPE iarray_pointer
+     INTEGER,DIMENSION(:),POINTER::i1
+  END TYPE iarray_pointer
+  TYPE darray_pointer
+     DOUBLE PRECISION,DIMENSION(:),POINTER::d1
+  END TYPE darray_pointer
+
 CONTAINS
 
 
@@ -34,6 +41,61 @@ SUBROUTINE PBC(vector,box,ortho)
   END IF
   
 END SUBROUTINE PBC
+
+SUBROUTINE MAKE_CONTACT_LIST (cut_off,diff_system,pbc_opt,list1,coors1,box1,ortho1,coors2,n1,n2,natom1,natom2)
+
+  DOUBLE PRECISION,INTENT(IN)::cut_off
+  INTEGER,INTENT(IN)::diff_system,pbc_opt,ortho1
+  INTEGER,INTENT(IN)::n1,n2,natom1,natom2
+  INTEGER,DIMENSION(n1),INTENT(IN)::list1
+  INTEGER,DIMENSION(n2),INTENT(IN)::list2
+  double precision,dimension(natom1,3),intent(in)::coors1
+  double precision,DIMENSION(3,3),INTENT(IN)::box1
+  double precision,dimension(natom2,3),intent(in)::coors2
+
+  INTEGER::ii,jj,gg,ll,lim
+  TYPE(iarray_pointer),DIMENSION(:),POINTER::box_ind
+  TYPE(darray_pointer),DIMENSION(:),POINTER::box_val
+  INTEGER,DIMENSION(:),ALLOCATABLE::aux_box_ind,box_num
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::aux_box_val
+  DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::matrix
+  
+  ALLOCATE(matrix(n1,n2))
+
+  CALL DISTANCE(diff_system,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,matrix)
+
+  lim=20
+  ALLOCATE(box_ind(n1),box_val(n1),box_num(n1))
+  box_num=0
+
+  IF (diff_system) THEN
+     DO ii=1,n1
+        gg=0
+        DO jj=1,n2
+           IF (matrix(ii,jj)<=cut_off) THEN
+
+              IF (gg>0) THEN
+                 ALLOCATE(aux_box_ind(gg),aux_box_val(gg))
+                 
+              gg=gg+1
+              
+              IF (gg>lim) THEN
+                 ALLOCATE(aux2_box_ind(lim),aux2_box,val(lim))
+                 aux2_box_ind=aux_box_ind
+                 aux2_box_val=aux_box_val
+                 DEALLOCATE(aux_box_ind,aux_box,val)
+                 ALLOCATE(aux_box_ind(gg),aux_box,val(gg))
+                 aux_box_ind(1:lim)=aux2_box_ind
+                 aux_box_val(1:lim)=aux2_box_val
+                 DEALLOCATE(aux2_box_ind,aux2_box,val)
+              END IF
+              aux_box_ind(gg)=list2(jj)
+              aux_box_val(gg)=matrix(ii,jj)
+           END DO
+        END DO
+        IF (gg>0) THEN
+           
+
 
 SUBROUTINE DISTANCE (diff_system,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,matrix)
 
@@ -1062,10 +1124,10 @@ SUBROUTINE FREE_MEMORY ()
 END SUBROUTINE FREE_MEMORY
 
 
-SUBROUTINE GET_HBONDS (hbtype,effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,coors1,box1,ortho1,acc_B,don_B,coors2,num_acc_A,num_don_A,num_acc_B,num_don_B)
+SUBROUTINE GET_HBONDS (hbtype,effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,coors1,box1,ortho1,acc_B,don_B,coors2,num_acc_A,num_don_A,num_acc_B,num_don_B,natomA,natomB)
 
   TYPE iarray_pointer
-     INTEGER,DIMENSION(:),POINTER::p1
+     INTEGER,DIMENSION(:),POINTER::i1
   END TYPE iarray_pointer
   TYPE darray_pointer
      DOUBLE PRECISION,DIMENSION(:),POINTER::d1
@@ -1080,6 +1142,7 @@ SUBROUTINE GET_HBONDS (hbtype,effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,coors
 
   TYPE(iarray_pointer),DIMENSION(:),POINTER::hbs_a_ind,hbs_b_ind 
   TYPE(darray_pointer),DIMENSION(:),POINTER::hbs_a_val,hbs_b_val 
+
   INTEGER,DIMENSION(:),ALLOCATABLE::aux_box_ind,num_hbs_a,num_hbs_a
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::aux_vox_vel
 
@@ -1090,6 +1153,7 @@ SUBROUTINE GET_HBONDS (hbtype,effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,coors
   DOUBLE PRECISION,DIMENSION(3)::vect_don_oh,pos_don_o
 
   lim_hbs=8
+
   ALLOCATE(aux_box_ind(lim_hbs),aux_box_vel(lim_hbs))
 
   ALLOCATE(hbs_a_ind(num_don_A),hbs_a_val(num_don_A))
@@ -1098,16 +1162,6 @@ SUBROUTINE GET_HBONDS (hbtype,effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,coors
 
   IF (diff_syst==0) THEN
 
-     IF (effic==0) THEN
-        IF (diff_set==0) THEN
-           ALLOCATE(inds_supp_don_A(num_don_A),inds_supp_acc_A(num_acc_A))
-           inds_supp_don_A=0
-           inds_supp_acc_A=0
-           gg=0
-           DO 
-
-     END IF
-     
      DO ii=1,num_don_A
         
         don_o=don_A(ii,1)+1
@@ -1131,11 +1185,11 @@ SUBROUTINE GET_HBONDS (hbtype,effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,coors
                  aux2_box_ind=aux_box_ind
                  aux2_box_val=aux_box_val
                  DEALLOCATE(aux_box_ind,aux_box_val)
-                 ALLOCATE(aux_box_ind(lim_hbs+1),aux_box_val(lim_hbs+1))
+                 ALLOCATE(aux_box_ind(gg),aux_box_val(gg))
                  aux_box_ind(1:lim_hbs)=aux2_box_ind
                  aux_box_val(1:lim_hbs)=aux2_box_val
                  DEALLOCATE(aux2_box_ind,aux2_box_val)
-                 lim_hbs=lim_hbs+1
+                 lim_hbs=gg
               END IF
               aux_box_ind(gg)=acc_B(jj)
               aux_box_val(gg)=val_out
@@ -1143,14 +1197,14 @@ SUBROUTINE GET_HBONDS (hbtype,effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,coors
         END DO
         
         IF (gg>0) THEN
-           ALLOCATE(hbs_a_ind(ii)%p1(gg),hbs_a_val(ii)%d1(gg))
+           ALLOCATE(hbs_a_ind(ii)%i1(gg),hbs_a_val(ii)%d1(gg))
            ALLOCATE(filtro(gg))
            filtro=.TRUE.
            DO jj=1,gg
               ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)
               filtro(ll)=.FALSE.
-              hbs_a_ind(ii)%p1(jj)=aux_box_ind(ll)
-              hbs_a_val(ii)%p1(jj)=aux_box_val(ll)
+              hbs_a_ind(ii)%i1(jj)=aux_box_ind(ll)
+              hbs_a_val(ii)%d1(jj)=aux_box_val(ll)
            END DO
            DEALLOCATE(filtro)
         END IF
@@ -1183,11 +1237,11 @@ SUBROUTINE GET_HBONDS (hbtype,effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,coors
                     aux2_box_ind=aux_box_ind
                     aux2_box_val=aux_box_val
                     DEALLOCATE(aux_box_ind,aux_box_val)
-                    ALLOCATE(aux_box_ind(lim_hbs+1),aux_box_val(lim_hbs+1))
+                    ALLOCATE(aux_box_ind(gg),aux_box_val(gg))
                     aux_box_ind(1:lim_hbs)=aux2_box_ind
                     aux_box_val(1:lim_hbs)=aux2_box_val
                     DEALLOCATE(aux2_box_ind,aux2_box_val)
-                    lim_hbs=lim_hbs+1
+                    lim_hbs=gg
                  END IF
                  aux_box_ind(gg)=acc_A(jj)
                  aux_box_val(gg)=val_out
@@ -1195,14 +1249,14 @@ SUBROUTINE GET_HBONDS (hbtype,effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,coors
            END DO
            
            IF (gg>0) THEN
-              ALLOCATE(hbs_b_ind(ii)%p1(gg),hbs_b_val(ii)%d1(gg))
+              ALLOCATE(hbs_b_ind(ii)%i1(gg),hbs_b_val(ii)%d1(gg))
               ALLOCATE(filtro(gg))
               filtro=.TRUE.
               DO jj=1,gg
                  ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)
                  filtro(ll)=.FALSE.
-                 hbs_b_ind(ii)%p1(jj)=aux_box_ind(ll)
-                 hbs_b_val(ii)%p1(jj)=aux_box_val(ll)
+                 hbs_b_ind(ii)%i1(jj)=aux_box_ind(ll)
+                 hbs_b_val(ii)%d1(jj)=aux_box_val(ll)
               END DO
               DEALLOCATE(filtro)
            END IF
