@@ -712,7 +712,6 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
     def distance(self,setA='ALL',setB=None,traj=0,frame='ALL',pbc=True):
         
-        diff_system=1
         if pbc:
             check_cell=self.traj[traj].frame[0].cell
             if check_cell[0,1]!=90 or check_cell[0,2]!=90 or check_cell[1,2]!=90:
@@ -720,13 +719,13 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 return
             pbc=1
 
-        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system=__read_sets_opt__(self,setA,None,setB)
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
         num_frames=__length_frame_opt__(self,traj,frame)
         dists=empty(shape=(nlist_A,nlist_B,num_frames),order='Fortran')
 
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
-            dists[:,:,num_frames]=faux.glob.distance(diff_system,pbc,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+            dists[:,:,num_frames]=faux.glob.distance(diff_syst,diff_set,pbc,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
             num_frames+=1
 
         if num_frames==1:
@@ -736,7 +735,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
     def distance_image_pbc(self,setA='ALL',setB=None,traj=0,frame='ALL'):
 
-        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system=__read_sets_opt__(self,setA,None,setB)
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
         num_frames=__length_frame_opt__(self,traj,frame)
         min_dists=empty(shape=(nlist_A,num_frames),dtype=float,order='Fortran')
         ind_atoms_min=empty(shape=(nlist_A,num_frames),dtype=int,order='Fortran')
@@ -744,7 +743,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
-            min_dists[:,num_frames],ind_atoms_min[:,num_frames],min_image[:,:,num_frames]=faux.glob.distance_images(diff_system,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+            min_dists[:,num_frames],ind_atoms_min[:,num_frames],min_image[:,:,num_frames]=faux.glob.distance_images(diff_syst,diff_set,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
             num_frames+=1
 
         if num_frames==1:
@@ -826,7 +825,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
     def rdf(self,setA=None,setB=None,traj=0,frame='ALL',pbc=True,bins=100,segment=None):
 
-        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system=__read_sets_opt__(self,setA,None,setB)
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
 
         xxx=pyn_math.binning(None,bins,segment,None,None)
         rdf_tot=zeros(shape=(bins),dtype=float,order='Fortran')
@@ -843,7 +842,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
     def neighbs(self,setA=None,setB=None,ranking=1,dist=None,traj=0,frame=0,pbc=True):
      
-        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system=__read_sets_opt__(self,setA,None,setB)
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
         num_frames=__length_frame_opt__(self,traj,frame)
 
         if dist==None:
@@ -851,7 +850,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             neighbs=empty(shape=(nlist_A,ranking,num_frames),dtype=int,order='Fortran')
             num_frames=0
             for iframe in __read_frame_opt__(self,traj,frame):
-                neighbs[:,:][num_frames]=faux.glob.neighbs_ranking(diff_system,pbc,ranking,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+                neighbs[:,:][num_frames]=faux.glob.neighbs_ranking(diff_syst,diff_set,pbc,ranking,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
                 num_frames+=1
             if num_frames==1:
                 return neighbs[:,:][0]
@@ -864,7 +863,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             if ranking:
                 sort_opt=1
             for iframe in __read_frame_opt__(self,traj,frame):
-                contact_map,num_neighbs,dist_matrix=faux.glob.neighbs_dist(diff_system,pbc,dist,setA,iframe.coors,iframe.orthogonal,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+                contact_map,num_neighbs,dist_matrix=faux.glob.neighbs_dist(diff_syst,diff_set,pbc,dist,setA,iframe.coors,iframe.orthogonal,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
                 aux_neighbs=[]
                 if ranking:
                     for ii in range(nlist_A):
@@ -1027,9 +1026,12 @@ def __read_sets_opt__(systA=None,setA=None,systB=None,setB=None):
         print '# SetA needed.'
         pass
 
-    diff_system=1
+    diff_syst=1
+    diff_set=1
+
     if systB==None:
 
+        diff_syst=0
         nsys_a=systA.num_atoms
         nsys_b=systA.num_atoms
 
@@ -1048,6 +1050,7 @@ def __read_sets_opt__(systA=None,setA=None,systB=None,setB=None):
         if setB in [None]:
             setB=setA
             nlist_b=nlist_a
+            diff_set=0
         elif setB in ['ALL','All','all']:
             setB=[ii for ii in range(systA.num_atoms)]
             nlist_b=systA.num_atoms
@@ -1060,9 +1063,9 @@ def __read_sets_opt__(systA=None,setA=None,systB=None,setB=None):
             setB=systA.selection(setB)
             nlist_b=len(setB)
 
-        if (setA==setB): diff_system=0
+        if (setA==setB): diff_set=0
 
-        return setA,nlist_a,nsys_a,setB,nlist_b,nsys_b,diff_system
+        return setA,nlist_a,nsys_a,setB,nlist_b,nsys_b,diff_syst,diff_set
 
     else:
         print 'Different systems: Not implemented yet'

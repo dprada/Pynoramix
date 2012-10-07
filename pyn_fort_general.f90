@@ -6,6 +6,8 @@ MODULE GLOB
   TYPE darray_pointer
      DOUBLE PRECISION,DIMENSION(:),POINTER::d1
   END TYPE darray_pointer
+  INTEGER,DIMENSION(:),ALLOCATABLE::cl_ind,cl_start  !! indices fortran
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::cl_val
 
 CONTAINS
 
@@ -42,10 +44,11 @@ SUBROUTINE PBC(vector,box,ortho)
   
 END SUBROUTINE PBC
 
-SUBROUTINE MAKE_CONTACT_LIST (cut_off,diff_system,pbc_opt,list1,coors1,box1,ortho1,coors2,n1,n2,natom1,natom2)
+
+SUBROUTINE MAKE_CONTACT_LIST (cut_off,diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,coors2,n1,n2,natom1,natom2)
 
   DOUBLE PRECISION,INTENT(IN)::cut_off
-  INTEGER,INTENT(IN)::diff_system,pbc_opt,ortho1
+  INTEGER,INTENT(IN)::diff_syst,diff_set,pbc_opt,ortho1
   INTEGER,INTENT(IN)::n1,n2,natom1,natom2
   INTEGER,DIMENSION(n1),INTENT(IN)::list1
   INTEGER,DIMENSION(n2),INTENT(IN)::list2
@@ -53,55 +56,111 @@ SUBROUTINE MAKE_CONTACT_LIST (cut_off,diff_system,pbc_opt,list1,coors1,box1,orth
   double precision,DIMENSION(3,3),INTENT(IN)::box1
   double precision,dimension(natom2,3),intent(in)::coors2
 
-  INTEGER::ii,jj,gg,ll,lim
-  TYPE(iarray_pointer),DIMENSION(:),POINTER::box_ind
-  TYPE(darray_pointer),DIMENSION(:),POINTER::box_val
-  INTEGER,DIMENSION(:),ALLOCATABLE::aux_box_ind,box_num
-  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::aux_box_val
+  INTEGER::ii,jj,gg,ll
+  INTEGER,DIMENSION(:),ALLOCATABLE::box_ind
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::box_val
   DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::matrix
   
-  ALLOCATE(matrix(n1,n2))
+  TYPE(iarray_pointer),DIMENSION(:),POINTER::pcl_ind   !! En indices fortran
+  TYPE(darray_pointer),DIMENSION(:),POINTER::pcl_val
+  INTEGER,DIMENSION(:),ALLOCATABLE::pcl_num
 
-  CALL DISTANCE(diff_system,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,matrix)
+!!$  IF (ALLOCATED(pcl_ind)) DEALLOCATE(pcl_ind)
+!!$  IF (ALLOCATED(pcl_val)) DEALLOCATE(pcl_val)
+!!$  IF (ALLOCATED(pcl_num)) DEALLOCATE(pcl_num)
+!!$  ALLOCATE(matrix(n1,n2))
+!!$  ALLOCATE(pcl_ind(natoms1),pcl_val(natoms1),pcl_num(natoms1))
+!!$  pcl_num=0
+!!$
+!!$  CALL DISTANCE(diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,matrix)
+!!$
+!!$  IF (diff_syst) THEN
+!!$     PRINT*,'NOT IMPLEMENTED YET'
+!!$  ELSE
+!!$     IF (diff_set) THEN
+!!$        DO ii=1,n1
+!!$           ai=list1(ii)+1
+!!$           gg=0
+!!$           DO jj=1,n2
+!!$              IF (matrix(ii,jj)<=cut_off) THEN
+!!$                 aj=list2(jj)+1
+!!$                 IF (ai/=aj) THEN
+!!$                    IF (gg==0) THEN
+!!$                       ALLOCATE(pcl_ind(ii)%i1(1),pcl_val(ii)%d1(1))
+!!$                    ELSE
+!!$                       ALLOCATE(box_ind(gg),box_val(gg))
+!!$                       box_ind(:)=pcl_ind(ii)%i1(:)
+!!$                       box_val(:)=pcl_val(ii)%d1(:)
+!!$                       DEALLOCATE(pcl_ind(ii)%i1,pcl_val(ii)%d1)
+!!$                       ALLOCATE(pcl_ind(ii)%i1(gg+1),pcl_val(ii)%d1(gg+1))
+!!$                       pcl_ind(ii)%i1(1:gg)=box_ind(:) 
+!!$                       pcl_val(ii)%d1(1:gg)=box_val(:)
+!!$                       DEALLOCATE(pcl_ind,pcl_val)
+!!$                    END IF
+!!$                    gg=gg+1
+!!$                    pcl_ind(ii)%i1(gg)=aj
+!!$                    pcl_ind(ii)%d1(gg)=matrix(ii,jj)
+!!$                 END IF
+!!$              END IF
+!!$           END DO
+!!$           pcl_num(ii)=gg
+!!$        END DO
+!!$     ELSE
+!!$        DO ii=1,n1
+!!$           ai=list1(ii)+1
+!!$           gg=pcl_num(ii)
+!!$           DO jj=ii+1,n2
+!!$              IF (matrix(ii,jj)<=cut_off) THEN
+!!$                 aj=list2(jj)+1
+!!$                 ll=pcl_num(jj)
+!!$                 IF (gg==0) THEN
+!!$                    ALLOCATE(pcl_ind(ii)%i1(1),pcl_val(ii)%d1(1))
+!!$                 ELSE
+!!$                    ALLOCATE(box_ind(gg),box_val(gg))
+!!$                    box_ind(:)=pcl_ind(ii)%i1(:)
+!!$                    box_val(:)=pcl_val(ii)%d1(:)
+!!$                    DEALLOCATE(pcl_ind(ii)%i1,pcl_val(ii)%d1)
+!!$                    ALLOCATE(pcl_ind(ii)%i1(gg+1),pcl_val(ii)%d1(gg+1))
+!!$                    pcl_ind(ii)%i1(1:gg)=box_ind(:) 
+!!$                    pcl_val(ii)%d1(1:gg)=box_val(:)
+!!$                    DEALLOCATE(box_ind,box_val)
+!!$                 END IF
+!!$                 IF (ll==0) THEN
+!!$                    ALLOCATE(pcl_ind(jj)%i1(1),pcl_val(jj)%d1(1))
+!!$                 ELSE
+!!$                    ALLOCATE(box_ind(ll),box_val(ll))
+!!$                    box_ind(:)=pcl_ind(jj)%i1(:)
+!!$                    box_val(:)=pcl_val(jj)%d1(:)
+!!$                    DEALLOCATE(pcl_ind(jj)%i1,pcl_val(jj)%d1)
+!!$                    ALLOCATE(pcl_ind(jj)%i1(ll+1),pcl_val(jj)%d1(ll+1))
+!!$                    pcl_ind(jj)%i1(1:ll)=box_ind(:) 
+!!$                    pcl_val(jj)%d1(1:ll)=box_val(:)
+!!$                    DEALLOCATE(box_ind,box_val)
+!!$                 END IF
+!!$                 gg=gg+1
+!!$                 ll=ll+1
+!!$                 pcl_ind(ii)%i1(gg)=aj
+!!$                 pcl_val(ii)%d1(gg)=matrix(ii,jj)
+!!$                 pcl_ind(jj)%i1(ll)=ai
+!!$                 pcl_val(jj)%d1(ll)=matrix(ii,jj)
+!!$                 pcl_num(jj)=ll
+!!$              END IF
+!!$           END DO
+!!$           pcl_num(ii)=gg
+!!$        END DO
+!!$     END IF
+!!$  END IF
+!!$
+!!$  DEALLOCATE(matrix)
+!!$
+!!$END SUBROUTINE MAKE_CONTACT_LIST
 
-  lim=20
-  ALLOCATE(box_ind(n1),box_val(n1),box_num(n1))
-  box_num=0
 
-  IF (diff_system) THEN
-     DO ii=1,n1
-        gg=0
-        DO jj=1,n2
-           IF (matrix(ii,jj)<=cut_off) THEN
-
-              IF (gg>0) THEN
-                 ALLOCATE(aux_box_ind(gg),aux_box_val(gg))
-                 
-              gg=gg+1
-              
-              IF (gg>lim) THEN
-                 ALLOCATE(aux2_box_ind(lim),aux2_box,val(lim))
-                 aux2_box_ind=aux_box_ind
-                 aux2_box_val=aux_box_val
-                 DEALLOCATE(aux_box_ind,aux_box,val)
-                 ALLOCATE(aux_box_ind(gg),aux_box,val(gg))
-                 aux_box_ind(1:lim)=aux2_box_ind
-                 aux_box_val(1:lim)=aux2_box_val
-                 DEALLOCATE(aux2_box_ind,aux2_box,val)
-              END IF
-              aux_box_ind(gg)=list2(jj)
-              aux_box_val(gg)=matrix(ii,jj)
-           END DO
-        END DO
-        IF (gg>0) THEN
-           
-
-
-SUBROUTINE DISTANCE (diff_system,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,matrix)
+SUBROUTINE DISTANCE (diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,matrix)
 
 IMPLICIT NONE
 
-INTEGER,INTENT(IN)::diff_system,pbc_opt,ortho1
+INTEGER,INTENT(IN)::diff_syst,diff_set,pbc_opt,ortho1
 integer,intent(in)::n1,n2,natom1,natom2
 INTEGER,DIMENSION(n1),INTENT(IN)::list1
 INTEGER,DIMENSION(n2),INTENT(IN)::list2
@@ -121,7 +180,7 @@ llist2=list2+1
 
 matrix=0.0d0
 
-IF (diff_system) THEN
+IF (diff_syst .or. diff_set) THEN
    IF (pbc_opt) THEN
       do i=1,n1
          ai=llist1(i)
@@ -151,29 +210,25 @@ ELSE
       do i=1,n1
          ai=llist1(i)
          vect_aux=coors1(ai,:)
-         do j=1,n2
+         do j=i+1,n2
             aj=llist2(j)
-            if (aj>ai) then
-               vect=(coors1(aj,:)-vect_aux)
-               CALL PBC (vect,box1,ortho1)
-               val_aux=sqrt(dot_product(vect,vect))
-               matrix(i,j)=val_aux
-               matrix(j,i)=val_aux
-            end if
+            vect=(coors1(aj,:)-vect_aux)
+            CALL PBC (vect,box1,ortho1)
+            val_aux=sqrt(dot_product(vect,vect))
+            matrix(i,j)=val_aux
+            matrix(j,i)=val_aux
          end do
       end do
    ELSE
       do i=1,n1
          ai=llist1(i)
          vect_aux=coors1(ai,:)
-         do j=1,n2
+         do j=i+1,n2
             aj=llist2(j)
-            if (aj>ai) then
-               vect=(coors1(aj,:)-vect_aux)
-               val_aux=sqrt(dot_product(vect,vect))
-               matrix(i,j)=val_aux
-               matrix(j,i)=val_aux
-            end if
+            vect=(coors1(aj,:)-vect_aux)
+            val_aux=sqrt(dot_product(vect,vect))
+            matrix(i,j)=val_aux
+            matrix(j,i)=val_aux
          end do
       end do
    END IF
@@ -185,11 +240,11 @@ DEALLOCATE(llist1,llist2)
 END SUBROUTINE DISTANCE
 
 
-SUBROUTINE DISTANCE_IMAGES (diff_system,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,min_dists,ind_atoms_min,min_image)
+SUBROUTINE DISTANCE_IMAGES (diff_syst,diff_set,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,min_dists,ind_atoms_min,min_image)
 
 IMPLICIT NONE
-
-INTEGER,INTENT(IN)::diff_system,ortho1
+  
+INTEGER,INTENT(IN)::diff_syst,diff_set,ortho1
 integer,intent(in)::n1,n2,natom1,natom2
 INTEGER,DIMENSION(n1),INTENT(IN)::list1
 INTEGER,DIMENSION(n2),INTENT(IN)::list2
@@ -200,10 +255,12 @@ double precision,dimension(n1),intent(out)::min_dists
 integer,dimension(n1),intent(out):: ind_atoms_min
 integer,dimension(n1,3),intent(out):: min_image
 
-integer::ii,jj,ai,aj,im1,im2,im3,ind_aux_min,imin1,imin2,imin3
+integer::ii,jj,gg,kk,ai,aj,ind_aux_min,val_imin,prov_imin
 double precision,dimension(:),allocatable::vect,vect_aux,vect_aux2
 integer,dimension(:),allocatable::llist1,llist2
-double precision::val_aux,val_aux_min,val_ref_min
+double precision::val_aux,val_aux_min,val_ref_min,prov_val_min
+INTEGER,DIMENSION(:,:),ALLOCATABLE::imag
+DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::trans_imag
 
 val_ref_min=10000.0d0
 DO ii=1,3
@@ -213,41 +270,89 @@ DO ii=1,3
    END IF
 END DO
 
+ALLOCATE(vect(3),vect_aux(3),vect_aux2(3),imag(26,3),trans_imag(26,3))
+gg=0
+DO ii=-1,1
+   DO jj=-1,1
+      DO kk=-1,1
+         IF ((ii/=0).or.(jj/=0).or.(kk/=0)) THEN
+            gg=gg+1
+            imag(gg,:)=(/ii,jj,kk/)
+            trans_imag(gg,:)=ii*box1(1,:)+jj*box1(2,:)+kk*box1(3,:)
+         END IF
+      END DO
+   END DO
+END DO
 
-ALLOCATE(vect(3),vect_aux(3),vect_aux2(3))
 ALLOCATE(llist1(n1),llist2(n2))
 llist1=list1+1
 llist2=list2+1
 
-DO ii=1,n1
-   ai=llist1(ii)
-   vect_aux=coors1(ai,:)
-   val_aux_min=val_ref_min
-   DO jj=1,n2
-      aj=llist2(jj)
-      vect_aux2=coors2(aj,:)-vect_aux
-      DO im1=-1,1
-         DO im2=-1,1
-            DO im3=-1,1
-               IF ((im1/=0).or.(im2/=0).or.(im3/=0)) THEN
-                  vect=vect_aux2+im1*box1(1,:)+im2*box1(2,:)+im3*box1(3,:)
-                  val_aux=dot_product(vect,vect)
-                  IF (val_aux<val_aux_min) THEN
-                     val_aux_min=val_aux
-                     imin1=im1
-                     imin2=im2
-                     imin3=im3
-                     ind_aux_min=jj
-                  END IF
-               END IF
-            END DO
+IF (diff_set) THEN
+   DO ii=1,n1
+      ai=llist1(ii)
+      vect_aux=coors1(ai,:)
+      val_aux_min=val_ref_min
+      DO jj=1,n2
+         aj=llist2(jj)
+         vect_aux2=coors2(aj,:)-vect_aux
+         DO gg=1,26
+            vect=vect_aux2+trans_imag(gg,:)
+            val_aux=dot_product(vect,vect)
+            IF (val_aux<val_aux_min) THEN
+               val_aux_min=val_aux
+               val_imin=gg
+               ind_aux_min=jj
+            END IF
          END DO
       END DO
+      min_dists(ii)=val_aux_min
+      ind_atoms_min(ii)=ind_aux_min
+      min_image(ii,1)=val_imin
    END DO
-   min_dists(ii)=sqrt(val_aux_min)
-   ind_atoms_min(ii)=list2(ind_aux_min)
-   min_image(ii,:)=(/imin1,imin2,imin3/)
+ELSE
+   min_dists(:)=val_ref_min
+   DO ii=1,n1
+      ai=llist1(ii)
+      vect_aux=coors1(ai,:)
+      val_aux_min=min_dists(ii)
+      DO jj=ii+1,n2
+         aj=llist2(jj)
+         vect_aux2=coors2(aj,:)-vect_aux
+         prov_val_min=val_ref_min
+         DO gg=1,26
+            vect=vect_aux2+trans_imag(gg,:)
+            val_aux=dot_product(vect,vect)
+            IF (val_aux<prov_val_min) THEN
+               prov_val_min=val_aux
+               prov_imin=gg
+            END IF
+         END DO
+         IF (prov_val_min<val_aux_min) THEN
+            val_aux_min=prov_val_min
+            val_imin=prov_imin
+            ind_aux_min=jj
+         END IF
+         IF (prov_val_min<min_dists(jj)) THEN
+            min_dists(jj)=prov_val_min
+            ind_atoms_min(jj)=ii
+            min_image(jj,1)=prov_imin
+         END IF
+      END DO
+      min_dists(ii)=val_aux_min
+      ind_atoms_min(ii)=ind_aux_min
+      min_image(ii,1)=val_imin
+   END DO
+END IF
+
+DO ii=1,n1
+   min_dists(ii)=sqrt(min_dists(ii))
+   ind_atoms_min(ii)=list2(ind_atoms_min(ii))
+   min_image(ii,:)=imag(min_image(ii,1),:)
 END DO
+
+DEALLOCATE(vect,vect_aux,vect_aux2,imag,trans_imag)
+DEALLOCATE(llist1,llist2)
 
 END SUBROUTINE DISTANCE_IMAGES
 
@@ -434,12 +539,11 @@ DEALLOCATE(cdm,vect_aux,matrix,values)
 END SUBROUTINE PRINCIPAL_GEOMETRIC_AXIS
 
 
-
-SUBROUTINE neighbs_ranking (diff_system,pbc_opt,limit,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,neighb_list) !before: neighb_dist,neighb_uvect
+SUBROUTINE neighbs_ranking (diff_syst,diff_set,pbc_opt,limit,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,neighb_list) !before: neighb_dist,neighb_uvect
 
   IMPLICIT NONE
 
-  INTEGER,INTENT(IN)::diff_system,pbc_opt,ortho1
+  INTEGER,INTENT(IN)::diff_syst,diff_set,pbc_opt,ortho1
   INTEGER,INTENT(IN)::limit
   integer,intent(in)::n1,n2,natom1,natom2
   INTEGER,DIMENSION(n1),INTENT(IN)::list1
@@ -462,32 +566,50 @@ SUBROUTINE neighbs_ranking (diff_system,pbc_opt,limit,list1,coors1,box1,ortho1,l
 
   ALLOCATE(dist_matrix(n1,n2),dist_aux(n2),filter(n2),neight_aux(limit))
   filter=.TRUE.
-  CALL distance (diff_system,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,dist_matrix)
+  CALL distance (diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,dist_matrix)
 
-  DO ii=1,n1
-     dist_aux=dist_matrix(ii,:)
-     DO jj=1,limit
-        gg=MINLOC(dist_aux(:),DIM=1,MASK=filter(:))
-        neight_aux(jj)=gg
-        filter(gg)=.FALSE.
+  IF (diff_syst .or. diff_set) THEN
+     DO ii=1,n1
+        dist_aux=dist_matrix(ii,:)
+        DO jj=1,limit
+           gg=MINLOC(dist_aux(:),DIM=1,MASK=filter(:))
+           neight_aux(jj)=gg
+           filter(gg)=.FALSE.
+        END DO
+        DO jj=1,limit
+           gg=neight_aux(jj)
+           filter(gg)=.TRUE.
+           neighb_list(ii,jj)=list2(gg) ! No correction was done on indexes
+        END DO
      END DO
-     DO jj=1,limit
-        gg=neight_aux(jj)
-        filter(gg)=.TRUE.
-        neighb_list(ii,jj)=list2(gg) ! No correction was done on indexes
+  ELSE
+     DO ii=1,n1
+        dist_aux=dist_matrix(ii,:)
+        filter(ii)=.FALSE.
+        DO jj=1,limit
+           gg=MINLOC(dist_aux(:),DIM=1,MASK=filter(:))
+           neight_aux(jj)=gg
+           filter(gg)=.FALSE.
+        END DO
+        DO jj=1,limit
+           gg=neight_aux(jj)
+           filter(gg)=.TRUE.
+           neighb_list(ii,jj)=list2(gg) ! No correction was done on indexes
+        END DO
+        filter(ii)=.TRUE.
      END DO
-  END DO
-        
+  END IF
+
   DEALLOCATE(dist_matrix,dist_aux,filter,neight_aux)
 
 END SUBROUTINE neighbs_ranking
 
 
-SUBROUTINE neighbs_dist (diff_system,pbc_opt,limit,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,contact_map,num_neighbs,dist_matrix) !before: neighb_dist,neighb_uvect
+SUBROUTINE neighbs_dist (diff_syst,diff_set,pbc_opt,limit,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,contact_map,num_neighbs,dist_matrix) !before: neighb_dist,neighb_uvect
 
   IMPLICIT NONE
 
-  INTEGER,INTENT(IN)::diff_system,pbc_opt,ortho1
+  INTEGER,INTENT(IN)::diff_syst,diff_set,pbc_opt,ortho1
   DOUBLE PRECISION,INTENT(IN)::limit
   integer,intent(in)::n1,n2,natom1,natom2
   INTEGER,DIMENSION(n1),INTENT(IN)::list1
@@ -505,22 +627,37 @@ SUBROUTINE neighbs_dist (diff_system,pbc_opt,limit,list1,coors1,box1,ortho1,list
   !DOUBLE PRECISION,DIMENSION(n_atoms1,limit,3),INTENT(OUT)::neighb_uvect
 
   ! The indexes in list1 and list2 not corrected yet (because of function dist)
-  CALL DISTANCE (diff_system,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,dist_matrix)
+  CALL DISTANCE (diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,dist_matrix)
 
   contact_map=0
   num_neighbs=0
 
-  DO ii=1,n1
-     gg=0
-     DO jj=1,n2
-        IF (dist_matrix(ii,jj)<=limit) THEN
-           contact_map(ii,jj)=1
-           gg=gg+1
-        END IF
+  IF (diff_syst .or. diff_set) THEN
+     DO ii=1,n1
+        gg=0
+        DO jj=1,n2
+           IF (dist_matrix(ii,jj)<=limit) THEN
+              contact_map(ii,jj)=1
+              gg=gg+1
+           END IF
+        END DO
+        num_neighbs(ii)=gg
      END DO
-     num_neighbs(ii)=gg
-  END DO
-
+  ELSE
+     DO ii=1,n1
+        gg=num_neighbs(ii)
+        DO jj=ii+1,n2
+           IF (dist_matrix(ii,jj)<=limit) THEN
+              contact_map(ii,jj)=1
+              contact_map(jj,ii)=1
+              gg=gg+1
+              num_neighbs(jj)=num_neighbs(jj)+1
+           END IF
+        END DO
+        num_neighbs(ii)=gg
+     END DO
+  END IF
+  
 END SUBROUTINE neighbs_dist
 
 SUBROUTINE translate_list (sort,list,filter,distances,dim_out,n_list,trans_inds)
@@ -1103,176 +1240,176 @@ END MODULE RDF
 
 
 
-MODULE HBONDS
-
-USE GLOB
-
-!! Parameters
-INTEGER::definition
-DOUBLE PRECISION::sk_param,roh_param,roo_param,cos_angooh_param
-
-
-!!Output
-INTEGER,DIMENSION(:,:),ALLOCATABLE::hbonds_out
-
-CONTAINS
-
-SUBROUTINE FREE_MEMORY ()
-
-  IF (ALLOCATED(hbonds_out)) DEALLOCATE(hbonds_out)
-
-END SUBROUTINE FREE_MEMORY
-
-
-SUBROUTINE GET_HBONDS (hbtype,effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,coors1,box1,ortho1,acc_B,don_B,coors2,num_acc_A,num_don_A,num_acc_B,num_don_B,natomA,natomB)
-
-  TYPE iarray_pointer
-     INTEGER,DIMENSION(:),POINTER::i1
-  END TYPE iarray_pointer
-  TYPE darray_pointer
-     DOUBLE PRECISION,DIMENSION(:),POINTER::d1
-  END TYPE darray_pointer
-
-  INTEGER,INTENT(IN)::hbtype,effic,diff_syst,diff_set
-  INTEGER,INTENT(IN)::num_acc_A,num_don_A,num_acc_B,num_don_B
-  INTEGER,DIMENSION(num_acc_A),INTENT(IN)::acc_A
-  INTEGER,DIMENSION(num_acc_B),INTENT(IN)::acc_B
-  INTEGER,DIMENSION(num_don_A,2),INTENT(IN)::don_A
-  INTEGER,DIMENSION(num_don_B,2),INTENT(IN)::don_B
-
-  TYPE(iarray_pointer),DIMENSION(:),POINTER::hbs_a_ind,hbs_b_ind 
-  TYPE(darray_pointer),DIMENSION(:),POINTER::hbs_a_val,hbs_b_val 
-
-  INTEGER,DIMENSION(:),ALLOCATABLE::aux_box_ind,num_hbs_a,num_hbs_a
-  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::aux_vox_vel
-
-  INTEGER::ii,jj,gg,bound
-  INTEGER::don_o,don_h,acc
-  INTEGER::lim_hbs
-
-  DOUBLE PRECISION,DIMENSION(3)::vect_don_oh,pos_don_o
-
-  lim_hbs=8
-
-  ALLOCATE(aux_box_ind(lim_hbs),aux_box_vel(lim_hbs))
-
-  ALLOCATE(hbs_a_ind(num_don_A),hbs_a_val(num_don_A))
-  ALLOCATE(hbs_b_ind(num_don_B),hbs_b_val(num_don_B))
-  ALLOCATE(num_hbs_a(num_don_A),num_hbs_b(num_don_B))
-
-  IF (diff_syst==0) THEN
-
-     DO ii=1,num_don_A
-        
-        don_o=don_A(ii,1)+1
-        don_h=don_A(ii,2)+1
-        pos_don_o=coors1(don_o,:)
-        vect_don_oh=pos_don_o-coors1(don_h,:)
-        dist_don_oh=sqrt(dot_product(vect_doh,vect_doh))
-        vect_don_oh=vect_don_oh/dist_don_oh
-        
-        gg=0
-        
-        DO jj=1,num_acc_B
-           acc=acc_B(jj)+1
-           vect_don_o_acc=coors2(acc,:)-pos_don_o
-           IF (pbc_opt) CALL PBC(vect_don_o_acc,box1,ortho1)
-           CALL CHECK_HBOND (hbtype,vect_don_o_acc,vect_don_oh,dist_don_oh,val_out,bound)
-           IF (bound) THEN
-              gg=gg+1
-              IF (gg>lim_hbs) THEN
-                 ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))
-                 aux2_box_ind=aux_box_ind
-                 aux2_box_val=aux_box_val
-                 DEALLOCATE(aux_box_ind,aux_box_val)
-                 ALLOCATE(aux_box_ind(gg),aux_box_val(gg))
-                 aux_box_ind(1:lim_hbs)=aux2_box_ind
-                 aux_box_val(1:lim_hbs)=aux2_box_val
-                 DEALLOCATE(aux2_box_ind,aux2_box_val)
-                 lim_hbs=gg
-              END IF
-              aux_box_ind(gg)=acc_B(jj)
-              aux_box_val(gg)=val_out
-           END IF
-        END DO
-        
-        IF (gg>0) THEN
-           ALLOCATE(hbs_a_ind(ii)%i1(gg),hbs_a_val(ii)%d1(gg))
-           ALLOCATE(filtro(gg))
-           filtro=.TRUE.
-           DO jj=1,gg
-              ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)
-              filtro(ll)=.FALSE.
-              hbs_a_ind(ii)%i1(jj)=aux_box_ind(ll)
-              hbs_a_val(ii)%d1(jj)=aux_box_val(ll)
-           END DO
-           DEALLOCATE(filtro)
-        END IF
-        
-        num_hbs_a(ii)=gg
-        
-     END DO
-     
-     IF (diff_set) THEN
-        DO ii=1,num_don_B
-           
-           don_o=don_B(ii,1)+1
-           don_h=don_B(ii,2)+1
-           pos_don_o=coors2(don_o,:)
-           vect_don_oh=pos_don_o-coors2(don_h,:)
-           dist_don_oh=sqrt(dot_product(vect_doh,vect_doh))
-           vect_don_oh=vect_don_oh/dist_don_oh
-           
-           gg=0
-           
-           DO jj=1,num_acc_A
-              acc=acc_A(jj)+1
-              vect_don_o_acc=coors1(acc,:)-pos_don_o
-              IF (pbc_opt) CALL PBC(vect_don_o_acc,box1,ortho1)
-              CALL CHECK_HBOND (hbtype,vect_don_o_acc,vect_don_oh,dist_don_oh,val_out,bound)
-              IF (bound) THEN
-                 gg=gg+1
-                 IF (gg>lim_hbs) THEN
-                    ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))
-                    aux2_box_ind=aux_box_ind
-                    aux2_box_val=aux_box_val
-                    DEALLOCATE(aux_box_ind,aux_box_val)
-                    ALLOCATE(aux_box_ind(gg),aux_box_val(gg))
-                    aux_box_ind(1:lim_hbs)=aux2_box_ind
-                    aux_box_val(1:lim_hbs)=aux2_box_val
-                    DEALLOCATE(aux2_box_ind,aux2_box_val)
-                    lim_hbs=gg
-                 END IF
-                 aux_box_ind(gg)=acc_A(jj)
-                 aux_box_val(gg)=val_out
-              END IF
-           END DO
-           
-           IF (gg>0) THEN
-              ALLOCATE(hbs_b_ind(ii)%i1(gg),hbs_b_val(ii)%d1(gg))
-              ALLOCATE(filtro(gg))
-              filtro=.TRUE.
-              DO jj=1,gg
-                 ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)
-                 filtro(ll)=.FALSE.
-                 hbs_b_ind(ii)%i1(jj)=aux_box_ind(ll)
-                 hbs_b_val(ii)%d1(jj)=aux_box_val(ll)
-              END DO
-              DEALLOCATE(filtro)
-           END IF
-           
-           num_hbs_b(ii)=gg
-           
-        END DO
-     END IF
-  ELSE
-     PRINT*,'NOT IMPLEMENTED YET'
-  END IF
-
-END SUBROUTINE GET_HBONDS
-
-
-
-
-
-END MODULE HBONDS
+!!$MODULE HBONDS
+!!$
+!!$USE GLOB
+!!$
+!!$!! Parameters
+!!$INTEGER::definition
+!!$DOUBLE PRECISION::sk_param,roh_param,roo_param,cos_angooh_param
+!!$
+!!$
+!!$!!Output
+!!$INTEGER,DIMENSION(:,:),ALLOCATABLE::hbonds_out
+!!$
+!!$CONTAINS
+!!$
+!!$SUBROUTINE FREE_MEMORY ()
+!!$
+!!$  IF (ALLOCATED(hbonds_out)) DEALLOCATE(hbonds_out)
+!!$
+!!$END SUBROUTINE FREE_MEMORY
+!!$
+!!$
+!!$SUBROUTINE GET_HBONDS (hbtype,effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,coors1,box1,ortho1,acc_B,don_B,coors2,num_acc_A,num_don_A,num_acc_B,num_don_B,natomA,natomB)
+!!$
+!!$  TYPE iarray_pointer
+!!$     INTEGER,DIMENSION(:),POINTER::i1
+!!$  END TYPE iarray_pointer
+!!$  TYPE darray_pointer
+!!$     DOUBLE PRECISION,DIMENSION(:),POINTER::d1
+!!$  END TYPE darray_pointer
+!!$
+!!$  INTEGER,INTENT(IN)::hbtype,effic,diff_syst,diff_set
+!!$  INTEGER,INTENT(IN)::num_acc_A,num_don_A,num_acc_B,num_don_B
+!!$  INTEGER,DIMENSION(num_acc_A),INTENT(IN)::acc_A
+!!$  INTEGER,DIMENSION(num_acc_B),INTENT(IN)::acc_B
+!!$  INTEGER,DIMENSION(num_don_A,2),INTENT(IN)::don_A
+!!$  INTEGER,DIMENSION(num_don_B,2),INTENT(IN)::don_B
+!!$
+!!$  TYPE(iarray_pointer),DIMENSION(:),POINTER::hbs_a_ind,hbs_b_ind 
+!!$  TYPE(darray_pointer),DIMENSION(:),POINTER::hbs_a_val,hbs_b_val 
+!!$
+!!$  INTEGER,DIMENSION(:),ALLOCATABLE::aux_box_ind,num_hbs_a,num_hbs_a
+!!$  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::aux_vox_vel
+!!$
+!!$  INTEGER::ii,jj,gg,bound
+!!$  INTEGER::don_o,don_h,acc
+!!$  INTEGER::lim_hbs
+!!$
+!!$  DOUBLE PRECISION,DIMENSION(3)::vect_don_oh,pos_don_o
+!!$
+!!$  lim_hbs=8
+!!$
+!!$  ALLOCATE(aux_box_ind(lim_hbs),aux_box_vel(lim_hbs))
+!!$
+!!$  ALLOCATE(hbs_a_ind(num_don_A),hbs_a_val(num_don_A))
+!!$  ALLOCATE(hbs_b_ind(num_don_B),hbs_b_val(num_don_B))
+!!$  ALLOCATE(num_hbs_a(num_don_A),num_hbs_b(num_don_B))
+!!$
+!!$  IF (diff_syst==0) THEN
+!!$
+!!$     DO ii=1,num_don_A
+!!$        
+!!$        don_o=don_A(ii,1)+1
+!!$        don_h=don_A(ii,2)+1
+!!$        pos_don_o=coors1(don_o,:)
+!!$        vect_don_oh=pos_don_o-coors1(don_h,:)
+!!$        dist_don_oh=sqrt(dot_product(vect_doh,vect_doh))
+!!$        vect_don_oh=vect_don_oh/dist_don_oh
+!!$        
+!!$        gg=0
+!!$        
+!!$        DO jj=1,num_acc_B
+!!$           acc=acc_B(jj)+1
+!!$           vect_don_o_acc=coors2(acc,:)-pos_don_o
+!!$           IF (pbc_opt) CALL PBC(vect_don_o_acc,box1,ortho1)
+!!$           CALL CHECK_HBOND (hbtype,vect_don_o_acc,vect_don_oh,dist_don_oh,val_out,bound)
+!!$           IF (bound) THEN
+!!$              gg=gg+1
+!!$              IF (gg>lim_hbs) THEN
+!!$                 ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))
+!!$                 aux2_box_ind=aux_box_ind
+!!$                 aux2_box_val=aux_box_val
+!!$                 DEALLOCATE(aux_box_ind,aux_box_val)
+!!$                 ALLOCATE(aux_box_ind(gg),aux_box_val(gg))
+!!$                 aux_box_ind(1:lim_hbs)=aux2_box_ind
+!!$                 aux_box_val(1:lim_hbs)=aux2_box_val
+!!$                 DEALLOCATE(aux2_box_ind,aux2_box_val)
+!!$                 lim_hbs=gg
+!!$              END IF
+!!$              aux_box_ind(gg)=acc_B(jj)
+!!$              aux_box_val(gg)=val_out
+!!$           END IF
+!!$        END DO
+!!$        
+!!$        IF (gg>0) THEN
+!!$           ALLOCATE(hbs_a_ind(ii)%i1(gg),hbs_a_val(ii)%d1(gg))
+!!$           ALLOCATE(filtro(gg))
+!!$           filtro=.TRUE.
+!!$           DO jj=1,gg
+!!$              ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)
+!!$              filtro(ll)=.FALSE.
+!!$              hbs_a_ind(ii)%i1(jj)=aux_box_ind(ll)
+!!$              hbs_a_val(ii)%d1(jj)=aux_box_val(ll)
+!!$           END DO
+!!$           DEALLOCATE(filtro)
+!!$        END IF
+!!$        
+!!$        num_hbs_a(ii)=gg
+!!$        
+!!$     END DO
+!!$     
+!!$     IF (diff_set) THEN
+!!$        DO ii=1,num_don_B
+!!$           
+!!$           don_o=don_B(ii,1)+1
+!!$           don_h=don_B(ii,2)+1
+!!$           pos_don_o=coors2(don_o,:)
+!!$           vect_don_oh=pos_don_o-coors2(don_h,:)
+!!$           dist_don_oh=sqrt(dot_product(vect_doh,vect_doh))
+!!$           vect_don_oh=vect_don_oh/dist_don_oh
+!!$           
+!!$           gg=0
+!!$           
+!!$           DO jj=1,num_acc_A
+!!$              acc=acc_A(jj)+1
+!!$              vect_don_o_acc=coors1(acc,:)-pos_don_o
+!!$              IF (pbc_opt) CALL PBC(vect_don_o_acc,box1,ortho1)
+!!$              CALL CHECK_HBOND (hbtype,vect_don_o_acc,vect_don_oh,dist_don_oh,val_out,bound)
+!!$              IF (bound) THEN
+!!$                 gg=gg+1
+!!$                 IF (gg>lim_hbs) THEN
+!!$                    ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))
+!!$                    aux2_box_ind=aux_box_ind
+!!$                    aux2_box_val=aux_box_val
+!!$                    DEALLOCATE(aux_box_ind,aux_box_val)
+!!$                    ALLOCATE(aux_box_ind(gg),aux_box_val(gg))
+!!$                    aux_box_ind(1:lim_hbs)=aux2_box_ind
+!!$                    aux_box_val(1:lim_hbs)=aux2_box_val
+!!$                    DEALLOCATE(aux2_box_ind,aux2_box_val)
+!!$                    lim_hbs=gg
+!!$                 END IF
+!!$                 aux_box_ind(gg)=acc_A(jj)
+!!$                 aux_box_val(gg)=val_out
+!!$              END IF
+!!$           END DO
+!!$           
+!!$           IF (gg>0) THEN
+!!$              ALLOCATE(hbs_b_ind(ii)%i1(gg),hbs_b_val(ii)%d1(gg))
+!!$              ALLOCATE(filtro(gg))
+!!$              filtro=.TRUE.
+!!$              DO jj=1,gg
+!!$                 ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)
+!!$                 filtro(ll)=.FALSE.
+!!$                 hbs_b_ind(ii)%i1(jj)=aux_box_ind(ll)
+!!$                 hbs_b_val(ii)%d1(jj)=aux_box_val(ll)
+!!$              END DO
+!!$              DEALLOCATE(filtro)
+!!$           END IF
+!!$           
+!!$           num_hbs_b(ii)=gg
+!!$           
+!!$        END DO
+!!$     END IF
+!!$  ELSE
+!!$     PRINT*,'NOT IMPLEMENTED YET'
+!!$  END IF
+!!$
+!!$END SUBROUTINE GET_HBONDS
+!!$
+!!$
+!!$
+!!$
+!!$
+!!$END MODULE HBONDS
