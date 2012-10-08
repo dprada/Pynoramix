@@ -40,6 +40,16 @@ FCOMP=ifort
 endif
 endif
 
+ifeq ($(FCOMP),gfortran)
+FTYPE=gnu95
+endif
+ifeq ($(FCOMP),ifort)
+ifeq ($(MACHINE_TYPE),x86_64)
+FTYPE=intelem
+else
+FTYPE=intel
+endif
+endif
 
 # Configuring lapack libraries if "LAPACK_LIBS= "
 ifeq ($(FCOMP),ifort)
@@ -112,55 +122,55 @@ f90_libraries: pyn_fort_general.so pyn_water.so pyn_fort_enm.so pyn_fort_net.so 
 
 pyn_fort_general.so: pyn_fort_general.f90
 	@ echo '>>>>>> Compiling' $@ >> INSTALL.log
-	@ $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) -c -m pyn_fort_general pyn_fort_general.f90 $(LAPACK_LIBS) $(SOUT)
+	@ $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) --fcompiler=$(FTYPE) -c -m pyn_fort_general pyn_fort_general.f90 $(LAPACK_LIBS) $(SOUT)
 	@ if [ ! -e $@ ]; then echo '> Error compiling' $@ ': check the file INSTALL.log'; fi
 	@ if [ -e $@ ]; then echo '>' $@ '...   OK'; fi
 
 pyn_water.so: pyn_water.f90
 	@ echo '>>>>>> Compiling' $@ >> INSTALL.log
-	@ $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) -c -m pyn_water pyn_water.f90 $(LAPACK_LIBS) $(SOUT)
+	@ $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) --fcompiler=$(FTYPE) -c -m pyn_water pyn_water.f90 $(LAPACK_LIBS) $(SOUT)
 	@ if [ ! -e $@ ]; then echo '> Error compiling' $@ ': check the file INSTALL.log'; fi
 	@ if [ -e $@ ]; then echo '>' $@ '...   OK'; fi
 
 pyn_fort_enm.so: pyn_fort_enm.f90
 	@ echo '>>>>>> Compiling' $@ >> INSTALL.log
-	@ $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) -c -m pyn_fort_enm pyn_fort_enm.f90 $(LAPACK_LIBS) $(SOUT)
+	@ $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) --fcompiler=$(FTYPE) -c -m pyn_fort_enm pyn_fort_enm.f90 $(LAPACK_LIBS) $(SOUT)
 	@ if [ ! -e $@ ]; then echo '> Error compiling' $@ ': check the file INSTALL.log'; fi
 	@ if [ -e $@ ]; then echo '>' $@ '...   OK'; fi
 
 pyn_fort_net.so: pyn_fort_net.f90
 	@ echo '>>>>>> Compiling' $@ >> INSTALL.log
-	@ $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) -c -m pyn_fort_net pyn_fort_net.f90 $(LAPACK_LIBS) $(SOUT)
+	@ $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) --fcompiler=$(FTYPE) -c -m pyn_fort_net pyn_fort_net.f90 $(LAPACK_LIBS) $(SOUT)
 	@ if [ ! -e $@ ]; then echo '> Error compiling' $@ ': check the file INSTALL.log'; fi
 	@ if [ -e $@ ]; then echo '>' $@ '...   OK'; fi
 
 pyn_fort_math.so: pyn_fort_math.f90
 	@ echo '>>>>>> Compiling' $@ >> INSTALL.log
-	@ $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) -c -m pyn_fort_math pyn_fort_math.f90 $(LAPACK_LIBS) $(SOUT)
+	@ $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) --fcompiler=$(FTYPE) -c -m pyn_fort_math pyn_fort_math.f90 $(LAPACK_LIBS) $(SOUT)
 	@ if [ ! -e $@ ]; then echo '> Error compiling' $@ ': check the file INSTALL.log'; fi
 	@ if [ -e $@ ]; then echo '>' $@ '...   OK'; fi
 
 pyn_fort_anal_trajs.so: pyn_fort_anal_trajs.f90
 	@ echo '>>>>>> Compiling' $@ >> INSTALL.log
-	@ $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) -c -m pyn_fort_anal_trajs pyn_fort_anal_trajs.f90 $(LAPACK_LIBS) $(SOUT)
+	@ $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) --fcompiler=$(FTYPE) -c -m pyn_fort_anal_trajs pyn_fort_anal_trajs.f90 $(LAPACK_LIBS) $(SOUT)
 	@ if [ ! -e $@ ]; then echo '> Error compiling' $@ ': check the file INSTALL.log'; fi
 	@ if [ -e $@ ]; then echo '>' $@ '...   OK'; fi
 
 io_formats/libdcdfile.so: io_formats/libdcdfile.f90
 	@ echo '>>>>>> Compiling' $@ >> INSTALL.log
-	@ cd $(PWD)/io_formats; $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) -c -m libdcdfile libdcdfile.f90 $(SOUT)
+	@ cd $(PWD)/io_formats; $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) --fcompiler=$(FTYPE) -c -m libdcdfile libdcdfile.f90 $(SOUT)
 	@ if [ ! -e $@ ]; then echo '> Error compiling' $@ ': check the file INSTALL.log'; fi
 	@ if [ -e $@ ]; then echo '>' $@ '...   OK'; fi
 
 io_formats/libbinfile.so: io_formats/libbinfile.f90
 	@ echo '>>>>>> Compiling' $@ >> INSTALL.log
-	@ cd $(PWD)/io_formats; $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) -c -m libbinfile libbinfile.f90 $(SOUT)
+	@ cd $(PWD)/io_formats; $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) --fcompiler=$(FTYPE) -c -m libbinfile libbinfile.f90 $(SOUT)
 	@ if [ ! -e $@ ]; then echo '> Error compiling' $@ ': check the file INSTALL.log'; fi
 	@ if [ -e $@ ]; then echo '>' $@ '...   OK'; fi
 
 io_formats/libcell2box.so: io_formats/libcell2box.f90
 	@ echo '>>>>>> Compiling' $@ >> INSTALL.log
-	@ cd $(PWD)/io_formats; $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) -c -m libcell2box libcell2box.f90 $(SOUT)
+	@ cd $(PWD)/io_formats; $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) --fcompiler=$(FTYPE) -c -m libcell2box libcell2box.f90 $(SOUT)
 	@ if [ ! -e $@ ]; then echo '> Error compiling' $@ ': check the file INSTALL.log'; fi
 	@ if [ -e $@ ]; then echo '>' $@ '...   OK'; fi
 
