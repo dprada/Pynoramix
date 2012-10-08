@@ -1,11 +1,6 @@
 MODULE GLOB
 
-  TYPE iarray_pointer
-     INTEGER,DIMENSION(:),POINTER::i1
-  END TYPE iarray_pointer
-  TYPE darray_pointer
-     DOUBLE PRECISION,DIMENSION(:),POINTER::d1
-  END TYPE darray_pointer
+
   INTEGER,DIMENSION(:),ALLOCATABLE::cl_ind,cl_start  !! indices fortran
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::cl_val
 
@@ -45,7 +40,16 @@ SUBROUTINE PBC(vector,box,ortho)
 END SUBROUTINE PBC
 
 
-SUBROUTINE MAKE_CONTACT_LIST (cut_off,diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,coors2,n1,n2,natom1,natom2)
+SUBROUTINE MAKE_CONTACT_LIST (cut_off,diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2)
+
+  IMPLICIT NONE
+
+  TYPE iarray_pointer
+     INTEGER,DIMENSION(:),POINTER::i1
+  END TYPE iarray_pointer
+  TYPE darray_pointer
+     DOUBLE PRECISION,DIMENSION(:),POINTER::d1
+  END TYPE darray_pointer
 
   DOUBLE PRECISION,INTENT(IN)::cut_off
   INTEGER,INTENT(IN)::diff_syst,diff_set,pbc_opt,ortho1
@@ -56,7 +60,7 @@ SUBROUTINE MAKE_CONTACT_LIST (cut_off,diff_syst,diff_set,pbc_opt,list1,coors1,bo
   double precision,DIMENSION(3,3),INTENT(IN)::box1
   double precision,dimension(natom2,3),intent(in)::coors2
 
-  INTEGER::ii,jj,gg,ll
+  INTEGER::ii,jj,gg,ll,ai,aj
   INTEGER,DIMENSION(:),ALLOCATABLE::box_ind
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::box_val
   DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::matrix
@@ -65,95 +69,112 @@ SUBROUTINE MAKE_CONTACT_LIST (cut_off,diff_syst,diff_set,pbc_opt,list1,coors1,bo
   TYPE(darray_pointer),DIMENSION(:),POINTER::pcl_val
   INTEGER,DIMENSION(:),ALLOCATABLE::pcl_num
 
-!!$  IF (ALLOCATED(pcl_ind)) DEALLOCATE(pcl_ind)
-!!$  IF (ALLOCATED(pcl_val)) DEALLOCATE(pcl_val)
-!!$  IF (ALLOCATED(pcl_num)) DEALLOCATE(pcl_num)
-!!$  ALLOCATE(matrix(n1,n2))
-!!$  ALLOCATE(pcl_ind(natoms1),pcl_val(natoms1),pcl_num(natoms1))
-!!$  pcl_num=0
-!!$
-!!$  CALL DISTANCE(diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,matrix)
-!!$
-!!$  IF (diff_syst) THEN
-!!$     PRINT*,'NOT IMPLEMENTED YET'
-!!$  ELSE
-!!$     IF (diff_set) THEN
-!!$        DO ii=1,n1
-!!$           ai=list1(ii)+1
-!!$           gg=0
-!!$           DO jj=1,n2
-!!$              IF (matrix(ii,jj)<=cut_off) THEN
-!!$                 aj=list2(jj)+1
-!!$                 IF (ai/=aj) THEN
-!!$                    IF (gg==0) THEN
-!!$                       ALLOCATE(pcl_ind(ii)%i1(1),pcl_val(ii)%d1(1))
-!!$                    ELSE
-!!$                       ALLOCATE(box_ind(gg),box_val(gg))
-!!$                       box_ind(:)=pcl_ind(ii)%i1(:)
-!!$                       box_val(:)=pcl_val(ii)%d1(:)
-!!$                       DEALLOCATE(pcl_ind(ii)%i1,pcl_val(ii)%d1)
-!!$                       ALLOCATE(pcl_ind(ii)%i1(gg+1),pcl_val(ii)%d1(gg+1))
-!!$                       pcl_ind(ii)%i1(1:gg)=box_ind(:) 
-!!$                       pcl_val(ii)%d1(1:gg)=box_val(:)
-!!$                       DEALLOCATE(pcl_ind,pcl_val)
-!!$                    END IF
-!!$                    gg=gg+1
-!!$                    pcl_ind(ii)%i1(gg)=aj
-!!$                    pcl_ind(ii)%d1(gg)=matrix(ii,jj)
-!!$                 END IF
-!!$              END IF
-!!$           END DO
-!!$           pcl_num(ii)=gg
-!!$        END DO
-!!$     ELSE
-!!$        DO ii=1,n1
-!!$           ai=list1(ii)+1
-!!$           gg=pcl_num(ii)
-!!$           DO jj=ii+1,n2
-!!$              IF (matrix(ii,jj)<=cut_off) THEN
-!!$                 aj=list2(jj)+1
-!!$                 ll=pcl_num(jj)
-!!$                 IF (gg==0) THEN
-!!$                    ALLOCATE(pcl_ind(ii)%i1(1),pcl_val(ii)%d1(1))
-!!$                 ELSE
-!!$                    ALLOCATE(box_ind(gg),box_val(gg))
-!!$                    box_ind(:)=pcl_ind(ii)%i1(:)
-!!$                    box_val(:)=pcl_val(ii)%d1(:)
-!!$                    DEALLOCATE(pcl_ind(ii)%i1,pcl_val(ii)%d1)
-!!$                    ALLOCATE(pcl_ind(ii)%i1(gg+1),pcl_val(ii)%d1(gg+1))
-!!$                    pcl_ind(ii)%i1(1:gg)=box_ind(:) 
-!!$                    pcl_val(ii)%d1(1:gg)=box_val(:)
-!!$                    DEALLOCATE(box_ind,box_val)
-!!$                 END IF
-!!$                 IF (ll==0) THEN
-!!$                    ALLOCATE(pcl_ind(jj)%i1(1),pcl_val(jj)%d1(1))
-!!$                 ELSE
-!!$                    ALLOCATE(box_ind(ll),box_val(ll))
-!!$                    box_ind(:)=pcl_ind(jj)%i1(:)
-!!$                    box_val(:)=pcl_val(jj)%d1(:)
-!!$                    DEALLOCATE(pcl_ind(jj)%i1,pcl_val(jj)%d1)
-!!$                    ALLOCATE(pcl_ind(jj)%i1(ll+1),pcl_val(jj)%d1(ll+1))
-!!$                    pcl_ind(jj)%i1(1:ll)=box_ind(:) 
-!!$                    pcl_val(jj)%d1(1:ll)=box_val(:)
-!!$                    DEALLOCATE(box_ind,box_val)
-!!$                 END IF
-!!$                 gg=gg+1
-!!$                 ll=ll+1
-!!$                 pcl_ind(ii)%i1(gg)=aj
-!!$                 pcl_val(ii)%d1(gg)=matrix(ii,jj)
-!!$                 pcl_ind(jj)%i1(ll)=ai
-!!$                 pcl_val(jj)%d1(ll)=matrix(ii,jj)
-!!$                 pcl_num(jj)=ll
-!!$              END IF
-!!$           END DO
-!!$           pcl_num(ii)=gg
-!!$        END DO
-!!$     END IF
-!!$  END IF
-!!$
-!!$  DEALLOCATE(matrix)
-!!$
-!!$END SUBROUTINE MAKE_CONTACT_LIST
+  IF (ALLOCATED(cl_ind)) DEALLOCATE(cl_ind)
+  IF (ALLOCATED(cl_val)) DEALLOCATE(cl_val)
+  IF (ALLOCATED(cl_start)) DEALLOCATE(cl_start)
+
+  ALLOCATE(matrix(n1,n2))
+  ALLOCATE(pcl_ind(natom1),pcl_val(natom1),pcl_num(natom1))
+  pcl_num=0
+
+  CALL DISTANCE(diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,matrix)
+
+  IF (diff_syst) THEN
+     PRINT*,'NOT IMPLEMENTED YET'
+  ELSE
+     IF (diff_set) THEN
+        DO ii=1,n1
+           ai=list1(ii)+1
+           gg=0
+           DO jj=1,n2
+              IF (matrix(ii,jj)<=cut_off) THEN
+                 aj=list2(jj)+1
+                 IF (ai/=aj) THEN
+                    IF (gg==0) THEN
+                       ALLOCATE(pcl_ind(ii)%i1(1),pcl_val(ii)%d1(1))
+                    ELSE
+                       ALLOCATE(box_ind(gg),box_val(gg))
+                       box_ind(:)=pcl_ind(ii)%i1(:)
+                       box_val(:)=pcl_val(ii)%d1(:)
+                       DEALLOCATE(pcl_ind(ii)%i1,pcl_val(ii)%d1)
+                       ALLOCATE(pcl_ind(ii)%i1(gg+1),pcl_val(ii)%d1(gg+1))
+                       pcl_ind(ii)%i1(1:gg)=box_ind(:) 
+                       pcl_val(ii)%d1(1:gg)=box_val(:)
+                       DEALLOCATE(pcl_ind,pcl_val)
+                    END IF
+                    gg=gg+1
+                    pcl_ind(ii)%i1(gg)=aj
+                    pcl_val(ii)%d1(gg)=matrix(ii,jj)
+                 END IF
+              END IF
+           END DO
+           pcl_num(ii)=gg
+        END DO
+     ELSE
+        DO ii=1,n1
+           ai=list1(ii)+1
+           gg=pcl_num(ii)
+           DO jj=ii+1,n2
+              IF (matrix(ii,jj)<=cut_off) THEN
+                 aj=list2(jj)+1
+                 ll=pcl_num(jj)
+                 IF (gg==0) THEN
+                    ALLOCATE(pcl_ind(ii)%i1(1),pcl_val(ii)%d1(1))
+                 ELSE
+                    ALLOCATE(box_ind(gg),box_val(gg))
+                    box_ind(:)=pcl_ind(ii)%i1(:)
+                    box_val(:)=pcl_val(ii)%d1(:)
+                    DEALLOCATE(pcl_ind(ii)%i1,pcl_val(ii)%d1)
+                    ALLOCATE(pcl_ind(ii)%i1(gg+1),pcl_val(ii)%d1(gg+1))
+                    pcl_ind(ii)%i1(1:gg)=box_ind(:) 
+                    pcl_val(ii)%d1(1:gg)=box_val(:)
+                    DEALLOCATE(box_ind,box_val)
+                 END IF
+                 IF (ll==0) THEN
+                    ALLOCATE(pcl_ind(jj)%i1(1),pcl_val(jj)%d1(1))
+                 ELSE
+                    ALLOCATE(box_ind(ll),box_val(ll))
+                    box_ind(:)=pcl_ind(jj)%i1(:)
+                    box_val(:)=pcl_val(jj)%d1(:)
+                    DEALLOCATE(pcl_ind(jj)%i1,pcl_val(jj)%d1)
+                    ALLOCATE(pcl_ind(jj)%i1(ll+1),pcl_val(jj)%d1(ll+1))
+                    pcl_ind(jj)%i1(1:ll)=box_ind(:) 
+                    pcl_val(jj)%d1(1:ll)=box_val(:)
+                    DEALLOCATE(box_ind,box_val)
+                 END IF
+                 gg=gg+1
+                 ll=ll+1
+                 pcl_ind(ii)%i1(gg)=aj
+                 pcl_val(ii)%d1(gg)=matrix(ii,jj)
+                 pcl_ind(jj)%i1(ll)=ai
+                 pcl_val(jj)%d1(ll)=matrix(ii,jj)
+                 pcl_num(jj)=ll
+              END IF
+           END DO
+           pcl_num(ii)=gg
+        END DO
+     END IF
+  END IF
+
+  DEALLOCATE(matrix)
+
+  gg=SUM(pcl_num(:),DIM=1)
+  ALLOCATE(cl_val(gg),cl_ind(gg),cl_start(natom1+1))
+
+  gg=0
+  DO ii=1,natom1
+     cl_start(ii)=gg
+     DO jj=1,pcl_num(ii)
+        gg=gg+1
+        cl_ind(gg)=pcl_ind(ii)%i1(jj)
+        cl_val(gg)=pcl_val(ii)%d1(jj)
+     END DO
+  END DO
+  cl_start(natom1+1)=gg
+
+  DEALLOCATE(pcl_ind,pcl_val,pcl_num)
+
+END SUBROUTINE MAKE_CONTACT_LIST
 
 
 SUBROUTINE DISTANCE (diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,matrix)

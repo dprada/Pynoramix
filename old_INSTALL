@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Checking compiler
+
+
+
 in_xdr=0
 in_f90=0
 
