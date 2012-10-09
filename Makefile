@@ -1,9 +1,10 @@
 ## Checking compilers and libraries
 
 F2PY=
-FCOMP=
+FCOMP=gfortran
+FTYPE=
 LAPACK_LIBS=
-FOPTS=-fast
+FOPTS=
 FFLAGS=
 
 #FOPTS=-check
@@ -28,9 +29,9 @@ endif
 ifeq ($(FCOMP),)
 IFORT_IN=$(shell which ifort)
 GFORTRAN_IN=$(shell which gfortran)
-PGF90_IN=$(shell which pgf90)
+PGF90_IN=$(shell which pgf95)
 ifneq ($(PGF90_IN),)
-FCOMP=pgf90
+FCOMP=pgf95
 endif
 ifneq ($(GFORTRAN_IN),)
 FCOMP=gfortran
@@ -49,6 +50,9 @@ FTYPE=intelem
 else
 FTYPE=intel
 endif
+endif
+ifeq ($(FCOMP),pgf95)
+FTYPE=pg
 endif
 
 # Configuring lapack libraries if "LAPACK_LIBS= "
@@ -87,7 +91,7 @@ options:
 	@ echo "-----------------------------------"
 	@ echo "# COMPILING WITH:"
 	@ echo "-----------------------------------"
-	@ echo "Fortran Compiler:" $(FCOMP)
+	@ echo "Fortran Compiler:" $(FCOMP) , "("$(FTYPE)")"
 	@ echo "Fortran 2 Python:" $(F2PY)
 	@ echo "Lapack libraries:" $(LAPACK_LIBS)
 	@ echo "Fortran options :" $(FOPTS)

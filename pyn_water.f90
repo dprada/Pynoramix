@@ -46,7 +46,7 @@ CONTAINS
 
 SUBROUTINE INITIALIZE_COORS_MEMORY()
 
-  IF (python) natw=3
+  IF (python==1) natw=3
 
   ALLOCATE(xarr(nw,natw,3),iarr(nw,2,nparts),darr(nw,2,nparts),Lbox(3,3),Lbox2(3,3))
   xarr=0.0d0
@@ -280,7 +280,7 @@ SUBROUTINE DMAT_EF()
      aux_filter(i)=.false.
 
      DO j=1,NW
-        IF (aux_filter(j)==.true.) THEN
+        IF (aux_filter(j).eqv..true.) THEN
            oo=oo+1
            list(oo)=j
            aux_filter(j)=.false.
@@ -500,7 +500,7 @@ SUBROUTINE HBONDS_BOX ()
 
   INTEGER::i,j
 
-  IF (PYTHON) THEN
+  IF (PYTHON==1) THEN
 
      Lbox2=Lbox/2.0d0
 
@@ -713,7 +713,7 @@ SUBROUTINE HBONDS_SIGN()
         jj=oohs(i,1)
         CALL DEF_SIG(i,gg,jj,up)
         hbsmol(i,1)=gg
-        IF (up==.true.) then
+        IF (up.eqv..true.) then
            pos_o(i,1)=1
         ELSE
            pos_o(i,1)=-1
@@ -735,7 +735,7 @@ SUBROUTINE HBONDS_SIGN()
            gg=obonds(i,gg)
            CALL DEF_SIG(i,gg,jj,up)
            hbsmol(i,j)=gg
-           IF (up==.true.) then
+           IF (up.eqv..true.) then
               pos_o(i,j)=1
            ELSE
               pos_o(i,j)=-1
@@ -879,7 +879,7 @@ SUBROUTINE SKINNER_PARAMETER (index_wat_o,index_wat_h,index_h,sk_val)
   aux_cos=0.0d0
   sk_val=0.0d0
 
-  IF (python) THEN
+  IF (python==1) THEN
      w_o=index_wat_o+1
      w_h=index_wat_h+1
   ELSE
@@ -968,7 +968,7 @@ SUBROUTINE HBONDS_DIST_OO_ANG_OOH()
      DO j=1,2
         DO jj=1,nparts
            g=iarr(i,j,jj)
-           IF (filter(i,g)==.false.) THEN
+           IF (filter(i,g).eqv..false.) THEN
               filter(i,g)=.true.
               filter(g,i)=.true.
               aux2=XARR(g,1,:)-aux
@@ -1127,7 +1127,7 @@ SUBROUTINE HBONDS_TOPOLOGICAL()
               IF (roh_val>darr(i,reord(j),jj)) interr=.false.
            END IF
         END DO
-        IF (interr==.true.) THEN
+        IF (interr.eqv..true.) THEN
            DO h=1,2
               DO jj=1,nparts
                  IF (iarr(g,h,jj)==i) THEN
@@ -1136,7 +1136,7 @@ SUBROUTINE HBONDS_TOPOLOGICAL()
               END DO
            END DO
         END IF
-        IF (interr==.true.) THEN
+        IF (interr.eqv..true.) THEN
            num_h2o(i,j)=1
            strength_h2o(i,j,1)=roh_val
            h2o(i,j,1)=g
@@ -1401,7 +1401,7 @@ SUBROUTINE MICROSTATES_BOX_IND_WAT (num_wat,mss)
   INTEGER,DIMENSION(num_wat,17),INTENT(OUT)::mss
   INTEGER::j
 
-  IF (PYTHON) THEN
+  IF (PYTHON==1) THEN
      CALL INITIALIZE_HBONDS_MEMORY()
      CALL INITIALIZE_MSS_MEMORY()
 
@@ -1495,7 +1495,7 @@ SUBROUTINE BUILD_HBONDS_LIMIT_SIMETRIC ()
                  EXIT
               END IF
            END DO
-           IF (interruptor==.false.) THEN
+           IF (interruptor.eqv..false.) THEN
               print*,'ERROR 009'
               stop
            END IF
@@ -1506,7 +1506,7 @@ SUBROUTINE BUILD_HBONDS_LIMIT_SIMETRIC ()
   !Miro ahora los oxigenos porque ahora tienen mas de 3 enlaces
   b=0
   interruptor=.TRUE.
-  DO WHILE (interruptor==.true.)
+  DO WHILE (interruptor.eqv..true.)
      b=b+1
      interruptor=.false.
      DO i=1,NW
@@ -1514,7 +1514,7 @@ SUBROUTINE BUILD_HBONDS_LIMIT_SIMETRIC ()
         IF (cuento_o(i)>2) THEN
            g=0
            DO j=1,num_o2h(i)
-              IF (cuento(i,j)==.true.) THEN
+              IF (cuento(i,j).eqv..true.) THEN
                  g=g+1
                  IF (g>2) THEN
                     cuento(i,j)=.false.
@@ -1554,7 +1554,7 @@ SUBROUTINE BUILD_HBONDS_LIMIT_SIMETRIC ()
   DO i=1,NW
      g=0
      DO j=1,6
-        IF (cuento(i,j)==.true.) THEN
+        IF (cuento(i,j).eqv..true.) THEN
            g=g+1
            hbsmol(i,2+g)=o2h(i,j)
            hbsmol(i,4+g)=o2which(i,j)
@@ -1652,12 +1652,12 @@ SUBROUTINE STATE_SHORT_NOSIMETRIC(a)
   g=0
 
   DO j=1,17
-     IF (filtro(j)==.true.) THEN
+     IF (filtro(j).eqv..true.) THEN
         b=aux(j)
         g=g+1
         shell_w(a,g)=b
         DO i=1,17
-           IF (filtro(i)==.true.) THEN
+           IF (filtro(i).eqv..true.) THEN
               IF (aux(i)==b) THEN
                  microstate(i)=j
                  filtro(i)=.false.
@@ -1712,13 +1712,13 @@ SUBROUTINE REMOVE_PERMUT_SHORT_NOSIMETRIC(mol)
            key_aux(j)=key(i)
            filtro=.true.
            DO g=1,17
-              IF ((microstate(g)==i).and.(filtro(g)==.true.)) THEN
+              IF ((microstate(g)==i).and.(filtro(g).eqv..true.)) THEN
                  microstate(g)=j
                  filtro(g)=.false.
               END IF
            END DO
            DO g=1,17
-              IF ((microstate(g)==j).and.(filtro(g)==.true.)) THEN
+              IF ((microstate(g)==j).and.(filtro(g).eqv..true.)) THEN
                  microstate(g)=i
                  filtro(g)=.false.
               END IF
@@ -1800,7 +1800,7 @@ SUBROUTINE REMOVE_PERMUT_SHORT_NOSIMETRIC(mol)
      interruptor=.true.
   END IF
   
-  IF (interruptor==.false.) THEN
+  IF (interruptor.eqv..false.) THEN
      IF (x_core/=0) THEN
         IF (x_core==1) THEN
            IF (x_core5==1) THEN
@@ -1817,7 +1817,7 @@ SUBROUTINE REMOVE_PERMUT_SHORT_NOSIMETRIC(mol)
      END IF
   END IF
 
-  IF (interruptor==.false.) THEN
+  IF (interruptor.eqv..false.) THEN
      IF (ceros4/=ceros5) interruptor=.true.
      IF (ceros5<ceros4) THEN
         CALL DOY_VUELTA()
@@ -1825,7 +1825,7 @@ SUBROUTINE REMOVE_PERMUT_SHORT_NOSIMETRIC(mol)
      END IF
   END IF
   
-  IF (interruptor==.false.) THEN
+  IF (interruptor.eqv..false.) THEN
      IF (x_primera4/=x_primera5) interruptor=.true.
      IF (x_primera5<x_primera4) THEN
         CALL DOY_VUELTA()
@@ -1833,7 +1833,7 @@ SUBROUTINE REMOVE_PERMUT_SHORT_NOSIMETRIC(mol)
      END IF
   END IF
   
-  IF (interruptor==.false.) THEN
+  IF (interruptor.eqv..false.) THEN
      IF (x_segunda4/=x_segunda5) interruptor=.true.
      IF (x_segunda5<x_segunda4) THEN
         CALL DOY_VUELTA()
@@ -1855,13 +1855,13 @@ SUBROUTINE REMOVE_PERMUT_SHORT_NOSIMETRIC(mol)
            microstate(j)=ms_short2(i)
            filtro=.true.
            DO g=1,17
-              IF ((microstate(g)==i).and.(filtro(g)==.true.)) THEN
+              IF ((microstate(g)==i).and.(filtro(g).eqv..true.)) THEN
                  microstate(g)=j
                  filtro(g)=.false.
               END IF
            END DO
            DO g=1,17
-              IF ((microstate(g)==j).and.(filtro(g)==.true.)) THEN
+              IF ((microstate(g)==j).and.(filtro(g).eqv..true.)) THEN
                  microstate(g)=i
                  filtro(g)=.false.
               END IF
@@ -1878,7 +1878,7 @@ SUBROUTINE REMOVE_PERMUT_SHORT_NOSIMETRIC(mol)
 
   !sigo
   
-  IF (interruptor==.false.) THEN
+  IF (interruptor.eqv..false.) THEN
      IF (ceros>0) THEN
         IF ((ms_short2(12)==0).and.(ms_short2(15)/=0)) THEN
            interruptor=.true.
@@ -1889,7 +1889,7 @@ SUBROUTINE REMOVE_PERMUT_SHORT_NOSIMETRIC(mol)
               interruptor=.true.
            END IF
         END IF
-        IF (interruptor==.false.) THEN
+        IF (interruptor.eqv..false.) THEN
            IF ((ms_short2(13)==0).and.(ms_short2(16)/=0)) THEN
               interruptor=.true.
            ELSE
@@ -1900,7 +1900,7 @@ SUBROUTINE REMOVE_PERMUT_SHORT_NOSIMETRIC(mol)
               END IF
            END IF
         END IF
-        IF (interruptor==.false.) THEN
+        IF (interruptor.eqv..false.) THEN
            IF ((ms_short2(14)==0).and.(ms_short2(17)/=0)) THEN
               interruptor=.true.
            ELSE
@@ -1915,7 +1915,7 @@ SUBROUTINE REMOVE_PERMUT_SHORT_NOSIMETRIC(mol)
   END IF
 
 
-  IF (interruptor==.false.) THEN
+  IF (interruptor.eqv..false.) THEN
      IF ((ms_short2(12)==12).and.(ms_short2(15)/=15)) THEN
         interruptor=.true.
      ELSE
@@ -1925,7 +1925,7 @@ SUBROUTINE REMOVE_PERMUT_SHORT_NOSIMETRIC(mol)
            interruptor=.true.
         END IF
      END IF
-     IF (interruptor==.false.) THEN
+     IF (interruptor.eqv..false.) THEN
         IF ((ms_short2(13)==13).and.(ms_short2(16)/=16)) THEN
            interruptor=.true.
         ELSE
@@ -1936,7 +1936,7 @@ SUBROUTINE REMOVE_PERMUT_SHORT_NOSIMETRIC(mol)
            END IF
         END IF
      END IF
-     IF (interruptor==.false.) THEN
+     IF (interruptor.eqv..false.) THEN
         IF ((ms_short2(14)==14).and.(ms_short2(17)/=17)) THEN
            interruptor=.true.
         ELSE
@@ -1987,11 +1987,11 @@ SUBROUTINE REMOVE_PERMUT_SHORT_NOSIMETRIC(mol)
      filtro=.true.
      DO i=12,17
         j=ms_short2(i)
-        IF ((j>11).and.(filtro(i)==.true.)) THEN
+        IF ((j>11).and.(filtro(i).eqv..true.)) THEN
            ms_short2(i)=i
            filtro(i)=.false.
            DO ii=i+1,17
-              IF ((microstate(ii)==j).and.(filtro(ii)==.true.)) THEN
+              IF ((microstate(ii)==j).and.(filtro(ii).eqv..true.)) THEN
                  ms_short2(ii)=i
                  filtro(ii)=.false.
               END IF
@@ -2002,7 +2002,7 @@ SUBROUTINE REMOVE_PERMUT_SHORT_NOSIMETRIC(mol)
   microstate=ms_short2
   key_aux=key
 
-  IF (interruptor==.false.) THEN
+  IF (interruptor.eqv..false.) THEN
      IF ((ms_short2(13)==3).and.(ms_short2(16)==2)) THEN
         CALL DOY_VUELTA()
         CALL DOY_VUELTA_KEY (key,key_aux)
@@ -2060,11 +2060,11 @@ SUBROUTINE DOY_VUELTA ()
   
   DO i=1,17
      j=ms_short2(i)
-     IF ((j>1).and.(filtro(i)==.true.)) THEN
+     IF ((j>1).and.(filtro(i).eqv..true.)) THEN
         ms_short2(i)=i
         filtro(i)=.false.
         DO ii=i+1,17
-           IF ((microstate(ii)==j).and.(filtro(ii)==.true.)) THEN
+           IF ((microstate(ii)==j).and.(filtro(ii).eqv..true.)) THEN
               ms_short2(ii)=i
               filtro(ii)=.false.
            END IF

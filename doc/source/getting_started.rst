@@ -56,6 +56,7 @@ Pynoramix depends on some packages:
 - NumPy
 - f2py
 - python-dev (to fix the problem with file Python.h)
+- liblapack and liblapack-dev (or similar: atlas, blas...)
 
 After solving the dependencies, the script INSTALL needs to be executed to compile the fortran core of Pynoramix.
 

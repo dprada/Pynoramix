@@ -52,7 +52,7 @@ SUBROUTINE TRAJ_MSS_2_TRAJ_NODES ()
      END DO
    
      nnn=0
-     WRITE(f1,'(I)') box
+     WRITE(f1,*) box   !! Aqui habia un '(I)' donde el asterisco
      f1="(I,"//TRIM(ADJUSTL(f1))//"I3)"
 
      OPEN(21,FILE="prov_trad_aux.aux",status="REPLACE",ACTION="WRITE")
@@ -1614,15 +1614,17 @@ SUBROUTINE DIJKSTRA (distancia,node,dim_out,directed,T_start,T_ind,T_tau,N_nodes
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::vect_aux
   LOGICAL,DIMENSION(:),ALLOCATABLE::filtro,filtro2
   
+  DOUBLE PRECISION::azero
   INTEGER::i,j,jj,g,gg,h,hh
   
   ALLOCATE(filtro(N_nodes),vect_aux(N_nodes))
   
   distancia=0.0d0
+  azero=0.0d0
 
   IF (node>0) THEN
      
-     vect_aux=1.0d0/0.0d0
+     vect_aux=1.0d0/azero
      filtro=.true.
      vect_aux(node)=0.0d0
      
@@ -1644,7 +1646,7 @@ SUBROUTINE DIJKSTRA (distancia,node,dim_out,directed,T_start,T_ind,T_tau,N_nodes
 
      ALLOCATE(filtro2(N_nodes))
      DO h=1,N_nodes
-        vect_aux=1.0d0/0.0d0
+        vect_aux=1.0d0/azero
         filtro=.true.
         filtro2=.true.
         vect_aux(h)=0.0d0

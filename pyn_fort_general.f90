@@ -17,7 +17,7 @@ SUBROUTINE PBC(vector,box,ortho)
   INTEGER::i
   DOUBLE PRECISION::x,L,Lhalf
  
-  IF (ortho) THEN
+  IF (ortho==1) THEN
      DO i=1,3
         L=box(i,i)
         Lhalf=0.50d0*L
@@ -79,10 +79,10 @@ SUBROUTINE MAKE_CONTACT_LIST (cut_off,diff_syst,diff_set,pbc_opt,list1,coors1,bo
 
   CALL DISTANCE(diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,matrix)
 
-  IF (diff_syst) THEN
+  IF (diff_syst==1) THEN
      PRINT*,'NOT IMPLEMENTED YET'
   ELSE
-     IF (diff_set) THEN
+     IF (diff_set==1) THEN
         DO ii=1,n1
            ai=list1(ii)+1
            gg=0
@@ -201,8 +201,8 @@ llist2=list2+1
 
 matrix=0.0d0
 
-IF (diff_syst .or. diff_set) THEN
-   IF (pbc_opt) THEN
+IF ((diff_syst==1) .or. (diff_set==1)) THEN
+   IF (pbc_opt==1) THEN
       do i=1,n1
          ai=llist1(i)
          vect_aux=coors1(ai,:)
@@ -227,7 +227,7 @@ IF (diff_syst .or. diff_set) THEN
       end do
    END IF
 ELSE
-   IF (pbc_opt) THEN
+   IF (pbc_opt==1) THEN
       do i=1,n1
          ai=llist1(i)
          vect_aux=coors1(ai,:)
@@ -261,7 +261,8 @@ DEALLOCATE(llist1,llist2)
 END SUBROUTINE DISTANCE
 
 
-SUBROUTINE DISTANCE_IMAGES (diff_syst,diff_set,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,min_dists,ind_atoms_min,min_image)
+SUBROUTINE DISTANCE_IMAGES (diff_syst,diff_set,list1,coors1,box1,ortho1,list2,coors2,&
+                            n1,n2,natom1,natom2,min_dists,ind_atoms_min,min_image)
 
 IMPLICIT NONE
   
@@ -309,7 +310,7 @@ ALLOCATE(llist1(n1),llist2(n2))
 llist1=list1+1
 llist2=list2+1
 
-IF (diff_set) THEN
+IF (diff_set==1) THEN
    DO ii=1,n1
       ai=llist1(ii)
       vect_aux=coors1(ai,:)
@@ -560,7 +561,8 @@ DEALLOCATE(cdm,vect_aux,matrix,values)
 END SUBROUTINE PRINCIPAL_GEOMETRIC_AXIS
 
 
-SUBROUTINE neighbs_ranking (diff_syst,diff_set,pbc_opt,limit,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,neighb_list) !before: neighb_dist,neighb_uvect
+SUBROUTINE neighbs_ranking (diff_syst,diff_set,pbc_opt,limit,list1,coors1,box1,ortho1,list2,coors2,&
+                            n1,n2,natom1,natom2,neighb_list) !before: neighb_dist,neighb_uvect
 
   IMPLICIT NONE
 
@@ -589,7 +591,7 @@ SUBROUTINE neighbs_ranking (diff_syst,diff_set,pbc_opt,limit,list1,coors1,box1,o
   filter=.TRUE.
   CALL distance (diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,dist_matrix)
 
-  IF (diff_syst .or. diff_set) THEN
+  IF ((diff_syst==1) .or. (diff_set==1)) THEN
      DO ii=1,n1
         dist_aux=dist_matrix(ii,:)
         DO jj=1,limit
@@ -626,7 +628,8 @@ SUBROUTINE neighbs_ranking (diff_syst,diff_set,pbc_opt,limit,list1,coors1,box1,o
 END SUBROUTINE neighbs_ranking
 
 
-SUBROUTINE neighbs_dist (diff_syst,diff_set,pbc_opt,limit,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2,contact_map,num_neighbs,dist_matrix) !before: neighb_dist,neighb_uvect
+SUBROUTINE neighbs_dist (diff_syst,diff_set,pbc_opt,limit,list1,coors1,box1,ortho1,list2,&
+                         coors2,n1,n2,natom1,natom2,contact_map,num_neighbs,dist_matrix) !before: neighb_dist,neighb_uvect
 
   IMPLICIT NONE
 
@@ -653,7 +656,7 @@ SUBROUTINE neighbs_dist (diff_syst,diff_set,pbc_opt,limit,list1,coors1,box1,orth
   contact_map=0
   num_neighbs=0
 
-  IF (diff_syst .or. diff_set) THEN
+  IF ((diff_syst==1) .or. (diff_set==1)) THEN
      DO ii=1,n1
         gg=0
         DO jj=1,n2
@@ -692,7 +695,7 @@ SUBROUTINE translate_list (sort,list,filter,distances,dim_out,n_list,trans_inds)
   LOGICAL,DIMENSION(:),ALLOCATABLE::ifilter
   INTEGER::ii,gg
 
-  IF (sort) THEN
+  IF (sort==1) THEN
 
      ALLOCATE(ifilter(n_list))
      ifilter=filter
@@ -709,7 +712,7 @@ SUBROUTINE translate_list (sort,list,filter,distances,dim_out,n_list,trans_inds)
 
      gg=0
      DO ii=1,n_list
-        IF (filter(ii)) THEN
+        IF (filter(ii)==1) THEN
            gg=gg+1
            trans_inds(gg)=list(gg)
         END IF
