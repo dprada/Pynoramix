@@ -26,7 +26,7 @@ SUBROUTINE TRAJ_MSS_2_TRAJ_NODES ()
   LOGICAL,DIMENSION(:,:),ALLOCATABLE::occup
   INTEGER,DIMENSION(:,:),ALLOCATABLE::indice
   INTEGER,DIMENSION(:),ALLOCATABLE::deantes
-  INTEGER:: nnn,i,j,box,counted
+  INTEGER:: nnn,i,j,box,counted,a,b
   CHARACTER*20::f1
 
   ALLOCATE(traj_nodes(nw,num_frames))
@@ -41,7 +41,7 @@ SUBROUTINE TRAJ_MSS_2_TRAJ_NODES ()
      END IF
      
      ALLOCATE(occup(counted,lim_inf_mss(box):lim_sup_mss(box)),indice(counted,lim_inf_mss(box):lim_sup_mss(box)))
-     ocupado=.false.
+     occup=.false.
    
      DO i=1,num_frames
         DO ii=1,num_parts
@@ -59,7 +59,7 @@ SUBROUTINE TRAJ_MSS_2_TRAJ_NODES ()
      IF (box==1) THEN
         DO i=1,counted
            DO j=lim_inf_mss(box),lim_sup_mss(box)
-              IF (occup(i,j)==.true.) THEN
+              IF (occup(i,j).eqv..true.) THEN
                  nnn=nnn+1
                  indice(i,j)=nnn
                  WRITE(21,f1) nnn,j
@@ -72,7 +72,7 @@ SUBROUTINE TRAJ_MSS_2_TRAJ_NODES ()
         DO i=1,counted
            READ(61,*) a,deantes(:)
            DO j=lim_inf_mss(box),lim_sup_mss(box)
-              IF (occup(i,j)==.true.) THEN
+              IF (occup(i,j).eqv..true.) THEN
                  nnn=nnn+1
                  WRITE(21,f1) nnn,deantes(:),j
                  indice(i,j)=nnn
@@ -1460,7 +1460,7 @@ SUBROUTINE cfep_mfpt (plot,info_1,info_2,A,T_ind,T_tau,T_start,length,num_iter,N
         END IF
      END DO
      
-     IF (interr==.false.) exit
+     IF (interr.eqv..false.) exit
 
      Pf2=Pf2+1.0d0
   END DO
@@ -1632,7 +1632,7 @@ SUBROUTINE DIJKSTRA (distancia,node,dim_out,directed,T_start,T_ind,T_tau,N_nodes
         i=MINLOC(vect_aux(:),DIM=1,MASK=filtro)
         DO j=T_start(i)+1,T_start(i+1)
            g=T_ind(j)
-           IF (filtro(g)==.true.) THEN
+           IF (filtro(g).eqv..true.) THEN
               IF (vect_aux(g)>(vect_aux(i)+T_tau(j))) THEN
                  vect_aux(g)=vect_aux(i)+T_tau(j)
               END IF
@@ -1660,7 +1660,7 @@ SUBROUTINE DIJKSTRA (distancia,node,dim_out,directed,T_start,T_ind,T_tau,N_nodes
            i=MINLOC(vect_aux(:),DIM=1,MASK=filtro)
            DO j=T_start(i)+1,T_start(i+1)
               g=T_ind(j)
-              IF (filtro2(g)==.true.) THEN
+              IF (filtro2(g).eqv..true.) THEN
                  IF (vect_aux(g)>(vect_aux(i)+T_tau(j))) THEN
                     vect_aux(g)=vect_aux(i)+T_tau(j)
                  END IF
@@ -1682,7 +1682,8 @@ END SUBROUTINE DIJKSTRA
 
 
 
-SUBROUTINE MDS (coordinates,eigenvals,eigenvects,stress,directed,opt,opt_stress,dim,lout,T_start,T_ind,T_tau,distances,N_nodes,Ktot,dim_distances)
+SUBROUTINE MDS (coordinates,eigenvals,eigenvects,stress,directed,opt,opt_stress,dim,lout,&
+     T_start,T_ind,T_tau,distances,N_nodes,Ktot,dim_distances)
  
   IMPLICIT NONE
   
@@ -1857,7 +1858,7 @@ SUBROUTINE MCL (N_sets,comunidades,granularity,epsilon,iterations,T_start,T_ind,
   inter=.true.
   ii=0
 
-  DO WHILE (inter==.true.)
+  DO WHILE (inter.eqv..true.)
      ii=ii+1
 
      matriz2=matmul(matriz,matriz)
@@ -1883,7 +1884,7 @@ SUBROUTINE MCL (N_sets,comunidades,granularity,epsilon,iterations,T_start,T_ind,
                  exit
               END IF
            END DO
-           IF (inter==.true.) THEN
+           IF (inter.eqv..true.) THEN
               exit
            END IF
         END DO
