@@ -91,7 +91,7 @@ options:
 	@ echo "-----------------------------------"
 	@ echo "# COMPILING WITH:"
 	@ echo "-----------------------------------"
-	@ echo "Fortran Compiler:" $(FCOMP) , "("$(FTYPE)")"
+	@ echo "Fortran Compiler:" $(FCOMP) "("$(FTYPE)")"
 	@ echo "Fortran 2 Python:" $(F2PY)
 	@ echo "Lapack libraries:" $(LAPACK_LIBS)
 	@ echo "Fortran options :" $(FOPTS)
