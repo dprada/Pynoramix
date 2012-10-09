@@ -36,7 +36,7 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_vars,o_natom,o_delta_t,pos_o)
      PRINT*, '# Error: Name of file too long.'
   end if
 
-  OPEN (unit=funit,name=TRIM(file_name),status='old',action='read',form='unformatted',access='stream')
+  OPEN (unit=funit,file=TRIM(file_name),status='old',action='read',form='unformatted',access='stream')
 
   !!!!!!!!! Checking the native Endianness
 
@@ -58,7 +58,7 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_vars,o_natom,o_delta_t,pos_o)
         ! Detected standard 32-bit DCD file with little-endian data.
         IF (endianness=='BIG   ') THEN
            CLOSE(funit)
-           OPEN (unit=funit,name='run.dcd',status='old',action='read',form='unformatted',access='stream',convert='LITTLE_ENDIAN')
+           OPEN (unit=funit,file='run.dcd',status='old',action='read',form='unformatted',access='stream',convert='LITTLE_ENDIAN')
            READ(funit) HD(:)
         END IF
      END IF
@@ -66,7 +66,7 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_vars,o_natom,o_delta_t,pos_o)
         ! Detected standard 32-bit DCD file with big-endian data.
         IF (endianness=='LITTLE') THEN
            CLOSE(funit)
-           OPEN (unit=funit,name='run.dcd',status='old',action='read',form='unformatted',access='stream',convert='BIG_ENDIAN')
+           OPEN (unit=funit,file='run.dcd',status='old',action='read',form='unformatted',access='stream',convert='BIG_ENDIAN')
            READ(funit) HD(:)
         END IF
      END IF
@@ -151,9 +151,10 @@ SUBROUTINE read (funit,natom,with_cell,pos_i,pos_o,cell,coors,io_err,io_end)
 
   ALLOCATE(buffer(natom))
 
-  IF (with_cell) THEN
+  IF (with_cell==1) THEN
      buffer_cell=0.0d0
-     READ(funit,pos=pos_o,end=600) HD,buffer_cell(1,1), buffer_cell(1,2), buffer_cell(2,2), buffer_cell(1,3), buffer_cell(2,3), buffer_cell(3,3)
+     READ(funit,pos=pos_o,end=600) HD,buffer_cell(1,1), buffer_cell(1,2), buffer_cell(2,2), &
+          buffer_cell(1,3), buffer_cell(2,3), buffer_cell(3,3)
      cell=dble(buffer_cell)
      INQUIRE(funit,pos=pos_o)
   END IF
@@ -203,7 +204,7 @@ SUBROUTINE open_write(len_ch,file_name,i_vars,i_natom,i_delta_t,origin_name,funi
      return
   end if
 
-  OPEN (unit=funit,name=TRIM(file_name),status='NEW',action='write',form='unformatted')
+  OPEN (unit=funit,file=TRIM(file_name),status='NEW',action='write',form='unformatted')
 
   DCD_TYPE='CORD'
   DCD_VARS=i_vars
@@ -278,7 +279,7 @@ SUBROUTINE close_write(funit,i_vars,i_natom,i_delta_t,io_err)
   INQUIRE(funit,name=file_name)
   CLOSE(funit)
 
-  OPEN (unit=funit,name=TRIM(file_name),status='OLD',action='readwrite',form='unformatted',access='stream')
+  OPEN (unit=funit,file=TRIM(file_name),status='OLD',action='readwrite',form='unformatted',access='stream')
   WRITE(funit,pos=9) DCD_VARS(:)
   CLOSE (funit)
 

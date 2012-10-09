@@ -88,7 +88,7 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
      IF (cajon==1) THEN
         DO ii=1,llevamos
            DO jj=ranges(1,1),ranges(1,2)
-              IF (ocupado(ii,jj)==.true.) THEN
+              IF (ocupado(ii,jj).eqv..true.) THEN
                  contador=contador+1
                  indice(ii,jj)=contador
                  WRITE(21,f3) contador,jj
@@ -101,7 +101,7 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
         DO ii=1,llevamos
            READ(61,*) aa,deantes(:)
            DO jj=ranges(cajon,1),ranges(cajon,2)
-              IF (ocupado(ii,jj)==.true.) THEN
+              IF (ocupado(ii,jj).eqv..true.) THEN
                  contador=contador+1
                  WRITE(21,f3) contador,deantes(:),jj
                  indice(ii,jj)=contador
@@ -182,7 +182,7 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
            END IF
         END DO
 
-        IF (switch==.true.) THEN
+        IF (switch.eqv..true.) THEN
            IF (K_out(x)>0) THEN
               gg=K_out(x)
               IF (gg>25000) THEN
@@ -224,7 +224,7 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
         END IF
      END DO
    
-     IF (switch==.true.) THEN
+     IF (switch.eqv..true.) THEN
         IF (K_out(x)>0) THEN
            gg=K_out(x)
            IF (gg>25000) THEN
@@ -276,7 +276,7 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
      END DO
 
      T_start(ii)=ll
-     IF (switch==.true.) THEN
+     IF (switch.eqv..true.) THEN
         ll=ll+1
         T_ind(ll)=ii
         hhh=WK_out(ii)%p1(gg)
@@ -417,7 +417,7 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
         filter=.true.
         DO jj=ii-1,1,-1
            gg=traj_out(nn,jj)
-           IF (filter(gg)==.true.) THEN
+           IF (filter(gg).eqv..true.) THEN
               dist=MAXVAL(abs(cumul_list(gg,:)-cumul(:)),DIM=1)
               IF (dist<=dsm) THEN
                  traj_out(nn,ii)=gg
@@ -430,7 +430,7 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
               END IF
            END IF
         END DO
-        IF (switch==.true.) THEN
+        IF (switch.eqv..true.) THEN
            IF (num_rep>0) THEN
               ALLOCATE(aux_list(num_rep,bins))
               aux_list=cumul_list
@@ -545,7 +545,7 @@ subroutine ganna2 (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,
         filter=.true.
         DO jj=ii-1,1,-1
            gg=traj_out(nn,jj)
-           IF (filter(gg)==.true.) THEN
+           IF (filter(gg).eqv..true.) THEN
               dist=MAXVAL(abs(cumul_list(gg,:)-cumul(:)),DIM=1)
               IF (dist<=dsm) THEN
                  traj_out(nn,ii)=gg
@@ -558,7 +558,7 @@ subroutine ganna2 (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,
               END IF
            END IF
         END DO
-        IF (switch==.true.) THEN
+        IF (switch.eqv..true.) THEN
            IF (num_rep>0) THEN
               ALLOCATE(aux_list(num_rep,bins))
               aux_list=cumul_list

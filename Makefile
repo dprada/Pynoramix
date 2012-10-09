@@ -1,7 +1,7 @@
 ## Checking compilers and libraries
 
 F2PY=
-FCOMP=gfortran
+FCOMP=
 FTYPE=
 LAPACK_LIBS=
 FOPTS=

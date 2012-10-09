@@ -7,6 +7,7 @@ SUBROUTINE CELL2BOX (cell,box,volume,ortho)
   DOUBLE PRECISION,INTENT(OUT)::volume
   INTEGER,INTENT(OUT)::ortho
   DOUBLE PRECISION::alpha,beta,gamma,x,y,z
+  DOUBLE PRECISION,PARAMETER::fact_pi_div_180=1.745329251994329547437168059786927E-0002
 
   ortho=0
   box=0.0d0
@@ -24,10 +25,13 @@ SUBROUTINE CELL2BOX (cell,box,volume,ortho)
      volume=x*y*z
      ortho=1
   ELSE
-     box(2,1)=y*cosd(gamma)
-     box(2,2)=y*sind(gamma)  ! sqrt(y**2-box(2,2)**2)
-     box(3,1)=z*cosd(beta)
-     box(3,2)=z*(cosd(alpha)-cosd(beta)*cosd(gamma))/sind(gamma) 
+     alpha=alpha/fact_pi_div_180
+     beta=beta/fact_pi_div_180
+     gamma=gamma/fact_pi_div_180
+     box(2,1)=y*cos(gamma)
+     box(2,2)=y*sin(gamma)  ! sqrt(y**2-box(2,2)**2)
+     box(3,1)=z*cos(beta)
+     box(3,2)=z*(cos(alpha)-cos(beta)*cos(gamma))/sin(gamma) 
      box(3,3)=sqrt(z*z-box(3,1)**2-box(3,2)**2)
      volume=box(1,1)*box(2,2)*box(3,3)
   END IF
@@ -43,6 +47,7 @@ SUBROUTINE BOX2CELL (box,cell,volume,ortho)
   DOUBLE PRECISION,INTENT(OUT)::volume
   INTEGER,INTENT(OUT)::ortho
   DOUBLE PRECISION::alpha,beta,gamma,x,y,z
+  DOUBLE PRECISION,PARAMETER::fact_pi_div_180=1.745329251994329547437168059786927E-0002
 
   ortho=0
   cell=0.0d0
@@ -65,9 +70,9 @@ SUBROUTINE BOX2CELL (box,cell,volume,ortho)
      cell(1,1)=x
      cell(2,2)=y
      cell(3,3)=z
-     cell(2,3)=acosd(dot_product(box(2,:),box(1,:))/(x*y)) ! gamma
-     cell(1,3)=acosd(dot_product(box(3,:),box(1,:))/(x*z)) ! beta
-     cell(1,2)=acosd(dot_product(box(3,:),box(2,:))/(x*y)) ! alpha
+     cell(2,3)=(acos(dot_product(box(2,:),box(1,:))/(x*y)))/fact_pi_div_180 ! gamma
+     cell(1,3)=(acos(dot_product(box(3,:),box(1,:))/(x*z)))/fact_pi_div_180 ! beta
+     cell(1,2)=(acos(dot_product(box(3,:),box(2,:))/(x*y)))/fact_pi_div_180 ! alpha
   END IF
 
 END SUBROUTINE BOX2CELL

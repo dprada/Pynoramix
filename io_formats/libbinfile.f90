@@ -22,7 +22,8 @@ SUBROUTINE open_read(len_ch,file_name,funit,o_natom,o_cell,pos_o)
      PRINT*, '# Error: Name of file too long.'
   end if
 
-  OPEN (unit=funit,name=TRIM(file_name),status='old',action='read',form='binary',access='stream')
+  OPEN (unit=funit,file=TRIM(file_name),status='old',action='read', &
+       form='unformatted',access='stream')
 
   READ(funit) o_natom,cell
 
