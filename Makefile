@@ -4,7 +4,7 @@ F2PY=
 FCOMP=
 FTYPE=
 LAPACK_LIBS=
-FOPTS=
+FOPTS=-check
 FFLAGS=
 
 #FOPTS=-check
