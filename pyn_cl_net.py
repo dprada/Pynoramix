@@ -843,24 +843,24 @@ class network():
 
         return vect_out
 
-    def symmetrize(self,new_net=True,verbose=True):
+    def symmetrize(self,new=True,verbose=True):
 
         if self.Ts==False :
             self.build_Ts()
 
         aux_k_total=ccopy.deepcopy(self.k_total)
 
-        if new_net:
+        if new:
             temp             = network(verbose=False)
+            temp.labels      = ccopy.deepcopy(self.labels)
+            temp.file_net    = ccopy.deepcopy(self.file_net)
+            temp.file_labels = ccopy.deepcopy(self.file_labels)
+            temp.num_nodes   = ccopy.deepcopy(self.num_nodes)
+            temp.directed    = ccopy.deepcopy(self.directed)
+            temp.kinetic     = ccopy.deepcopy(self.kinetic)
         else:
             temp             = self
 
-        temp.labels      = ccopy.deepcopy(self.labels)
-        temp.file_net    = ccopy.deepcopy(self.file_net)
-        temp.file_labels = ccopy.deepcopy(self.file_labels)
-        temp.num_nodes   = ccopy.deepcopy(self.num_nodes)
-        temp.directed    = ccopy.deepcopy(self.directed)
-        temp.kinetic     = ccopy.deepcopy(self.kinetic)
 
         aux={}
         for ii in range(self.num_nodes):
@@ -896,10 +896,9 @@ class network():
 
         del(pfff)
 
-        if new_net:
+        if new:
             return temp
         else:
-            print 'si'
             pass
 
 
@@ -1237,7 +1236,7 @@ def kinetic_network(traj=None,ranges=None,traj_out=False,verbose=True):
     except:
         traj=array(traj,order='Fortran')
         rango_traj=traj.shape
-    
+
     try:
         rango_ranges=ranges.shape
     except:

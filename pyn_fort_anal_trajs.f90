@@ -414,7 +414,6 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
            cumul(kk+1)=cumul(kk+1)+cumul(kk)
         END DO
         switch=.true.
-        filter=.true.
         DO jj=ii-1,1,-1
            gg=traj_out(nn,jj)
            IF (filter(gg).eqv..true.) THEN
@@ -437,6 +436,7 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
               DEALLOCATE(cumul_list,filter)
               num_rep=num_rep+1
               ALLOCATE(cumul_list(num_rep,bins),filter(num_rep))
+              filter=.true.
               cumul_list(1:(num_rep-1),:)=aux_list
               DEALLOCATE(aux_list)
               cumul_list(num_rep,:)=cumul
@@ -444,6 +444,7 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
            ELSE
               num_rep=1
               ALLOCATE(cumul_list(num_rep,bins),filter(num_rep))
+              filter=.true.
               cumul_list(num_rep,:)=cumul
               traj_out(nn,ii)=num_rep
            END IF
@@ -542,7 +543,6 @@ subroutine ganna2 (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,
            cumul=cumuli*Ltwi
         END IF
         switch=.true.
-        filter=.true.
         DO jj=ii-1,1,-1
            gg=traj_out(nn,jj)
            IF (filter(gg).eqv..true.) THEN
@@ -565,6 +565,7 @@ subroutine ganna2 (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,
               DEALLOCATE(cumul_list,filter)
               num_rep=num_rep+1
               ALLOCATE(cumul_list(num_rep,bins),filter(num_rep))
+              filter=.true.
               cumul_list(1:(num_rep-1),:)=aux_list
               DEALLOCATE(aux_list)
               cumul_list(num_rep,:)=cumul
@@ -572,6 +573,7 @@ subroutine ganna2 (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,
            ELSE
               num_rep=1
               ALLOCATE(cumul_list(num_rep,bins),filter(num_rep))
+              filter=.true.
               cumul_list(num_rep,:)=cumul
               traj_out(nn,ii)=num_rep
            END IF
