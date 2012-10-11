@@ -4,7 +4,7 @@ F2PY=             # f2py command
 FCOMP=            # fortran compiler command
 FTYPE=            # fortran compiler for f2py (not manually given)
 LAPACK_LIBS=      # lapack libraries
-FOPTS=-check      # options fortran compiler
+FOPTS=-fast       # options fortran compiler
 FFLAGS=           # additional fortran flags
 
 
