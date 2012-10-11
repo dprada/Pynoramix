@@ -112,71 +112,28 @@ This is a test to include the comments from the code.</p>
 <dt id="pyn_cl_net.cl_node">
 <em class="property">class </em><tt class="descclassname">pyn_cl_net.</tt><tt class="descname">cl_node</tt><a class="headerlink" href="#pyn_cl_net.cl_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fundamental unit to constitute a network together with links.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
-<li><strong>label</strong> &#8211; label or key</li>
-<li><strong>weight</strong> &#8211; weight</li>
-<li><strong>link</strong> &#8211; linked nodes, {node_index, weight_link}.</li>
-<li><strong>k_out</strong> &#8211; degree or connectivity with directed links out.</li>
-<li><strong>k_in</strong> &#8211; degree or connectivity with directed links in.</li>
-<li><strong>k</strong> &#8211; total degree or connectivity.</li>
-<li><strong>cluster</strong> &#8211; index of cluster the node belongs to</li>
-<li><strong>component</strong> &#8211; index of disconnected component the node belongs to</li>
-<li><strong>coors</strong> &#8211; spatial coordinates for representation</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
+<dl class="docutils">
+<dt>Attr:</dt>
+<dd>label   [string] :    label or key
+weight  [int]    :    weight
+link    [dict]   :</dd>
+</dl>
 <dl class="method">
 <dt id="pyn_cl_net.cl_node.most_weighted_links">
 <tt class="descname">most_weighted_links</tt><big>(</big><em>length=1</em><big>)</big><a class="headerlink" href="#pyn_cl_net.cl_node.most_weighted_links" title="Permalink to this definition">¶</a></dt>
-<dd><p>Ranked indexes of connected nodes according to the weight of the links.</p>
+<dd><p>Indexes <strong>of</strong> the ranked N most weighted links.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>length</strong> (<a class="reference external" href="http://docs.python.org/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; N number of links requested</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>length</strong> (<em>integer</em>) &#8211; number of links</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">ranked node indexes</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">array of node indexes</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">N-dim list [int]</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="pyn_cl_net.net">
-<em class="property">class </em><tt class="descclassname">pyn_cl_net.</tt><tt class="descname">net</tt><big>(</big><em>file_net=None</em>, <em>file_keys=None</em>, <em>directed=True</em>, <em>labels_format='2columns'</em>, <em>verbose=True</em><big>)</big><a class="headerlink" href="#pyn_cl_net.net" title="Permalink to this definition">¶</a></dt>
-<dd><p>Supra-structure composed by nodes</p>
-<dl class="method">
-<dt id="pyn_cl_net.net.add_node">
-<tt class="descname">add_node</tt><big>(</big><em>new_node</em>, <em>weight=0</em><big>)</big><a class="headerlink" href="#pyn_cl_net.net.add_node" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adding a new node to the network.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>new_node</strong> (<em>str,int,float...</em>) &#8211; key or label of the new node</li>
-<li><strong>weight</strong> (int, <em>opt</em>) &#8211; weight of new node</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyn_cl_net.net.info">
-<tt class="descname">info</tt><big>(</big><big>)</big><a class="headerlink" href="#pyn_cl_net.net.info" title="Permalink to this definition">¶</a></dt>
-<dd><p>Print network general variables: num_nodes, k_total, weight.</p>
 </dd></dl>
 
 </dd></dl>
