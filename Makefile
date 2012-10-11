@@ -55,17 +55,18 @@ endif
 
 # Configuring lapack libraries if "LAPACK_LIBS= "
 PATH_LIBS=/usr/lib /usr/lib32 /usr/lib64 /lib /lib32 /lib64 
-PATH_LOCAL_LIBS=$(shell echo ${LIBRARY_PATH//[:]/ })
-PATH_LOCAL_LD_LIBS=$(shell echo ${LD_LIBRARY_PATH//[:]/ })
-LAPACK_IN=$(shell find $(PATH_LIBS) $(PATH_LOCAL_LIBS) $(PATH_LOCAL_LD_LIBS) -name *lapack* 2>/dev/null )
-MKL_IN=$(shell find $(PATH_LIBS) $(PATH_LOCAL_LIBS) $(PATH_LOCAL_LD_LIBS) -name *mkl* 2>/dev/null )
+PATH_LOCAL_LIBS=$(subst :, ,$(LIBRARY_PATH))
+PATH_LOCAL_LD_LIBS=$(subst :, ,$(LD_LIBRARY_PATH))
+
+LAPACK_IN=$(shell find $(PATH_LIBS) $(PATH_LOCAL_LIBS) $(PATH_LOCAL_LD_LIBS) -name liblapack* 2>/dev/null )
+MKL_IN=$(shell find $(PATH_LIBS) $(PATH_LOCAL_LIBS) $(PATH_LOCAL_LD_LIBS) -name libmkl* 2>/dev/null )
+
 ifneq ($(LAPACK_IN),)
 LAPACK_IN=1
 endif
 ifneq ($(MKL_IN),)
 MKL_IN=1
 endif
-
 
 ifeq ($(FCOMP),ifort)
 ifeq ($(LAPACK_IN),1)
