@@ -76,12 +76,13 @@ else
 LAPACK_LIBS= -lmkl_intel -lmkl_sequential -lmkl_core -lmkl_def -lpthread # ??
 #LAPACK_LIBS= -lmkl_intel -lmkl_sequential -lmkl_core -lpthread -lm
 endif
-endif
 else
 ifeq ($(LAPACK_IN),1)
 LAPACK_LIBS= -llapack
 endif
 endif
+endif
+
 ifeq ($(FCOMP),gfortran)
 LAPACK_LIBS= -llapack
 endif
