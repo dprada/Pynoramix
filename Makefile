@@ -54,12 +54,31 @@ FTYPE=pg
 endif
 
 # Configuring lapack libraries if "LAPACK_LIBS= "
+PATH_LIBS=/usr/lib /usr/lib32 /usr/lib64 /lib /lib32 /lib64 
+PATH_LOCAL_LIBS=$(shell echo ${LIBRARY_PATH//[:]/ })
+PATH_LOCAL_LD_LIBS=$(shell echo ${LD_LIBRARY_PATH//[:]/ })
+LAPACK_IN=$(shell find $(PATH_LIBS) $(PATH_LOCAL_LIBS) $(PATH_LOCAL_LD_LIBS) -name *lapack* 2>/dev/null )
+MKL_IN=$(shell find $(PATH_LIBS) $(PATH_LOCAL_LIBS) $(PATH_LOCAL_LD_LIBS) -name *mkl* 2>/dev/null )
+ifneq ($(LAPACK_IN),)
+LAPACK_IN=1
+endif
+ifneq ($(MKL_IN),)
+MKL_IN=1
+endif
+
+
 ifeq ($(FCOMP),ifort)
+ifeq ($(LAPACK_IN),1)
 ifeq ($(MACHINE_TYPE),x86_64)
 LAPACK_LIBS= -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_def -lpthread
 else
 LAPACK_LIBS= -lmkl_intel -lmkl_sequential -lmkl_core -lmkl_def -lpthread # ??
 #LAPACK_LIBS= -lmkl_intel -lmkl_sequential -lmkl_core -lpthread -lm
+endif
+endif
+else
+ifeq ($(MKL_IN),1)
+LAPACK_LIBS= -llapack
 endif
 endif
 ifeq ($(FCOMP),gfortran)
