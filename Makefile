@@ -61,9 +61,6 @@ PATH_LOCAL_LD_LIBS=$(subst :, ,$(LD_LIBRARY_PATH))
 LAPACK_IN=$(shell find $(PATH_LIBS) $(PATH_LOCAL_LIBS) $(PATH_LOCAL_LD_LIBS) -name liblapack* 2>/dev/null )
 MKL_IN=$(shell find $(PATH_LIBS) $(PATH_LOCAL_LIBS) $(PATH_LOCAL_LD_LIBS) -name libmkl* 2>/dev/null )
 
-AAA=$(shell find $(PATH_LIBS) $(PATH_LOCAL_LIBS) $(PATH_LOCAL_LD_LIBS) -name liblapack* 2>/dev/null )
-BBB=$(shell find $(PATH_LIBS) $(PATH_LOCAL_LIBS) $(PATH_LOCAL_LD_LIBS) -name libmkl* 2>/dev/null )
-
 ifneq ($(LAPACK_IN),)
 LAPACK_IN=1
 endif
@@ -72,7 +69,7 @@ MKL_IN=1
 endif
 
 ifeq ($(FCOMP),ifort)
-ifeq ($(LAPACK_IN),1)
+ifeq ($(MKL_IN),1)
 ifeq ($(MACHINE_TYPE),x86_64)
 LAPACK_LIBS= -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_def -lpthread
 else
@@ -81,7 +78,7 @@ LAPACK_LIBS= -lmkl_intel -lmkl_sequential -lmkl_core -lmkl_def -lpthread # ??
 endif
 endif
 else
-ifeq ($(MKL_IN),1)
+ifeq ($(LAPACK_IN),1)
 LAPACK_LIBS= -llapack
 endif
 endif
@@ -117,10 +114,6 @@ options:
 	@ echo "Lapack libraries:" $(LAPACK_LIBS)
 	@ echo "Fortran options :" $(FOPTS)
 	@ if [ -e INSTALL.log ]; then rm INSTALL.log; fi
-	@ echo "#############"
-	@ echo $(AAA)
-	@ echo "#############"
-	@ echo $(BBB)
 
 pref90:
 	@ echo "-----------------------------------"
