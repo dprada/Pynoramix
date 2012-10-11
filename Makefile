@@ -61,6 +61,9 @@ PATH_LOCAL_LD_LIBS=$(subst :, ,$(LD_LIBRARY_PATH))
 LAPACK_IN=$(shell find $(PATH_LIBS) $(PATH_LOCAL_LIBS) $(PATH_LOCAL_LD_LIBS) -name liblapack* 2>/dev/null )
 MKL_IN=$(shell find $(PATH_LIBS) $(PATH_LOCAL_LIBS) $(PATH_LOCAL_LD_LIBS) -name libmkl* 2>/dev/null )
 
+AAA=$(shell find $(PATH_LIBS) $(PATH_LOCAL_LIBS) $(PATH_LOCAL_LD_LIBS) -name liblapack* 2>/dev/null )
+BBB=$(shell find $(PATH_LIBS) $(PATH_LOCAL_LIBS) $(PATH_LOCAL_LD_LIBS) -name libmkl* 2>/dev/null )
+
 ifneq ($(LAPACK_IN),)
 LAPACK_IN=1
 endif
@@ -114,6 +117,10 @@ options:
 	@ echo "Lapack libraries:" $(LAPACK_LIBS)
 	@ echo "Fortran options :" $(FOPTS)
 	@ if [ -e INSTALL.log ]; then rm INSTALL.log; fi
+	@ echo "#############"
+	@ echo $(AAA)
+	@ echo "#############"
+	@ echo $(BBB)
 
 pref90:
 	@ echo "-----------------------------------"
