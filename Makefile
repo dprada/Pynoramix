@@ -4,7 +4,7 @@ F2PY=             # f2py command
 FCOMP=            # fortran compiler command
 FTYPE=            # fortran compiler for f2py (not manually given)
 LAPACK_LIBS=      # lapack libraries
-FOPTS=-fast       # options fortran compiler
+FOPTS=            # options fortran compiler
 FFLAGS=           # additional fortran flags
 
 
@@ -13,21 +13,21 @@ MACHINE_TYPE=$(shell uname -m)
 
 # Detecting f2py if "F2PY= "
 ifeq ($(F2PY),)
-F2PY_IN=$(shell which f2py)
-F2PY2_IN=$(shell which f2py2)
+F2PY_IN=$(shell which f2py 2>/dev/null)
+F2PY2_IN=$(shell which f2py2 2>/dev/null)
 ifneq ($(F2PY_IN),)
 F2PY=f2py
 endif
-ifneq ($(F2PY_IN),)
-F2PY2=f2py2
+ifneq ($(F2PY2_IN),)
+F2PY=f2py2
 endif
 endif
 
 # Detecting compiler if "FCOMP= "
 ifeq ($(FCOMP),)
-IFORT_IN=$(shell which ifort)
-GFORTRAN_IN=$(shell which gfortran)
-PGF90_IN=$(shell which pgf95)
+IFORT_IN=$(shell which ifort 2>/dev/null)
+GFORTRAN_IN=$(shell which gfortran 2>/dev/null)
+PGF90_IN=$(shell which pgf95 2>/dev/null)
 ifneq ($(PGF90_IN),)
 FCOMP=pgf95
 endif
