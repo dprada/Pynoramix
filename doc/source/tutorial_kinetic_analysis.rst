@@ -8,9 +8,11 @@ First of all, lets load Pynoramix in our script or in a ipython session:
      In [1]: from pynoramix_beta import *
 
 
-Some basic notions on python will be assumed along this tutorial. If you just landed here without any idea on python, have a look to the section *First steps on python*.
+Some basic notions on python will be assumed along this tutorial. 
 
-.. todo:: Make a short tutorial on python, enough to run pynoramix.
+
+.. If you just landed here without any idea on python, have a look to the section *First steps on python*.
+.. coment todo:: Make a short tutorial on python, enough to run pynoramix.
 
 ----------------------
 
@@ -19,6 +21,9 @@ Some basic notions on python will be assumed along this tutorial. If you just la
 
 Given a trajectory 1D trajectory, its kinetic analysis can be done taking advantage of the class *kinetic_1D_analysis*. 
 The following subsections are a description of how to deal with this class and the functions included.
+
+.. seealso:: The section XXX for the details of this function.
+
 
 Loading a trajectory
 ++++++++++++++++++++
@@ -79,8 +84,6 @@ G. Berezovska et al. [CITE] to unveil the conformational macrostates
 kinetically "well defined" and the underlying accurate first order
 kinetic model.
 
-For a further description
-
 .. sourcecode:: ipython
 
    In [3]: kin_test.Ganna2012(window=25,granularity=1.2,bins=20,verbose=True)
@@ -90,9 +93,12 @@ For a further description
    # 1999700.0 total weight nodes
    # Number of clusters:  3
 
+.. seealso:: The section XXX for the details of this function.
 
 
-.. Note::
+
+
+.. Warning::
 
    Please cite the following reference if the method is used for a scientific publication: XXXXXXX
 
