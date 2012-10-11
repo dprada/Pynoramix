@@ -1,10 +1,11 @@
 import pyn_fort_anal_trajs as ftrajs
 from pyn_cl_net import *
+import pyn_math as pyn_math
 from numpy import *
 
 class kinetic_1D_analysis():
 
-    def __init__ (self,traject=None,column=None):
+    def __init__ (self,traject=None,column=None,verbose=True):
 
         self.file_name=''
         self.file_column=None
@@ -49,6 +50,19 @@ class kinetic_1D_analysis():
             self.traj=array(self.traj,order="Fortran")
 
         self.length=self.traj.shape[-1]
+
+        if verbose:
+            if self.num_particles==1:
+                print '# Trajectory loaded:',self.length,'time steps'
+            else:
+                print '# Trajectory loaded:',self.num_particles,'particles,',self.length,'time steps'
+
+    def histogram(self,bins=20,segment=None,delta_x=None,norm=False,cumul=False):
+
+        if self.num_particles==1:
+            return pyn_math.histogram(self.traj,bins=bins,segment=segment,delta_x=delta_x,norm=norm,cumul=cumul,plot=False)
+        else:
+            return pyn_math.histogram(self.traj[0],bins=bins,segment=segment,delta_x=delta_x,norm=norm,cumul=cumul,plot=False)
 
     def Ganna2012(self,window=None,ksi=0.5,granularity=1.2,bins=20,segment=None,delta_x=None,clusters=True,verbose=False):
 
