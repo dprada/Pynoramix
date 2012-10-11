@@ -26,14 +26,14 @@ Pynoramix depends on some packages:
 After solving the dependencies, the Makefile needs to be executed to compile the fortran core of Pynoramix.
 This installation script has some variables which can be fullfilled manually:
 
-``
-F2PY=             # f2py command (f2py,f2py2,...)
-FCOMP=            # fortran compiler command (gfortran, ifort,...)
-FTYPE=            # fortran compiler for f2py (not manually given)
-LAPACK_LIBS=      # lapack libraries (-llapack, -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_def -lpthread, ...)
-FOPTS=            # options of the fortran compiler used (-fast, -checkall, ...)
-FFLAGS=           # additional fortran flags
-``
+
+- F2PY=             # f2py command (f2py,f2py2,...)
+- FCOMP=            # fortran compiler command (gfortran, ifort,...)
+- FTYPE=            # fortran compiler for f2py (not manually given)
+- LAPACK_LIBS=      # lapack libraries (-llapack, -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_def -lpthread, ...)
+- FOPTS=            # options of the fortran compiler used (-fast, -checkall, ...)
+- FFLAGS=           # additional fortran flags
+
 
 If these variables are left in blank, they will be detected automatically. 
 At this point, and in the directory of Pynoramix, the following command needs to be executed:
