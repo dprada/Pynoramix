@@ -26,26 +26,24 @@ Pynoramix depends on some packages:
 After solving the dependencies, the Makefile needs to be executed to compile the fortran core of Pynoramix.
 This installation script has some variables which can be fullfilled manually:
 
-.. sourcecode:: bash
 
-   F2PY=             # f2py command (f2py,f2py2,...)
-   FCOMP=            # fortran compiler command (gfortran, ifort,...)
-   FTYPE=            # fortran compiler for f2py (not manually given)
-   LAPACK_LIBS=      # lapack libraries (-llapack, -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_def -lpthread, ...)
-   FOPTS=            # options of the fortran compiler used (-fast, -checkall, ...)
-   FFLAGS=           # additional fortran flags
+F2PY=             # f2py command (f2py,f2py2,...)
+FCOMP=            # fortran compiler command (gfortran, ifort,...)
+FTYPE=            # fortran compiler for f2py (not manually given)
+LAPACK_LIBS=      # lapack libraries (-llapack, -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_def -lpthread, ...)
+FOPTS=            # options of the fortran compiler used (-fast, -checkall, ...)
+FFLAGS=           # additional fortran flags
 
 If these variables are left in blank, they will be detected automatically. 
 At this point, and in the directory of Pynoramix, the following command needs to be executed:
 
-.. sourcecode:: bash
-
-   make
+$ make
 
 If the installation run without troubles, Pynoramix is ready to be used.
 
-.. warning:: Do not forget to add Pynoramix to your python path:
-   - export PYTHONPATH=$PYTHONPATH:/path/to/Pynoramix
+Do not forget to add Pynoramix to your python path!!
+
+$export PYTHONPATH=$PYTHONPATH:/path/to/Pynoramix
 
 
 --------------------------------------------
@@ -56,16 +54,12 @@ Being updated
 The last modifications can be easily downloaded if you made a git clone.
 The command 'git pull' can be executed over the Pynoramix directory to check and obtained the changes.
 
-.. sourcecode:: bash
-
-   git pull
+$ git pull
 
 Once this has been done, compiling the changed libraries is mandatory. 
 Since the Makefile script detects the changes, running it again is enough:
 
-.. sourcecode:: bash
-
-   make
+$ make
 
 --------------------------------------------
 
