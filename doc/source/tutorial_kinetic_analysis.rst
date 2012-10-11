@@ -1,5 +1,5 @@
-Tutorial Analysis of Trajectories
-*********************************
+Tutorial Kinetic Analysis
+*************************
 
 First of all, lets load Pynoramix in our script or in a ipython session:
 
@@ -14,8 +14,8 @@ Some basic notions on python will be assumed along this tutorial. If you just la
 
 ----------------------
 
-Kinetic analysis
-================
+1D Trajectories
+===============
 
 Given a trajectory, we will temporary work with 1D traj, these are
 some functions for its analysis.
@@ -76,12 +76,6 @@ Rao's method
       ....:       traj_mcl_clusts[cluster].append(traj1D[tw+ii])
       ....: 
 
-
-
-
-
-
---------------------------
 
 
 

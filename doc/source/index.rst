@@ -7,17 +7,35 @@ Welcome to the tentative Pynoramix's documentation!
 ===================================================
 
 Contents:
++++++++++
 
 .. toctree::
    :maxdepth: 2
 
    getting_started.rst
-   to_be_included.rst
    molecular_systems.rst
-   tutorial_molecular_systems.rst
    networks.rst
+   kinetic_analysis.rst
+
+
+Tutorials:
+++++++++++
+
+.. toctree::
+   :maxdepth: 3
+
+   tutorial_molecular_systems.rst
+
+.. toctree::
+   :maxdepth: 3
+
    tutorial_networks.rst
-   tutorial_anal_trajs.rst
+
+.. toctree::
+   :maxdepth: 3
+
+   tutorial_kinetic_analysis.rst
+
 
 Indices and tables
 ==================
