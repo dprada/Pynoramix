@@ -1,0 +1,1429 @@
+>>>>>> Installing the xdr library...
+checking build system type... x86_64-unknown-linux-gnu
+checking host system type... x86_64-unknown-linux-gnu
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether build environment is sane... yes
+checking for a thread-safe mkdir -p... /bin/mkdir -p
+checking for gawk... no
+checking for mawk... mawk
+checking whether make sets $(MAKE)... yes
+checking how to create a ustar tar archive... gnutar
+checking for cc... cc
+checking whether the C compiler works... yes
+checking for C compiler default output file name... a.out
+checking for suffix of executables... 
+checking whether we are cross compiling... no
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether cc accepts -g... yes
+checking for cc option to accept ISO C89... none needed
+checking for style of include used by make... GNU
+checking dependency style of cc... gcc3
+checking whether we are using the GNU Fortran 77 compiler... no
+checking whether ifort accepts -g... yes
+checking dependency style of cc... gcc3
+checking how to get verbose linking output from ifort... -v
+checking for Fortran 77 libraries of ifort...  -L/opt/intel/composerxe-2011.0.084/compiler/lib/intel64 -L/opt/intel/composerxe-2011.0.084/mkl/lib/intel64 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../../../lib -L/lib/../lib64 -L/lib/../lib -L/usr/lib/../lib64 -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../.. -L/lib64 -L/lib -L/usr/lib64 -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lifport -lifcore -limf -lsvml -lm -lipgo -lirc -lpthread -lirc_s -ldl
+checking for dummy main to link with Fortran 77 libraries... none
+checking for Fortran 77 name-mangling scheme... lower case, underscore, no extra underscore
+checking how to run the C preprocessor... cc -E
+checking whether cc accepts -O3... yes
+checking whether cc accepts -msse2... yes
+checking whether cc accepts -funroll-all-loops... yes
+checking whether cc accepts -std=gnu99... yes
+checking whether cc accepts -fexcess-precision=fast... no
+checking whether cc accepts  -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99... yes
+checking whether ifort accepts  -w90 -w95... ifort: command line remark #10010: option '-w90' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10010: option '-w95' is deprecated and will be removed in a future release. See '-help deprecated'
+yes
+checking for grep that handles long lines and -e... /bin/grep
+checking for egrep... /bin/grep -E
+checking for ANSI C header files... yes
+checking for sys/types.h... yes
+checking for sys/stat.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for memory.h... yes
+checking for strings.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for unistd.h... yes
+checking whether byte ordering is bigendian... no
+checking size of int... 4
+checking size of long int... 8
+checking size of long long int... 8
+checking that size_t can hold pointers... yes
+checking floating-point format... IEEE754 (little-endian byte and word order)
+checking whether ln -s works... yes
+checking whether make sets $(MAKE)... (cached) yes
+checking for a sed that does not truncate output... /bin/sed
+checking for ld used by cc... /usr/bin/ld
+checking if the linker (/usr/bin/ld) is GNU ld... yes
+checking for /usr/bin/ld option to reload object files... -r
+checking for BSD-compatible nm... /usr/bin/nm -B
+checking how to recognise dependent libraries... pass_all
+checking dlfcn.h usability... yes
+checking dlfcn.h presence... yes
+checking for dlfcn.h... yes
+checking for g++... g++
+checking whether we are using the GNU C++ compiler... yes
+checking whether g++ accepts -g... yes
+checking dependency style of g++... gcc3
+checking how to run the C++ preprocessor... g++ -E
+checking the maximum length of command line arguments... 32768
+checking command to parse /usr/bin/nm -B output from cc object... ok
+checking for objdir... .libs
+checking for ar... ar
+checking for ranlib... ranlib
+checking for strip... strip
+checking if cc supports -fno-rtti -fno-exceptions... no
+checking for cc option to produce PIC... -fPIC
+checking if cc PIC flag -fPIC works... yes
+checking if cc static flag -static works... yes
+checking if cc supports -c -o file.o... yes
+checking whether the cc linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+checking whether -lc should be explicitly linked in... no
+checking dynamic linker characteristics... GNU/Linux ld.so
+checking how to hardcode library paths into programs... immediate
+checking whether stripping libraries is possible... yes
+checking if libtool supports shared libraries... yes
+checking whether to build shared libraries... yes
+checking whether to build static libraries... yes
+configure: creating libtool
+appending configuration tag "CXX" to libtool
+checking for ld used by g++... /usr/bin/ld -m elf_x86_64
+checking if the linker (/usr/bin/ld -m elf_x86_64) is GNU ld... yes
+checking whether the g++ linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+checking for g++ option to produce PIC... -fPIC
+checking if g++ PIC flag -fPIC works... yes
+checking if g++ static flag -static works... yes
+checking if g++ supports -c -o file.o... yes
+checking whether the g++ linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+checking dynamic linker characteristics... GNU/Linux ld.so
+checking how to hardcode library paths into programs... immediate
+appending configuration tag "F77" to libtool
+checking if libtool supports shared libraries... yes
+checking whether to build shared libraries... yes
+checking whether to build static libraries... yes
+checking for ifort option to produce PIC... -fPIC
+checking if ifort PIC flag -fPIC works... yes
+checking if ifort static flag -static works... yes
+checking if ifort supports -c -o file.o... yes
+checking whether the ifort linker (/usr/bin/ld -m elf_x86_64) supports shared libraries... yes
+checking dynamic linker characteristics... ifort: command line warning #10156: ignoring option '-p'; no argument required
+ifort: command line error: no files specified; for help type "ifort -help"
+GNU/Linux ld.so
+checking how to hardcode library paths into programs... immediate
+checking for special C compiler options needed for large files... no
+checking for _FILE_OFFSET_BITS value needed for large files... no
+checking for _LARGEFILE_SOURCE value needed for large files... no
+checking for sqrt in -lm... yes
+checking rpc/rpc.h usability... yes
+checking rpc/rpc.h presence... yes
+checking for rpc/rpc.h... yes
+checking for rpc/xdr.h... yes
+checking for xdr_float in -lnsl... yes
+checking for working memcmp... yes
+checking return type of signal handlers... void
+checking for vprintf... yes
+checking for _doprnt... no
+checking if malloc debugging is wanted... no
+checking for strcasecmp... yes
+checking for strdup... yes
+checking for bool... no
+checking limits.h usability... yes
+checking limits.h presence... yes
+checking for limits.h... yes
+checking for strings.h... (cached) yes
+checking for unistd.h... (cached) yes
+checking for unistd.h... (cached) yes
+checking for an ANSI C-conforming const... yes
+checking for size_t... yes
+checking whether struct tm is in sys/time.h or time.h... time.h
+checking for uid_t in sys/types.h... yes
+checking for inline... inline
+checking whether byte ordering is bigendian... (cached) no
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating include/Makefile
+config.status: creating src/Makefile
+config.status: creating src/python/Makefile
+config.status: creating config.h
+config.status: executing depfiles commands
+
+make[1]: Entering directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1'
+Making install in include
+make[2]: Entering directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/include'
+make[3]: Entering directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/include'
+make[3]: Nothing to be done for `install-exec-am'.
+test -z "/home/diego/Projects/GitHub/Pynoramix/xdrfiles/include/xdrfile" || /bin/mkdir -p "/home/diego/Projects/GitHub/Pynoramix/xdrfiles/include/xdrfile"
+ /usr/bin/install -c -m 644 xdrfile.h xdrfile_trr.h xdrfile_xtc.h '/home/diego/Projects/GitHub/Pynoramix/xdrfiles/include/xdrfile'
+make[3]: Leaving directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/include'
+make[2]: Leaving directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/include'
+Making install in src
+make[2]: Entering directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/src'
+Making install in python
+make[3]: Entering directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/src/python'
+make[4]: Entering directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/src/python'
+make[4]: Nothing to be done for `install-exec-am'.
+make[4]: Nothing to be done for `install-data-am'.
+make[4]: Leaving directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/src/python'
+make[3]: Leaving directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/src/python'
+make[3]: Entering directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/src'
+/bin/bash ../libtool --tag=CC   --mode=compile cc -DHAVE_CONFIG_H -I. -I..  -I../include   -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99 -MT xdrfile.lo -MD -MP -MF .deps/xdrfile.Tpo -c -o xdrfile.lo xdrfile.c
+mkdir .libs
+ cc -DHAVE_CONFIG_H -I. -I.. -I../include -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99 -MT xdrfile.lo -MD -MP -MF .deps/xdrfile.Tpo -c xdrfile.c  -fPIC -DPIC -o .libs/xdrfile.o
+xdrfile.c: In function 'xdrfile_compress_coord_float':
+xdrfile.c:977: warning: 'prevcoord[2]' may be used uninitialized in this function
+xdrfile.c:977: warning: 'prevcoord[1]' may be used uninitialized in this function
+xdrfile.c: In function 'xdrfile_compress_coord_double':
+xdrfile.c:1470: warning: 'prevcoord[2]' may be used uninitialized in this function
+xdrfile.c:1470: warning: 'prevcoord[1]' may be used uninitialized in this function
+ cc -DHAVE_CONFIG_H -I. -I.. -I../include -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99 -MT xdrfile.lo -MD -MP -MF .deps/xdrfile.Tpo -c xdrfile.c -o xdrfile.o >/dev/null 2>&1
+mv -f .deps/xdrfile.Tpo .deps/xdrfile.Plo
+/bin/bash ../libtool --tag=CC   --mode=compile cc -DHAVE_CONFIG_H -I. -I..  -I../include   -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99 -MT xdrfile_trr.lo -MD -MP -MF .deps/xdrfile_trr.Tpo -c -o xdrfile_trr.lo xdrfile_trr.c
+ cc -DHAVE_CONFIG_H -I. -I.. -I../include -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99 -MT xdrfile_trr.lo -MD -MP -MF .deps/xdrfile_trr.Tpo -c xdrfile_trr.c  -fPIC -DPIC -o .libs/xdrfile_trr.o
+ cc -DHAVE_CONFIG_H -I. -I.. -I../include -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99 -MT xdrfile_trr.lo -MD -MP -MF .deps/xdrfile_trr.Tpo -c xdrfile_trr.c -o xdrfile_trr.o >/dev/null 2>&1
+mv -f .deps/xdrfile_trr.Tpo .deps/xdrfile_trr.Plo
+/bin/bash ../libtool --tag=CC   --mode=compile cc -DHAVE_CONFIG_H -I. -I..  -I../include   -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99 -MT xdrfile_xtc.lo -MD -MP -MF .deps/xdrfile_xtc.Tpo -c -o xdrfile_xtc.lo xdrfile_xtc.c
+ cc -DHAVE_CONFIG_H -I. -I.. -I../include -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99 -MT xdrfile_xtc.lo -MD -MP -MF .deps/xdrfile_xtc.Tpo -c xdrfile_xtc.c  -fPIC -DPIC -o .libs/xdrfile_xtc.o
+ cc -DHAVE_CONFIG_H -I. -I.. -I../include -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99 -MT xdrfile_xtc.lo -MD -MP -MF .deps/xdrfile_xtc.Tpo -c xdrfile_xtc.c -o xdrfile_xtc.o >/dev/null 2>&1
+mv -f .deps/xdrfile_xtc.Tpo .deps/xdrfile_xtc.Plo
+/bin/bash ../libtool --tag=CC   --mode=link cc  -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99 -version-info 4:0:0  -o libxdrfile.la -rpath /home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib xdrfile.lo xdrfile_trr.lo xdrfile_xtc.lo  -lnsl -lm   -L/opt/intel/composerxe-2011.0.084/compiler/lib/intel64 -L/opt/intel/composerxe-2011.0.084/mkl/lib/intel64 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../../../lib -L/lib/../lib64 -L/lib/../lib -L/usr/lib/../lib64 -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../.. -L/lib64 -L/lib -L/usr/lib64 -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lifport -lifcore -limf -lsvml -lm -lipgo -lirc -lpthread -lirc_s -ldl
+cc -shared  .libs/xdrfile.o .libs/xdrfile_trr.o .libs/xdrfile_xtc.o  -lnsl -L/opt/intel/composerxe-2011.0.084/compiler/lib/intel64 -L/opt/intel/composerxe-2011.0.084/mkl/lib/intel64 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../../../lib -L/lib/../lib64 -L/lib/../lib -L/usr/lib/../lib64 -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../.. -L/lib64 -L/lib -L/usr/lib64 -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lifport -lifcore -limf -lsvml -lm -lipgo -lirc -lpthread -lirc_s -ldl  -msse2 -Wl,-soname -Wl,libxdrfile.so.4 -o .libs/libxdrfile.so.4.0.0
+(cd .libs && rm -f libxdrfile.so.4 && ln -s libxdrfile.so.4.0.0 libxdrfile.so.4)
+(cd .libs && rm -f libxdrfile.so && ln -s libxdrfile.so.4.0.0 libxdrfile.so)
+ar cru .libs/libxdrfile.a  xdrfile.o xdrfile_trr.o xdrfile_xtc.o
+ranlib .libs/libxdrfile.a
+creating libxdrfile.la
+(cd .libs && rm -f libxdrfile.la && ln -s ../libxdrfile.la libxdrfile.la)
+cc -DHAVE_CONFIG_H -I. -I..  -I../include   -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99 -MT trr2xtc.o -MD -MP -MF .deps/trr2xtc.Tpo -c -o trr2xtc.o trr2xtc.c
+mv -f .deps/trr2xtc.Tpo .deps/trr2xtc.Po
+/bin/bash ../libtool --tag=CC   --mode=link cc  -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99   -o trr2xtc trr2xtc.o libxdrfile.la -lnsl -lm   -L/opt/intel/composerxe-2011.0.084/compiler/lib/intel64 -L/opt/intel/composerxe-2011.0.084/mkl/lib/intel64 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../../../lib -L/lib/../lib64 -L/lib/../lib -L/usr/lib/../lib64 -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../.. -L/lib64 -L/lib -L/usr/lib64 -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lifport -lifcore -limf -lsvml -lm -lipgo -lirc -lpthread -lirc_s -ldl
+cc -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99 -o .libs/trr2xtc trr2xtc.o  ./.libs/libxdrfile.so -L/opt/intel/composerxe-2011.0.084/compiler/lib/intel64 -L/opt/intel/composerxe-2011.0.084/mkl/lib/intel64 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../../../lib -L/lib/../lib64 -L/lib/../lib -L/usr/lib/../lib64 -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../.. -L/lib64 -L/lib -L/usr/lib64 -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lnsl -lifport -lifcore -limf -lsvml -lm -lipgo -lirc -lpthread -lirc_s -ldl -Wl,--rpath -Wl,/home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib
+creating trr2xtc
+make[4]: Entering directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/src'
+test -z "/home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib" || /bin/mkdir -p "/home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib"
+ /bin/bash ../libtool   --mode=install /usr/bin/install -c   libxdrfile.la '/home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib'
+/usr/bin/install -c .libs/libxdrfile.so.4.0.0 /home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib/libxdrfile.so.4.0.0
+(cd /home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib && { ln -s -f libxdrfile.so.4.0.0 libxdrfile.so.4 || { rm -f libxdrfile.so.4 && ln -s libxdrfile.so.4.0.0 libxdrfile.so.4; }; })
+(cd /home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib && { ln -s -f libxdrfile.so.4.0.0 libxdrfile.so || { rm -f libxdrfile.so && ln -s libxdrfile.so.4.0.0 libxdrfile.so; }; })
+/usr/bin/install -c .libs/libxdrfile.lai /home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib/libxdrfile.la
+/usr/bin/install -c .libs/libxdrfile.a /home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib/libxdrfile.a
+chmod 644 /home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib/libxdrfile.a
+ranlib /home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib/libxdrfile.a
+PATH="$PATH:/sbin" ldconfig -n /home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib
+----------------------------------------------------------------------
+Libraries have been installed in:
+   /home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib
+
+If you ever happen to want to link against installed libraries
+in a given directory, LIBDIR, you must either use libtool, and
+specify the full pathname of the library, or use the `-LLIBDIR'
+flag during linking and do at least one of the following:
+   - add LIBDIR to the `LD_LIBRARY_PATH' environment variable
+     during execution
+   - add LIBDIR to the `LD_RUN_PATH' environment variable
+     during linking
+   - use the `-Wl,--rpath -Wl,LIBDIR' linker flag
+   - have your system administrator add LIBDIR to `/etc/ld.so.conf'
+
+See any operating system documentation about shared libraries for
+more information, such as the ld(1) and ld.so(8) manual pages.
+----------------------------------------------------------------------
+test -z "/home/diego/Projects/GitHub/Pynoramix/xdrfiles/bin" || /bin/mkdir -p "/home/diego/Projects/GitHub/Pynoramix/xdrfiles/bin"
+  /bin/bash ../libtool   --mode=install /usr/bin/install -c trr2xtc '/home/diego/Projects/GitHub/Pynoramix/xdrfiles/bin'
+/usr/bin/install -c .libs/trr2xtc /home/diego/Projects/GitHub/Pynoramix/xdrfiles/bin/trr2xtc
+make[4]: Nothing to be done for `install-data-am'.
+make[4]: Leaving directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/src'
+make[3]: Leaving directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/src'
+make[2]: Leaving directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/src'
+make[2]: Entering directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1'
+make[3]: Entering directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1'
+make  install-exec-hook
+make[4]: Entering directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1'
+
+libxdrfile is installed under /home/diego/Projects/GitHub/Pynoramix/xdrfiles.
+Make sure to update your PATH and MANPATH to find the
+programs and unix manual pages, and possibly LD_LIBRARY_PATH
+or /etc/ld.so.conf if you are using dynamic libraries.
+
+Please run "make test" now to verify your installation.
+
+If you want links to the executables in /usr/local/bin,
+you can issue "make links" now.
+make[4]: Leaving directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1'
+make[3]: Nothing to be done for `install-data-am'.
+make[3]: Leaving directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1'
+make[2]: Leaving directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1'
+make[1]: Leaving directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1'
+make[1]: Entering directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1'
+cd src; make test
+make[2]: Entering directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/src'
+cc -DHAVE_CONFIG_H -I. -I..  -I../include   -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99 -MT xdrfile_c_test.o -MD -MP -MF .deps/xdrfile_c_test.Tpo -c -o xdrfile_c_test.o xdrfile_c_test.c
+mv -f .deps/xdrfile_c_test.Tpo .deps/xdrfile_c_test.Po
+/bin/bash ../libtool --tag=CC   --mode=link cc  -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99   -o xdrfile_c_test xdrfile_c_test.o libxdrfile.la -lnsl -lm   -L/opt/intel/composerxe-2011.0.084/compiler/lib/intel64 -L/opt/intel/composerxe-2011.0.084/mkl/lib/intel64 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../../../lib -L/lib/../lib64 -L/lib/../lib -L/usr/lib/../lib64 -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../.. -L/lib64 -L/lib -L/usr/lib64 -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lifport -lifcore -limf -lsvml -lm -lipgo -lirc -lpthread -lirc_s -ldl
+cc -O3 -fomit-frame-pointer -finline-functions -Wall -Wno-unused -msse2 -funroll-all-loops -std=gnu99 -o .libs/xdrfile_c_test xdrfile_c_test.o  ./.libs/libxdrfile.so -L/opt/intel/composerxe-2011.0.084/compiler/lib/intel64 -L/opt/intel/composerxe-2011.0.084/mkl/lib/intel64 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../../../lib64 -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../../../lib -L/lib/../lib64 -L/lib/../lib -L/usr/lib/../lib64 -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/4.4.5/../../.. -L/lib64 -L/lib -L/usr/lib64 -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lnsl -lifport -lifcore -limf -lsvml -lm -lipgo -lirc -lpthread -lirc_s -ldl -Wl,--rpath -Wl,/home/diego/Projects/GitHub/Pynoramix/xdrfiles/lib
+creating xdrfile_c_test
+./xdrfile_c_test
+Testing basic xdrfile library: PASSED
+Testing xtc functionality: PASSED
+Testing trr functionality: PASSED
+make[2]: Leaving directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1/src'
+make[1]: Leaving directory `/home/diego/Projects/GitHub/Pynoramix/xdrfile-1.1.1'
+>>>>>> Compiling pyn_fort_general.so
+running build
+running config_cc
+unifing config_cc, config, build_clib, build_ext, build commands --compiler options
+running config_fc
+unifing config_fc, config, build_clib, build_ext, build commands --fcompiler options
+running build_src
+building extension "pyn_fort_general" sources
+f2py options: []
+f2py:> /tmp/tmpThQbNw/src.linux-x86_64-2.6/pyn_fort_generalmodule.c
+creating /tmp/tmpThQbNw
+creating /tmp/tmpThQbNw/src.linux-x86_64-2.6
+"object of type 'type' has no len()" in evaluating 'len(list)' (available names: [])
+Reading fortran codes...
+	Reading file 'pyn_fort_general.f90' (format:free)
+Post-processing...
+	Block: pyn_fort_general
+			Block: glob
+				Block: pbc
+				Block: make_contact_list
+					Block: iarray_pointer
+					Block: darray_pointer
+				Block: distance
+				Block: distance_images
+				Block: radius_gyration
+				Block: principal_inertia_axis
+				Block: principal_geometric_axis
+				Block: neighbs_ranking
+				Block: neighbs_dist
+				Block: translate_list
+				Block: within
+			Block: rdf
+				Block: rdf_frame
+Post-processing (stage 2)...
+	Block: pyn_fort_general
+		Block: unknown_interface
+			Block: glob
+				Block: pbc
+				Block: make_contact_list
+					Block: iarray_pointer
+					Block: darray_pointer
+				Block: distance
+				Block: distance_images
+				Block: radius_gyration
+				Block: principal_inertia_axis
+				Block: principal_geometric_axis
+				Block: neighbs_ranking
+				Block: neighbs_dist
+				Block: translate_list
+				Block: within
+			Block: rdf
+				Block: rdf_frame
+Building modules...
+	Building module "pyn_fort_general"...
+		Constructing F90 module support for "glob"...
+		  Variables: cl_val cl_start cl_ind
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+			Constructing wrapper function "glob.pbc"...
+			  pbc(vector,box,ortho)
+			Constructing wrapper function "glob.make_contact_list"...
+			  make_contact_list(cut_off,diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,[n1,n2,natom1,natom2])
+			Constructing wrapper function "glob.distance"...
+			  matrix = distance(diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,[n1,n2,natom1,natom2])
+			Constructing wrapper function "glob.distance_images"...
+			  min_dists,ind_atoms_min,min_image = distance_images(diff_syst,diff_set,list1,coors1,box1,ortho1,list2,coors2,[n1,n2,natom1,natom2])
+			Constructing wrapper function "glob.radius_gyration"...
+			  val_rg = radius_gyration(list1,coors1,box1,ortho1,[n1,natom1])
+			Constructing wrapper function "glob.principal_inertia_axis"...
+			  axis = principal_inertia_axis(list1,coors1,box1,ortho1,[n1,natom1])
+			Constructing wrapper function "glob.principal_geometric_axis"...
+			  axis = principal_geometric_axis(list1,coors1,box1,ortho1,[n1,natom1])
+			Constructing wrapper function "glob.neighbs_ranking"...
+			  neighb_list = neighbs_ranking(diff_syst,diff_set,pbc_opt,limit,list1,coors1,box1,ortho1,list2,coors2,[n1,n2,natom1,natom2])
+			Constructing wrapper function "glob.neighbs_dist"...
+			  contact_map,num_neighbs,dist_matrix = neighbs_dist(diff_syst,diff_set,pbc_opt,limit,list1,coors1,box1,ortho1,list2,coors2,[n1,n2,natom1,natom2])
+			Constructing wrapper function "glob.translate_list"...
+			  trans_inds = translate_list(sort,list,filter,distances,dim_out,[n_list])
+			Constructing wrapper function "glob.within"...
+			  isin = within(list_dists,cutoff,[dim_list])
+		Constructing F90 module support for "rdf"...
+			Constructing wrapper function "rdf.rdf_frame"...
+			  rdf = rdf_frame(distances,box,segment_min,segment_max,bins,[n_a,n_b])
+	Wrote C/API module "pyn_fort_general" to file "/tmp/tmpThQbNw/src.linux-x86_64-2.6/pyn_fort_generalmodule.c"
+	Fortran 90 wrappers are saved to "/tmp/tmpThQbNw/src.linux-x86_64-2.6/pyn_fort_general-f2pywrappers2.f90"
+  adding '/tmp/tmpThQbNw/src.linux-x86_64-2.6/fortranobject.c' to sources.
+  adding '/tmp/tmpThQbNw/src.linux-x86_64-2.6' to include_dirs.
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmpThQbNw/src.linux-x86_64-2.6
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmpThQbNw/src.linux-x86_64-2.6
+  adding '/tmp/tmpThQbNw/src.linux-x86_64-2.6/pyn_fort_general-f2pywrappers2.f90' to sources.
+running build_ext
+customize UnixCCompiler
+customize UnixCCompiler using build_ext
+customize IntelEM64TFCompiler
+Found executable /opt/intel/composerxe-2011.0.084/bin/intel64/ifort
+customize IntelEM64TFCompiler using build_ext
+building 'pyn_fort_general' extension
+compiling C sources
+C compiler: gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC
+
+creating /tmp/tmpThQbNw/tmp
+creating /tmp/tmpThQbNw/tmp/tmpThQbNw
+creating /tmp/tmpThQbNw/tmp/tmpThQbNw/src.linux-x86_64-2.6
+compile options: '-I/tmp/tmpThQbNw/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+gcc: /tmp/tmpThQbNw/src.linux-x86_64-2.6/pyn_fort_generalmodule.c
+/tmp/tmpThQbNw/src.linux-x86_64-2.6/pyn_fort_generalmodule.c: In function ‘f2py_setup_glob’:
+/tmp/tmpThQbNw/src.linux-x86_64-2.6/pyn_fort_generalmodule.c:2661: warning: assignment from incompatible pointer type
+/tmp/tmpThQbNw/src.linux-x86_64-2.6/pyn_fort_generalmodule.c:2662: warning: assignment from incompatible pointer type
+/tmp/tmpThQbNw/src.linux-x86_64-2.6/pyn_fort_generalmodule.c:2663: warning: assignment from incompatible pointer type
+gcc: /tmp/tmpThQbNw/src.linux-x86_64-2.6/fortranobject.c
+compiling Fortran 90 module sources
+Fortran f77 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -w90 -w95 -fPIC -cm -fast -tpp7 -xW
+Fortran f90 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FR -fPIC -cm -fast -tpp7 -xW
+Fortran fix compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -fPIC -cm -fast -tpp7 -xW
+compile options: '-I/tmp/tmpThQbNw/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+extra options: '-module /tmp/tmpThQbNw/ -I/tmp/tmpThQbNw/'
+ifort:f90: pyn_fort_general.f90
+ifort: command line remark #10010: option '-cm' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10148: option '-tpp7' not supported
+ifort: command line remark #10279: option '-xW' is deprecated and will be removed in a future release. See '-help deprecated'
+compiling Fortran sources
+Fortran f77 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -w90 -w95 -fPIC -cm -fast -tpp7 -xW
+Fortran f90 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FR -fPIC -cm -fast -tpp7 -xW
+Fortran fix compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -fPIC -cm -fast -tpp7 -xW
+compile options: '-I/tmp/tmpThQbNw/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+extra options: '-module /tmp/tmpThQbNw/ -I/tmp/tmpThQbNw/'
+ifort:f90: /tmp/tmpThQbNw/src.linux-x86_64-2.6/pyn_fort_general-f2pywrappers2.f90
+ifort: command line remark #10010: option '-cm' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10148: option '-tpp7' not supported
+ifort: command line remark #10279: option '-xW' is deprecated and will be removed in a future release. See '-help deprecated'
+/opt/intel/composerxe-2011.0.084/bin/intel64/ifort -shared -shared -nofor_main /tmp/tmpThQbNw/tmp/tmpThQbNw/src.linux-x86_64-2.6/pyn_fort_generalmodule.o /tmp/tmpThQbNw/tmp/tmpThQbNw/src.linux-x86_64-2.6/fortranobject.o /tmp/tmpThQbNw/pyn_fort_general.o /tmp/tmpThQbNw/tmp/tmpThQbNw/src.linux-x86_64-2.6/pyn_fort_general-f2pywrappers2.o -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_def -lpthread -o ./pyn_fort_general.so
+ipo: remark #11000: performing multi-file optimizations
+ipo: remark #11006: generating object file /tmp/ipo_ifortN9uAWs.o
+running scons
+Removing build directory /tmp/tmpThQbNw
+>>>>>> Compiling pyn_water.so
+running build
+running config_cc
+unifing config_cc, config, build_clib, build_ext, build commands --compiler options
+running config_fc
+unifing config_fc, config, build_clib, build_ext, build commands --fcompiler options
+running build_src
+building extension "pyn_water" sources
+f2py options: []
+f2py:> /tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c
+creating /tmp/tmpgc23FV
+creating /tmp/tmpgc23FV/src.linux-x86_64-2.6
+analyzeline: Failed to evaluate 'acos(-1.0d0)'. Ignoring: invalid syntax (<string>, line 1)
+Reading fortran codes...
+	Reading file 'pyn_water.f90' (format:free)
+Line #38 in pyn_water.f90:"PARAMETER (pi=acos(-1.0d0))"
+	determineexprtype: could not determine expressions ('acos') type.
+Line #38 in pyn_water.f90:"PARAMETER (pi=acos(-1.0d0))"
+	determineexprtype: could not determine expressions ('acos(-1.0d0)') type.
+Post-processing...
+	Block: pyn_water
+			Block: main
+				Block: initialize_coors_memory
+				Block: free_coors_memory
+				Block: pbc
+				Block: all_norm_water
+				Block: perpendicular_water
+				Block: product_vect
+				Block: normalize_vect
+				Block: def_sig
+				Block: dmat
+				Block: dmat_ef
+				Block: tetrahedrality
+				Block: distance
+			Block: hbonds
+				Block: initialize_hbonds_memory
+				Block: reset_hbonds
+				Block: free_hbonds_memory
+				Block: hbonds_box
+				Block: hbonds_complete_oxygens
+				Block: sorting_hbonds_maxloc
+				Block: sorting_hbonds_minloc
+				Block: hbonds_sign
+				Block: hbonds_skinner
+				Block: skinner_parameter_definition
+				Block: skinner_parameter
+				Block: hbonds_dist_oh
+				Block: hbonds_dist_oo_ang_ooh
+				Block: hbonds_donor_acceptor_number
+				Block: hbonds_topological
+				Block: hbonds_donor_ang_ooh
+				Block: hbonds_nearest_neighbour
+			Block: microstates
+				Block: initialize_mss_memory
+				Block: free_mss_memory
+				Block: initalize_tray_mem
+				Block: free_tray_mem
+				Block: microstates_box
+				Block: microstates_box_ind_wat
+				Block: build_hbonds_limit_nosimetric
+				Block: build_hbonds_limit_simetric
+				Block: state_short_nosimetric
+				Block: remove_permut_short_nosimetric
+				Block: doy_vuelta
+				Block: doy_vuelta_key
+Post-processing (stage 2)...
+	Block: pyn_water
+		Block: unknown_interface
+			Block: main
+				Block: initialize_coors_memory
+				Block: free_coors_memory
+				Block: pbc
+				Block: all_norm_water
+				Block: perpendicular_water
+				Block: product_vect
+				Block: normalize_vect
+				Block: def_sig
+				Block: dmat
+				Block: dmat_ef
+				Block: tetrahedrality
+				Block: distance
+			Block: hbonds
+				Block: initialize_hbonds_memory
+				Block: reset_hbonds
+				Block: free_hbonds_memory
+				Block: hbonds_box
+				Block: hbonds_complete_oxygens
+				Block: sorting_hbonds_maxloc
+				Block: sorting_hbonds_minloc
+				Block: hbonds_sign
+				Block: hbonds_skinner
+				Block: skinner_parameter_definition
+				Block: skinner_parameter
+				Block: hbonds_dist_oh
+				Block: hbonds_dist_oo_ang_ooh
+				Block: hbonds_donor_acceptor_number
+				Block: hbonds_topological
+				Block: hbonds_donor_ang_ooh
+				Block: hbonds_nearest_neighbour
+			Block: microstates
+				Block: initialize_mss_memory
+				Block: free_mss_memory
+				Block: initalize_tray_mem
+				Block: free_tray_mem
+				Block: microstates_box
+				Block: microstates_box_ind_wat
+				Block: build_hbonds_limit_nosimetric
+				Block: build_hbonds_limit_simetric
+				Block: state_short_nosimetric
+				Block: remove_permut_short_nosimetric
+				Block: doy_vuelta
+				Block: doy_vuelta_key
+Building modules...
+	Building module "pyn_water"...
+		Constructing F90 module support for "main"...
+		  Variables: num_frames num_an danrr num_ions list_neighbours vect_norm_htoo nparts2_cat xirr icatrr natw num_cat python dcatrr lbox2 pi nw dimall iarr odarr oiarr darr xarr nparts wat_perp dimw oiarrhs nparts_an lbox nparts2 nparts_cat num_mols ianrr
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+			Constructing wrapper function "main.initialize_coors_memory"...
+			  initialize_coors_memory()
+			Constructing wrapper function "main.free_coors_memory"...
+			  free_coors_memory()
+			Constructing wrapper function "main.pbc"...
+			  pbc(vector)
+			Constructing wrapper function "main.all_norm_water"...
+			  all_norm_water()
+			Constructing wrapper function "main.perpendicular_water"...
+			  vect = perpendicular_water(a)
+			Constructing wrapper function "main.product_vect"...
+			  normal = product_vect(a,b)
+			Constructing wrapper function "main.normalize_vect"...
+			  normalize_vect(a)
+			Constructing wrapper function "main.def_sig"...
+			  up = def_sig(a,b,c)
+			Constructing wrapper function "main.dmat"...
+			  dmat()
+			Constructing wrapper function "main.dmat_ef"...
+			  dmat_ef()
+			Constructing wrapper function "main.tetrahedrality"...
+			  q = tetrahedrality(nnw)
+			Constructing wrapper function "main.distance"...
+			  val = distance(mol_a,atom_a,mol_b,atom_b)
+		Constructing F90 module support for "hbonds"...
+		  Variables: hb_def strength_cat2o roh_param hbsmol strength_h2o cos_angooh_param num_o2h num_h2o o2h sk_param num_cat2o strength_o2h o2which cat2o h2o pos_o nhbs roo_param limit_shell_cation
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+			Constructing wrapper function "hbonds.initialize_hbonds_memory"...
+			  initialize_hbonds_memory()
+			Constructing wrapper function "hbonds.reset_hbonds"...
+			  reset_hbonds()
+			Constructing wrapper function "hbonds.free_hbonds_memory"...
+			  free_hbonds_memory()
+			Constructing wrapper function "hbonds.hbonds_box"...
+			  hbonds_box()
+			Constructing wrapper function "hbonds.hbonds_complete_oxygens"...
+			  hbonds_complete_oxygens()
+			Constructing wrapper function "hbonds.sorting_hbonds_maxloc"...
+			  sorting_hbonds_maxloc()
+			Constructing wrapper function "hbonds.sorting_hbonds_minloc"...
+			  sorting_hbonds_minloc()
+			Constructing wrapper function "hbonds.hbonds_sign"...
+			  hbonds_sign()
+			Constructing wrapper function "hbonds.hbonds_skinner"...
+			  hbonds_skinner()
+			Constructing wrapper function "hbonds.skinner_parameter_definition"...
+			  sk_val = skinner_parameter_definition(aux_cos,aux_dist)
+			Constructing wrapper function "hbonds.skinner_parameter"...
+			  sk_val = skinner_parameter(index_wat_o,index_wat_h,index_h)
+			Constructing wrapper function "hbonds.hbonds_dist_oh"...
+			  hbonds_dist_oh()
+			Constructing wrapper function "hbonds.hbonds_dist_oo_ang_ooh"...
+			  hbonds_dist_oo_ang_ooh()
+			Constructing wrapper function "hbonds.hbonds_donor_acceptor_number"...
+			  hbonds_donor_acceptor_number()
+			Constructing wrapper function "hbonds.hbonds_topological"...
+			  hbonds_topological()
+			Constructing wrapper function "hbonds.hbonds_donor_ang_ooh"...
+			  hbonds_donor_ang_ooh()
+			Constructing wrapper function "hbonds.hbonds_nearest_neighbour"...
+			  hbonds_nearest_neighbour()
+		Constructing F90 module support for "microstates"...
+		  Variables: index_list_mss tray_entera ms_short2 seguro num_mss ms_short ms_all shell_w mss_ind_wat list_mss
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+			Constructing wrapper function "microstates.initialize_mss_memory"...
+			  initialize_mss_memory()
+			Constructing wrapper function "microstates.free_mss_memory"...
+			  free_mss_memory()
+			Constructing wrapper function "microstates.initalize_tray_mem"...
+			  initalize_tray_mem()
+			Constructing wrapper function "microstates.free_tray_mem"...
+			  free_tray_mem()
+			Constructing wrapper function "microstates.microstates_box"...
+			  mss = microstates_box(num_wat)
+			Constructing wrapper function "microstates.microstates_box_ind_wat"...
+			  mss = microstates_box_ind_wat(num_wat)
+			Constructing wrapper function "microstates.build_hbonds_limit_nosimetric"...
+			  build_hbonds_limit_nosimetric()
+			Constructing wrapper function "microstates.build_hbonds_limit_simetric"...
+			  build_hbonds_limit_simetric()
+			Constructing wrapper function "microstates.state_short_nosimetric"...
+			  state_short_nosimetric(a)
+			Constructing wrapper function "microstates.remove_permut_short_nosimetric"...
+			  remove_permut_short_nosimetric(mol)
+			Constructing wrapper function "microstates.doy_vuelta"...
+			  doy_vuelta()
+			Constructing wrapper function "microstates.doy_vuelta_key"...
+			  doy_vuelta_key(key,key_aux)
+	Wrote C/API module "pyn_water" to file "/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c"
+	Fortran 90 wrappers are saved to "/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_water-f2pywrappers2.f90"
+  adding '/tmp/tmpgc23FV/src.linux-x86_64-2.6/fortranobject.c' to sources.
+  adding '/tmp/tmpgc23FV/src.linux-x86_64-2.6' to include_dirs.
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmpgc23FV/src.linux-x86_64-2.6
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmpgc23FV/src.linux-x86_64-2.6
+  adding '/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_water-f2pywrappers2.f90' to sources.
+running build_ext
+customize UnixCCompiler
+customize UnixCCompiler using build_ext
+customize IntelEM64TFCompiler
+Found executable /opt/intel/composerxe-2011.0.084/bin/intel64/ifort
+customize IntelEM64TFCompiler using build_ext
+building 'pyn_water' extension
+compiling C sources
+C compiler: gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC
+
+creating /tmp/tmpgc23FV/tmp
+creating /tmp/tmpgc23FV/tmp/tmpgc23FV
+creating /tmp/tmpgc23FV/tmp/tmpgc23FV/src.linux-x86_64-2.6
+compile options: '-I/tmp/tmpgc23FV/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+gcc: /tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c: In function ‘f2py_setup_main’:
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3177: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3180: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3182: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3183: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3187: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3188: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3192: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3193: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3194: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3195: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3196: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3198: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3200: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3202: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3206: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c: In function ‘f2py_setup_hbonds’:
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3269: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3271: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3272: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3274: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3275: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3276: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3278: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3279: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3280: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3281: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3282: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3283: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c: In function ‘f2py_setup_microstates’:
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3339: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3340: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3341: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3342: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3344: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3345: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3346: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3347: warning: assignment from incompatible pointer type
+/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.c:3348: warning: assignment from incompatible pointer type
+gcc: /tmp/tmpgc23FV/src.linux-x86_64-2.6/fortranobject.c
+compiling Fortran 90 module sources
+Fortran f77 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -w90 -w95 -fPIC -cm -fast -tpp7 -xW
+Fortran f90 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FR -fPIC -cm -fast -tpp7 -xW
+Fortran fix compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -fPIC -cm -fast -tpp7 -xW
+compile options: '-I/tmp/tmpgc23FV/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+extra options: '-module /tmp/tmpgc23FV/ -I/tmp/tmpgc23FV/'
+ifort:f90: pyn_water.f90
+ifort: command line remark #10010: option '-cm' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10148: option '-tpp7' not supported
+ifort: command line remark #10279: option '-xW' is deprecated and will be removed in a future release. See '-help deprecated'
+compiling Fortran sources
+Fortran f77 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -w90 -w95 -fPIC -cm -fast -tpp7 -xW
+Fortran f90 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FR -fPIC -cm -fast -tpp7 -xW
+Fortran fix compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -fPIC -cm -fast -tpp7 -xW
+compile options: '-I/tmp/tmpgc23FV/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+extra options: '-module /tmp/tmpgc23FV/ -I/tmp/tmpgc23FV/'
+ifort:f90: /tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_water-f2pywrappers2.f90
+ifort: command line remark #10010: option '-cm' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10148: option '-tpp7' not supported
+ifort: command line remark #10279: option '-xW' is deprecated and will be removed in a future release. See '-help deprecated'
+/opt/intel/composerxe-2011.0.084/bin/intel64/ifort -shared -shared -nofor_main /tmp/tmpgc23FV/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_watermodule.o /tmp/tmpgc23FV/tmp/tmpgc23FV/src.linux-x86_64-2.6/fortranobject.o /tmp/tmpgc23FV/pyn_water.o /tmp/tmpgc23FV/tmp/tmpgc23FV/src.linux-x86_64-2.6/pyn_water-f2pywrappers2.o -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_def -lpthread -o ./pyn_water.so
+ipo: remark #11000: performing multi-file optimizations
+ipo: remark #11006: generating object file /tmp/ipo_ifort7nk7qt.o
+running scons
+Removing build directory /tmp/tmpgc23FV
+>>>>>> Compiling pyn_fort_enm.so
+running build
+running config_cc
+unifing config_cc, config, build_clib, build_ext, build commands --compiler options
+running config_fc
+unifing config_fc, config, build_clib, build_ext, build commands --fcompiler options
+running build_src
+building extension "pyn_fort_enm" sources
+f2py options: []
+f2py:> /tmp/tmpw1myGE/src.linux-x86_64-2.6/pyn_fort_enmmodule.c
+creating /tmp/tmpw1myGE
+creating /tmp/tmpw1myGE/src.linux-x86_64-2.6
+Reading fortran codes...
+	Reading file 'pyn_fort_enm.f90' (format:free)
+Post-processing...
+	Block: pyn_fort_enm
+			Block: contact_map
+			Block: gnm
+			Block: correlation
+			Block: anm
+Post-processing (stage 2)...
+Building modules...
+	Building module "pyn_fort_enm"...
+		Constructing wrapper function "contact_map"...
+		  map = contact_map(cutoff,coors,[num_atoms])
+		Constructing wrapper function "gnm"...
+		  values,vectors,freqs,bfact,invers,correl = gnm(contact,[num_nodes])
+		Constructing wrapper function "correlation"...
+		  correl = correlation(vectors,values,lista,[num_nodes,dim_lista])
+		Constructing wrapper function "anm"...
+		  values,vectors,freqs,bfact,invers,correl = anm(contact,coors,[num_nodes])
+	Wrote C/API module "pyn_fort_enm" to file "/tmp/tmpw1myGE/src.linux-x86_64-2.6/pyn_fort_enmmodule.c"
+  adding '/tmp/tmpw1myGE/src.linux-x86_64-2.6/fortranobject.c' to sources.
+  adding '/tmp/tmpw1myGE/src.linux-x86_64-2.6' to include_dirs.
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmpw1myGE/src.linux-x86_64-2.6
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmpw1myGE/src.linux-x86_64-2.6
+running build_ext
+customize UnixCCompiler
+customize UnixCCompiler using build_ext
+customize IntelEM64TFCompiler
+Found executable /opt/intel/composerxe-2011.0.084/bin/intel64/ifort
+customize IntelEM64TFCompiler using build_ext
+building 'pyn_fort_enm' extension
+compiling C sources
+C compiler: gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC
+
+creating /tmp/tmpw1myGE/tmp
+creating /tmp/tmpw1myGE/tmp/tmpw1myGE
+creating /tmp/tmpw1myGE/tmp/tmpw1myGE/src.linux-x86_64-2.6
+compile options: '-I/tmp/tmpw1myGE/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+gcc: /tmp/tmpw1myGE/src.linux-x86_64-2.6/fortranobject.c
+gcc: /tmp/tmpw1myGE/src.linux-x86_64-2.6/pyn_fort_enmmodule.c
+compiling Fortran sources
+Fortran f77 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -w90 -w95 -fPIC -cm -fast -tpp7 -xW
+Fortran f90 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FR -fPIC -cm -fast -tpp7 -xW
+Fortran fix compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -fPIC -cm -fast -tpp7 -xW
+compile options: '-I/tmp/tmpw1myGE/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+ifort:f90: pyn_fort_enm.f90
+ifort: command line remark #10010: option '-cm' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10148: option '-tpp7' not supported
+ifort: command line remark #10279: option '-xW' is deprecated and will be removed in a future release. See '-help deprecated'
+/opt/intel/composerxe-2011.0.084/bin/intel64/ifort -shared -shared -nofor_main /tmp/tmpw1myGE/tmp/tmpw1myGE/src.linux-x86_64-2.6/pyn_fort_enmmodule.o /tmp/tmpw1myGE/tmp/tmpw1myGE/src.linux-x86_64-2.6/fortranobject.o /tmp/tmpw1myGE/pyn_fort_enm.o -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_def -lpthread -o ./pyn_fort_enm.so
+ipo: remark #11001: performing single-file optimizations
+ipo: remark #11006: generating object file /tmp/ipo_ifortiTB1Dd.o
+running scons
+Removing build directory /tmp/tmpw1myGE
+>>>>>> Compiling pyn_fort_net.so
+running build
+running config_cc
+unifing config_cc, config, build_clib, build_ext, build commands --compiler options
+running config_fc
+unifing config_fc, config, build_clib, build_ext, build commands --fcompiler options
+running build_src
+building extension "pyn_fort_net" sources
+f2py options: []
+f2py:> /tmp/tmpTjvYtT/src.linux-x86_64-2.6/pyn_fort_netmodule.c
+creating /tmp/tmpTjvYtT
+creating /tmp/tmpTjvYtT/src.linux-x86_64-2.6
+rmbadname1: Replacing "index" with "index_bn".
+rmbadname1: Replacing "switch" with "switch_bn".
+rmbadname1: Replacing "index" with "index_bn".
+rmbadname1: Replacing "switch" with "switch_bn".
+Reading fortran codes...
+	Reading file 'pyn_fort_net.f90' (format:free)
+Post-processing...
+	Block: pyn_fort_net
+			Block: funcs
+				Block: init_traj_mss_2_net
+				Block: traj_mss_2_traj_nodes
+				Block: evolution_step
+				Block: brownian_run
+				Block: brownian_run_fpt
+				Block: detailed_balance_distance
+				Block: symmetrize_net
+					Block: iarray_pointer
+					Block: darray_pointer
+				Block: grad
+				Block: build_net_bin
+					Block: array_pointer
+				Block: build_net
+					Block: array_pointer
+				Block: cfep_pfold
+				Block: cfep_mfpt
+				Block: components
+				Block: dijkstra
+				Block: mds
+				Block: mcl
+Post-processing (stage 2)...
+	Block: pyn_fort_net
+		Block: unknown_interface
+			Block: funcs
+				Block: init_traj_mss_2_net
+				Block: traj_mss_2_traj_nodes
+				Block: evolution_step
+				Block: brownian_run
+				Block: brownian_run_fpt
+				Block: detailed_balance_distance
+				Block: symmetrize_net
+					Block: iarray_pointer
+					Block: darray_pointer
+				Block: grad
+				Block: build_net_bin
+					Block: array_pointer
+				Block: build_net
+					Block: array_pointer
+				Block: cfep_pfold
+				Block: cfep_mfpt
+				Block: components
+				Block: dijkstra
+				Block: mds
+				Block: mcl
+Building modules...
+	Building module "pyn_fort_net"...
+		Constructing F90 module support for "funcs"...
+		  Variables: num_parts num_frames dim_mss traj_mss labels lim_sup_mss lim_inf_mss
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+			Constructing wrapper function "funcs.init_traj_mss_2_net"...
+			  init_traj_mss_2_net()
+			Constructing wrapper function "funcs.traj_mss_2_traj_nodes"...
+			  traj_mss_2_traj_nodes()
+			Constructing wrapper function "funcs.evolution_step"...
+			  vect_out = evolution_step(t_start,t_ind,t_tau,vect_in,[n_nodes,ktot])
+			Constructing wrapper function "funcs.brownian_run"...
+			  vect_out = brownian_run(with_loops,t_start,t_ind,t_tau,iseed,node_alpha,length,[n_nodes,ktot])
+			Constructing wrapper function "funcs.brownian_run_fpt"...
+			  steps = brownian_run_fpt(t_start,t_ind,t_tau,iseed,node_alpha,node_omega,[n_nodes,ktot])
+			Constructing wrapper function "funcs.detailed_balance_distance"...
+			  db_dist = detailed_balance_distance(p,t_start,t_ind,t_tau,[n_nodes,ktot])
+			Constructing wrapper function "funcs.symmetrize_net"...
+			  newkmax,tt_tau,tt_ind,tt_start,pe = symmetrize_net(newktot,t_ind,t_tau,t_start,[n_nodes,ktot])
+			Constructing wrapper function "funcs.grad"...
+			  n_sets,comunidades = grad(t_ind,t_tau,t_start,[n_nodes,ktot])
+			Constructing wrapper function "funcs.build_net_bin"...
+			  build_net_bin(f_traj_nodes,f_net,nw,frames)
+			Constructing wrapper function "funcs.build_net"...
+			  build_net(f_traj_nodes,f_net,nw,frames)
+			Constructing wrapper function "funcs.cfep_pfold"...
+			  plot,info_1,info_2 = cfep_pfold(a,b,t_ind,t_tau,t_start,length,num_iter,[n_nodes,ktot])
+			Constructing wrapper function "funcs.cfep_mfpt"...
+			  plot,info_1,info_2 = cfep_mfpt(a,t_ind,t_tau,t_start,length,num_iter,[n_nodes,ktot])
+			Constructing wrapper function "funcs.components"...
+			  num_comp,componente = components(t_start,t_ind,t_tau,[n_nodes,ktot])
+			Constructing wrapper function "funcs.dijkstra"...
+			  distancia = dijkstra(node,dim_out,directed,t_start,t_ind,t_tau,[n_nodes,ktot])
+			Constructing wrapper function "funcs.mds"...
+			  coordinates,eigenvals,eigenvects,stress = mds(directed,opt,opt_stress,dim,lout,t_start,t_ind,t_tau,distances,[n_nodes,ktot,dim_distances])
+			Constructing wrapper function "funcs.mcl"...
+			  n_sets,comunidades = mcl(granularity,epsilon,iterations,t_start,t_ind,t_tau,[n_nodes,ktot])
+	Wrote C/API module "pyn_fort_net" to file "/tmp/tmpTjvYtT/src.linux-x86_64-2.6/pyn_fort_netmodule.c"
+	Fortran 90 wrappers are saved to "/tmp/tmpTjvYtT/src.linux-x86_64-2.6/pyn_fort_net-f2pywrappers2.f90"
+  adding '/tmp/tmpTjvYtT/src.linux-x86_64-2.6/fortranobject.c' to sources.
+  adding '/tmp/tmpTjvYtT/src.linux-x86_64-2.6' to include_dirs.
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmpTjvYtT/src.linux-x86_64-2.6
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmpTjvYtT/src.linux-x86_64-2.6
+  adding '/tmp/tmpTjvYtT/src.linux-x86_64-2.6/pyn_fort_net-f2pywrappers2.f90' to sources.
+running build_ext
+customize UnixCCompiler
+customize UnixCCompiler using build_ext
+customize IntelEM64TFCompiler
+Found executable /opt/intel/composerxe-2011.0.084/bin/intel64/ifort
+customize IntelEM64TFCompiler using build_ext
+building 'pyn_fort_net' extension
+compiling C sources
+C compiler: gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC
+
+creating /tmp/tmpTjvYtT/tmp
+creating /tmp/tmpTjvYtT/tmp/tmpTjvYtT
+creating /tmp/tmpTjvYtT/tmp/tmpTjvYtT/src.linux-x86_64-2.6
+compile options: '-I/tmp/tmpTjvYtT/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+gcc: /tmp/tmpTjvYtT/src.linux-x86_64-2.6/pyn_fort_netmodule.c
+/tmp/tmpTjvYtT/src.linux-x86_64-2.6/pyn_fort_netmodule.c: In function ‘f2py_setup_funcs’:
+/tmp/tmpTjvYtT/src.linux-x86_64-2.6/pyn_fort_netmodule.c:3085: warning: assignment from incompatible pointer type
+/tmp/tmpTjvYtT/src.linux-x86_64-2.6/pyn_fort_netmodule.c:3086: warning: assignment from incompatible pointer type
+/tmp/tmpTjvYtT/src.linux-x86_64-2.6/pyn_fort_netmodule.c:3087: warning: assignment from incompatible pointer type
+/tmp/tmpTjvYtT/src.linux-x86_64-2.6/pyn_fort_netmodule.c:3088: warning: assignment from incompatible pointer type
+gcc: /tmp/tmpTjvYtT/src.linux-x86_64-2.6/fortranobject.c
+compiling Fortran 90 module sources
+Fortran f77 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -w90 -w95 -fPIC -cm -fast -tpp7 -xW
+Fortran f90 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FR -fPIC -cm -fast -tpp7 -xW
+Fortran fix compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -fPIC -cm -fast -tpp7 -xW
+compile options: '-I/tmp/tmpTjvYtT/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+extra options: '-module /tmp/tmpTjvYtT/ -I/tmp/tmpTjvYtT/'
+ifort:f90: pyn_fort_net.f90
+ifort: command line remark #10010: option '-cm' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10148: option '-tpp7' not supported
+ifort: command line remark #10279: option '-xW' is deprecated and will be removed in a future release. See '-help deprecated'
+compiling Fortran sources
+Fortran f77 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -w90 -w95 -fPIC -cm -fast -tpp7 -xW
+Fortran f90 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FR -fPIC -cm -fast -tpp7 -xW
+Fortran fix compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -fPIC -cm -fast -tpp7 -xW
+compile options: '-I/tmp/tmpTjvYtT/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+extra options: '-module /tmp/tmpTjvYtT/ -I/tmp/tmpTjvYtT/'
+ifort:f90: /tmp/tmpTjvYtT/src.linux-x86_64-2.6/pyn_fort_net-f2pywrappers2.f90
+ifort: command line remark #10010: option '-cm' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10148: option '-tpp7' not supported
+ifort: command line remark #10279: option '-xW' is deprecated and will be removed in a future release. See '-help deprecated'
+/opt/intel/composerxe-2011.0.084/bin/intel64/ifort -shared -shared -nofor_main /tmp/tmpTjvYtT/tmp/tmpTjvYtT/src.linux-x86_64-2.6/pyn_fort_netmodule.o /tmp/tmpTjvYtT/tmp/tmpTjvYtT/src.linux-x86_64-2.6/fortranobject.o /tmp/tmpTjvYtT/pyn_fort_net.o /tmp/tmpTjvYtT/tmp/tmpTjvYtT/src.linux-x86_64-2.6/pyn_fort_net-f2pywrappers2.o -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_def -lpthread -o ./pyn_fort_net.so
+ipo: remark #11000: performing multi-file optimizations
+ipo: remark #11006: generating object file /tmp/ipo_ifortwQChYc.o
+running scons
+Removing build directory /tmp/tmpTjvYtT
+>>>>>> Compiling pyn_fort_math.so
+running build
+running config_cc
+unifing config_cc, config, build_clib, build_ext, build commands --compiler options
+running config_fc
+unifing config_fc, config, build_clib, build_ext, build commands --fcompiler options
+running build_src
+building extension "pyn_fort_math" sources
+f2py options: []
+f2py:> /tmp/tmpAMs_U_/src.linux-x86_64-2.6/pyn_fort_mathmodule.c
+creating /tmp/tmpAMs_U_
+creating /tmp/tmpAMs_U_/src.linux-x86_64-2.6
+rmbadname1: Replacing "max" with "max_bn".
+rmbadname1: Replacing "min" with "min_bn".
+rmbadname1: Replacing "max" with "max_bn".
+rmbadname1: Replacing "min" with "min_bn".
+rmbadname1: Replacing "max" with "max_bn".
+rmbadname1: Replacing "min" with "min_bn".
+rmbadname1: Replacing "max" with "max_bn".
+rmbadname1: Replacing "min" with "min_bn".
+Reading fortran codes...
+	Reading file 'pyn_fort_math.f90' (format:free)
+Post-processing...
+	Block: pyn_fort_math
+			Block: stats
+				Block: free_mem
+				Block: average
+				Block: histograma
+				Block: histograma_2d
+				Block: binning
+				Block: binning_x
+Post-processing (stage 2)...
+	Block: pyn_fort_math
+		Block: unknown_interface
+			Block: stats
+				Block: free_mem
+				Block: average
+				Block: histograma
+				Block: histograma_2d
+				Block: binning
+				Block: binning_x
+Building modules...
+	Building module "pyn_fort_math"...
+		Constructing F90 module support for "stats"...
+		  Variables: histo_y histo_x histo_z
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+			Constructing wrapper function "stats.free_mem"...
+			  free_mem()
+			Constructing wrapper function "stats.average"...
+			  aa,sigma = average(idatos,[l])
+			Constructing wrapper function "stats.histograma"...
+			  histograma(opt_norm,opt_prec,opt_range,opt,opt_cumul,idatos,ibins,imin_x,imax_x,idelta_x,iprec,[l])
+			Constructing wrapper function "stats.histograma_2d"...
+			  histograma_2d(opt_norm,opt_prec,opt_range,opt,idatos,ibins,imin_x,imax_x,idelta_x,iprec,[l])
+			Constructing wrapper function "stats.binning"...
+			  tray_bins = binning(opt_prec,opt_range,opt,idatos,ibins,imin_x,imax_x,idelta_x,iprec,[l])
+			Constructing wrapper function "stats.binning_x"...
+			  delta_x = binning_x(opt_range,opt,ibins,imin_x,imax_x,idelta_x,iprec)
+	Wrote C/API module "pyn_fort_math" to file "/tmp/tmpAMs_U_/src.linux-x86_64-2.6/pyn_fort_mathmodule.c"
+	Fortran 90 wrappers are saved to "/tmp/tmpAMs_U_/src.linux-x86_64-2.6/pyn_fort_math-f2pywrappers2.f90"
+  adding '/tmp/tmpAMs_U_/src.linux-x86_64-2.6/fortranobject.c' to sources.
+  adding '/tmp/tmpAMs_U_/src.linux-x86_64-2.6' to include_dirs.
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmpAMs_U_/src.linux-x86_64-2.6
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmpAMs_U_/src.linux-x86_64-2.6
+  adding '/tmp/tmpAMs_U_/src.linux-x86_64-2.6/pyn_fort_math-f2pywrappers2.f90' to sources.
+running build_ext
+customize UnixCCompiler
+customize UnixCCompiler using build_ext
+customize IntelEM64TFCompiler
+Found executable /opt/intel/composerxe-2011.0.084/bin/intel64/ifort
+customize IntelEM64TFCompiler using build_ext
+building 'pyn_fort_math' extension
+compiling C sources
+C compiler: gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC
+
+creating /tmp/tmpAMs_U_/tmp
+creating /tmp/tmpAMs_U_/tmp/tmpAMs_U_
+creating /tmp/tmpAMs_U_/tmp/tmpAMs_U_/src.linux-x86_64-2.6
+compile options: '-I/tmp/tmpAMs_U_/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+gcc: /tmp/tmpAMs_U_/src.linux-x86_64-2.6/fortranobject.c
+gcc: /tmp/tmpAMs_U_/src.linux-x86_64-2.6/pyn_fort_mathmodule.c
+/tmp/tmpAMs_U_/src.linux-x86_64-2.6/pyn_fort_mathmodule.c: In function ‘f2py_setup_stats’:
+/tmp/tmpAMs_U_/src.linux-x86_64-2.6/pyn_fort_mathmodule.c:1066: warning: assignment from incompatible pointer type
+/tmp/tmpAMs_U_/src.linux-x86_64-2.6/pyn_fort_mathmodule.c:1067: warning: assignment from incompatible pointer type
+/tmp/tmpAMs_U_/src.linux-x86_64-2.6/pyn_fort_mathmodule.c:1068: warning: assignment from incompatible pointer type
+compiling Fortran 90 module sources
+Fortran f77 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -w90 -w95 -fPIC -cm -fast -tpp7 -xW
+Fortran f90 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FR -fPIC -cm -fast -tpp7 -xW
+Fortran fix compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -fPIC -cm -fast -tpp7 -xW
+compile options: '-I/tmp/tmpAMs_U_/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+extra options: '-module /tmp/tmpAMs_U_/ -I/tmp/tmpAMs_U_/'
+ifort:f90: pyn_fort_math.f90
+ifort: command line remark #10010: option '-cm' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10148: option '-tpp7' not supported
+ifort: command line remark #10279: option '-xW' is deprecated and will be removed in a future release. See '-help deprecated'
+compiling Fortran sources
+Fortran f77 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -w90 -w95 -fPIC -cm -fast -tpp7 -xW
+Fortran f90 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FR -fPIC -cm -fast -tpp7 -xW
+Fortran fix compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -fPIC -cm -fast -tpp7 -xW
+compile options: '-I/tmp/tmpAMs_U_/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+extra options: '-module /tmp/tmpAMs_U_/ -I/tmp/tmpAMs_U_/'
+ifort:f90: /tmp/tmpAMs_U_/src.linux-x86_64-2.6/pyn_fort_math-f2pywrappers2.f90
+ifort: command line remark #10010: option '-cm' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10148: option '-tpp7' not supported
+ifort: command line remark #10279: option '-xW' is deprecated and will be removed in a future release. See '-help deprecated'
+/opt/intel/composerxe-2011.0.084/bin/intel64/ifort -shared -shared -nofor_main /tmp/tmpAMs_U_/tmp/tmpAMs_U_/src.linux-x86_64-2.6/pyn_fort_mathmodule.o /tmp/tmpAMs_U_/tmp/tmpAMs_U_/src.linux-x86_64-2.6/fortranobject.o /tmp/tmpAMs_U_/pyn_fort_math.o /tmp/tmpAMs_U_/tmp/tmpAMs_U_/src.linux-x86_64-2.6/pyn_fort_math-f2pywrappers2.o -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_def -lpthread -o ./pyn_fort_math.so
+ipo: remark #11000: performing multi-file optimizations
+ipo: remark #11006: generating object file /tmp/ipo_ifortzIuN7w.o
+running scons
+Removing build directory /tmp/tmpAMs_U_
+>>>>>> Compiling pyn_fort_anal_trajs.so
+running build
+running config_cc
+unifing config_cc, config, build_clib, build_ext, build commands --compiler options
+running config_fc
+unifing config_fc, config, build_clib, build_ext, build commands --fcompiler options
+running build_src
+building extension "pyn_fort_anal_trajs" sources
+f2py options: []
+f2py:> /tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/pyn_fort_anal_trajsmodule.c
+creating /tmp/tmpZ1Y5aU
+creating /tmp/tmpZ1Y5aU/src.linux-x86_64-2.6
+rmbadname1: Replacing "index" with "index_bn".
+rmbadname1: Replacing "switch" with "switch_bn".
+rmbadname1: Replacing "min" with "min_bn".
+rmbadname1: Replacing "max" with "max_bn".
+rmbadname1: Replacing "switch" with "switch_bn".
+rmbadname1: Replacing "min" with "min_bn".
+rmbadname1: Replacing "max" with "max_bn".
+rmbadname1: Replacing "switch" with "switch_bn".
+Reading fortran codes...
+	Reading file 'pyn_fort_anal_trajs.f90' (format:free)
+Post-processing...
+	Block: pyn_fort_anal_trajs
+			Block: aux
+				Block: array_pointer
+				Block: darray_pointer
+				Block: free_memory_ts
+				Block: traj2net
+				Block: rao_stat_1
+				Block: ganna
+				Block: ganna2
+Post-processing (stage 2)...
+	Block: pyn_fort_anal_trajs
+		Block: unknown_interface
+			Block: aux
+				Block: array_pointer
+				Block: darray_pointer
+				Block: free_memory_ts
+				Block: traj2net
+				Block: rao_stat_1
+				Block: ganna
+				Block: ganna2
+Building modules...
+	Building module "pyn_fort_anal_trajs"...
+		Constructing F90 module support for "aux"...
+		  Variables: t_tau labels t_ind t_start
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+getarrdims:warning: assumed shape array, using 0 instead of ':'
+Skipping type array_pointer
+Skipping type darray_pointer
+			Constructing wrapper function "aux.free_memory_ts"...
+			  free_memory_ts()
+			Constructing wrapper function "aux.traj2net"...
+			  tray = traj2net(len_str,traj_full,ranges,[num_parts,num_frames,dimensions])
+			Constructing wrapper function "aux.rao_stat_1"...
+			  traj_bins = rao_stat_1(tw,traj_dists,limits,[num_parts,frames,len_lims])
+			Constructing wrapper function "aux.ganna"...
+			  traj_out = ganna(opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,[num_parts,len_traj])
+			Constructing wrapper function "aux.ganna2"...
+			  traj_out = ganna2(opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,[num_parts,len_traj])
+	Wrote C/API module "pyn_fort_anal_trajs" to file "/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/pyn_fort_anal_trajsmodule.c"
+	Fortran 90 wrappers are saved to "/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/pyn_fort_anal_trajs-f2pywrappers2.f90"
+  adding '/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/fortranobject.c' to sources.
+  adding '/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6' to include_dirs.
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmpZ1Y5aU/src.linux-x86_64-2.6
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmpZ1Y5aU/src.linux-x86_64-2.6
+  adding '/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/pyn_fort_anal_trajs-f2pywrappers2.f90' to sources.
+running build_ext
+customize UnixCCompiler
+customize UnixCCompiler using build_ext
+customize IntelEM64TFCompiler
+Found executable /opt/intel/composerxe-2011.0.084/bin/intel64/ifort
+customize IntelEM64TFCompiler using build_ext
+building 'pyn_fort_anal_trajs' extension
+compiling C sources
+C compiler: gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC
+
+creating /tmp/tmpZ1Y5aU/tmp
+creating /tmp/tmpZ1Y5aU/tmp/tmpZ1Y5aU
+creating /tmp/tmpZ1Y5aU/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6
+compile options: '-I/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+gcc: /tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/pyn_fort_anal_trajsmodule.c
+/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/pyn_fort_anal_trajsmodule.c: In function ‘f2py_setup_aux’:
+/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/pyn_fort_anal_trajsmodule.c:976: warning: assignment from incompatible pointer type
+/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/pyn_fort_anal_trajsmodule.c:977: warning: assignment from incompatible pointer type
+/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/pyn_fort_anal_trajsmodule.c:978: warning: assignment from incompatible pointer type
+/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/pyn_fort_anal_trajsmodule.c:979: warning: assignment from incompatible pointer type
+gcc: /tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/fortranobject.c
+compiling Fortran 90 module sources
+Fortran f77 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -w90 -w95 -fPIC -cm -fast -tpp7 -xW
+Fortran f90 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FR -fPIC -cm -fast -tpp7 -xW
+Fortran fix compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -fPIC -cm -fast -tpp7 -xW
+compile options: '-I/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+extra options: '-module /tmp/tmpZ1Y5aU/ -I/tmp/tmpZ1Y5aU/'
+ifort:f90: pyn_fort_anal_trajs.f90
+ifort: command line remark #10010: option '-cm' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10148: option '-tpp7' not supported
+ifort: command line remark #10279: option '-xW' is deprecated and will be removed in a future release. See '-help deprecated'
+compiling Fortran sources
+Fortran f77 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -w90 -w95 -fPIC -cm -fast -tpp7 -xW
+Fortran f90 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FR -fPIC -cm -fast -tpp7 -xW
+Fortran fix compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -fPIC -cm -fast -tpp7 -xW
+compile options: '-I/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+extra options: '-module /tmp/tmpZ1Y5aU/ -I/tmp/tmpZ1Y5aU/'
+ifort:f90: /tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/pyn_fort_anal_trajs-f2pywrappers2.f90
+ifort: command line remark #10010: option '-cm' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10148: option '-tpp7' not supported
+ifort: command line remark #10279: option '-xW' is deprecated and will be removed in a future release. See '-help deprecated'
+/opt/intel/composerxe-2011.0.084/bin/intel64/ifort -shared -shared -nofor_main /tmp/tmpZ1Y5aU/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/pyn_fort_anal_trajsmodule.o /tmp/tmpZ1Y5aU/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/fortranobject.o /tmp/tmpZ1Y5aU/pyn_fort_anal_trajs.o /tmp/tmpZ1Y5aU/tmp/tmpZ1Y5aU/src.linux-x86_64-2.6/pyn_fort_anal_trajs-f2pywrappers2.o -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_def -lpthread -o ./pyn_fort_anal_trajs.so
+ipo: remark #11000: performing multi-file optimizations
+ipo: remark #11006: generating object file /tmp/ipo_ifort4HKEeY.o
+running scons
+Removing build directory /tmp/tmpZ1Y5aU
+>>>>>> Compiling io_formats/libdcdfile.so
+running build
+running config_cc
+unifing config_cc, config, build_clib, build_ext, build commands --compiler options
+running config_fc
+unifing config_fc, config, build_clib, build_ext, build commands --fcompiler options
+running build_src
+building extension "libdcdfile" sources
+f2py options: []
+f2py:> /tmp/tmpaB7o63/src.linux-x86_64-2.6/libdcdfilemodule.c
+creating /tmp/tmpaB7o63
+creating /tmp/tmpaB7o63/src.linux-x86_64-2.6
+analyzevars: charselector={'len': '1'} unhandled.analyzevars: charselector={'len': '80'} unhandled.analyzevars: charselector={'len': '80'} unhandled.analyzevars: charselector={'len': '80'} unhandled.Reading fortran codes...
+	Reading file 'libdcdfile.f90' (format:free)
+Post-processing...
+	Block: libdcdfile
+			Block: open_read
+In: :libdcdfile:libdcdfile.f90:open_read
+get_parameters: got "invalid syntax (<string>, line 1)" on "x'44524f43'"
+In: :libdcdfile:libdcdfile.f90:open_read
+get_parameters: got "invalid syntax (<string>, line 1)" on "x'434f5244'"
+			Block: read
+			Block: open_write
+			Block: write
+			Block: close
+			Block: close_write
+Post-processing (stage 2)...
+Building modules...
+	Building module "libdcdfile"...
+		Constructing wrapper function "open_read"...
+		  funit,o_vars,o_natom,o_delta_t,pos_o = open_read(len_ch,file_name)
+		Constructing wrapper function "read"...
+		  pos_o,cell,coors,io_err,io_end = read(funit,natom,with_cell,pos_i)
+		Constructing wrapper function "open_write"...
+		  funit = open_write(len_ch,file_name,i_vars,i_natom,i_delta_t,origin_name)
+		Constructing wrapper function "write"...
+		  write(funit,cell,coors,[i_natom])
+		Constructing wrapper function "close"...
+		  io_err = close(funit)
+		Constructing wrapper function "close_write"...
+		  io_err = close_write(funit,i_vars,i_natom,i_delta_t)
+	Wrote C/API module "libdcdfile" to file "/tmp/tmpaB7o63/src.linux-x86_64-2.6/libdcdfilemodule.c"
+  adding '/tmp/tmpaB7o63/src.linux-x86_64-2.6/fortranobject.c' to sources.
+  adding '/tmp/tmpaB7o63/src.linux-x86_64-2.6' to include_dirs.
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmpaB7o63/src.linux-x86_64-2.6
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmpaB7o63/src.linux-x86_64-2.6
+running build_ext
+customize UnixCCompiler
+customize UnixCCompiler using build_ext
+customize IntelEM64TFCompiler
+Found executable /opt/intel/composerxe-2011.0.084/bin/intel64/ifort
+customize IntelEM64TFCompiler using build_ext
+building 'libdcdfile' extension
+compiling C sources
+C compiler: gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC
+
+creating /tmp/tmpaB7o63/tmp
+creating /tmp/tmpaB7o63/tmp/tmpaB7o63
+creating /tmp/tmpaB7o63/tmp/tmpaB7o63/src.linux-x86_64-2.6
+compile options: '-I/tmp/tmpaB7o63/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+gcc: /tmp/tmpaB7o63/src.linux-x86_64-2.6/fortranobject.c
+gcc: /tmp/tmpaB7o63/src.linux-x86_64-2.6/libdcdfilemodule.c
+compiling Fortran sources
+Fortran f77 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -w90 -w95 -fPIC -cm -fast -tpp7 -xW
+Fortran f90 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FR -fPIC -cm -fast -tpp7 -xW
+Fortran fix compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -fPIC -cm -fast -tpp7 -xW
+compile options: '-I/tmp/tmpaB7o63/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+ifort:f90: libdcdfile.f90
+ifort: command line remark #10010: option '-cm' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10148: option '-tpp7' not supported
+ifort: command line remark #10279: option '-xW' is deprecated and will be removed in a future release. See '-help deprecated'
+libdcdfile.f90(261): warning #6843: A dummy argument with an explicit INTENT(OUT) declaration is not given an explicit value.   [IO_ERR]
+SUBROUTINE close_write(funit,i_vars,i_natom,i_delta_t,io_err)
+------------------------------------------------------^
+/opt/intel/composerxe-2011.0.084/bin/intel64/ifort -shared -shared -nofor_main /tmp/tmpaB7o63/tmp/tmpaB7o63/src.linux-x86_64-2.6/libdcdfilemodule.o /tmp/tmpaB7o63/tmp/tmpaB7o63/src.linux-x86_64-2.6/fortranobject.o /tmp/tmpaB7o63/libdcdfile.o -o ./libdcdfile.so
+ipo: remark #11001: performing single-file optimizations
+ipo: remark #11006: generating object file /tmp/ipo_ifortQhVES0.o
+running scons
+Removing build directory /tmp/tmpaB7o63
+>>>>>> Compiling io_formats/libbinfile.so
+running build
+running config_cc
+unifing config_cc, config, build_clib, build_ext, build commands --compiler options
+running config_fc
+unifing config_fc, config, build_clib, build_ext, build commands --fcompiler options
+running build_src
+building extension "libbinfile" sources
+f2py options: []
+f2py:> /tmp/tmpepXIA6/src.linux-x86_64-2.6/libbinfilemodule.c
+creating /tmp/tmpepXIA6
+creating /tmp/tmpepXIA6/src.linux-x86_64-2.6
+Reading fortran codes...
+	Reading file 'libbinfile.f90' (format:free)
+Post-processing...
+	Block: libbinfile
+			Block: open_read
+			Block: read
+			Block: close
+Post-processing (stage 2)...
+Building modules...
+	Building module "libbinfile"...
+		Constructing wrapper function "open_read"...
+		  funit,o_natom,o_cell,pos_o = open_read(len_ch,file_name)
+		Constructing wrapper function "read"...
+		  pos_o,step,time,prec,cell,coors,io_err,io_end = read(funit,natom,pos_i)
+		Constructing wrapper function "close"...
+		  io_err = close(funit)
+	Wrote C/API module "libbinfile" to file "/tmp/tmpepXIA6/src.linux-x86_64-2.6/libbinfilemodule.c"
+  adding '/tmp/tmpepXIA6/src.linux-x86_64-2.6/fortranobject.c' to sources.
+  adding '/tmp/tmpepXIA6/src.linux-x86_64-2.6' to include_dirs.
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmpepXIA6/src.linux-x86_64-2.6
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmpepXIA6/src.linux-x86_64-2.6
+running build_ext
+customize UnixCCompiler
+customize UnixCCompiler using build_ext
+customize IntelEM64TFCompiler
+Found executable /opt/intel/composerxe-2011.0.084/bin/intel64/ifort
+customize IntelEM64TFCompiler using build_ext
+building 'libbinfile' extension
+compiling C sources
+C compiler: gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC
+
+creating /tmp/tmpepXIA6/tmp
+creating /tmp/tmpepXIA6/tmp/tmpepXIA6
+creating /tmp/tmpepXIA6/tmp/tmpepXIA6/src.linux-x86_64-2.6
+compile options: '-I/tmp/tmpepXIA6/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+gcc: /tmp/tmpepXIA6/src.linux-x86_64-2.6/fortranobject.c
+gcc: /tmp/tmpepXIA6/src.linux-x86_64-2.6/libbinfilemodule.c
+compiling Fortran sources
+Fortran f77 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -w90 -w95 -fPIC -cm -fast -tpp7 -xW
+Fortran f90 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FR -fPIC -cm -fast -tpp7 -xW
+Fortran fix compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -fPIC -cm -fast -tpp7 -xW
+compile options: '-I/tmp/tmpepXIA6/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+ifort:f90: libbinfile.f90
+ifort: command line remark #10010: option '-cm' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10148: option '-tpp7' not supported
+ifort: command line remark #10279: option '-xW' is deprecated and will be removed in a future release. See '-help deprecated'
+/opt/intel/composerxe-2011.0.084/bin/intel64/ifort -shared -shared -nofor_main /tmp/tmpepXIA6/tmp/tmpepXIA6/src.linux-x86_64-2.6/libbinfilemodule.o /tmp/tmpepXIA6/tmp/tmpepXIA6/src.linux-x86_64-2.6/fortranobject.o /tmp/tmpepXIA6/libbinfile.o -o ./libbinfile.so
+ipo: remark #11001: performing single-file optimizations
+ipo: remark #11006: generating object file /tmp/ipo_ifortzDVg6D.o
+running scons
+Removing build directory /tmp/tmpepXIA6
+>>>>>> Compiling io_formats/libcell2box.so
+running build
+running config_cc
+unifing config_cc, config, build_clib, build_ext, build commands --compiler options
+running config_fc
+unifing config_fc, config, build_clib, build_ext, build commands --fcompiler options
+running build_src
+building extension "libcell2box" sources
+f2py options: []
+f2py:> /tmp/tmphB6teH/src.linux-x86_64-2.6/libcell2boxmodule.c
+creating /tmp/tmphB6teH
+creating /tmp/tmphB6teH/src.linux-x86_64-2.6
+Reading fortran codes...
+	Reading file 'libcell2box.f90' (format:free)
+Post-processing...
+	Block: libcell2box
+			Block: cell2box
+			Block: box2cell
+Post-processing (stage 2)...
+Building modules...
+	Building module "libcell2box"...
+		Constructing wrapper function "cell2box"...
+		  box,volume,ortho = cell2box(cell)
+		Constructing wrapper function "box2cell"...
+		  cell,volume,ortho = box2cell(box)
+	Wrote C/API module "libcell2box" to file "/tmp/tmphB6teH/src.linux-x86_64-2.6/libcell2boxmodule.c"
+  adding '/tmp/tmphB6teH/src.linux-x86_64-2.6/fortranobject.c' to sources.
+  adding '/tmp/tmphB6teH/src.linux-x86_64-2.6' to include_dirs.
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.c -> /tmp/tmphB6teH/src.linux-x86_64-2.6
+copying /usr/lib/python2.6/dist-packages/numpy/f2py/src/fortranobject.h -> /tmp/tmphB6teH/src.linux-x86_64-2.6
+running build_ext
+customize UnixCCompiler
+customize UnixCCompiler using build_ext
+customize IntelEM64TFCompiler
+Found executable /opt/intel/composerxe-2011.0.084/bin/intel64/ifort
+customize IntelEM64TFCompiler using build_ext
+building 'libcell2box' extension
+compiling C sources
+C compiler: gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC
+
+creating /tmp/tmphB6teH/tmp
+creating /tmp/tmphB6teH/tmp/tmphB6teH
+creating /tmp/tmphB6teH/tmp/tmphB6teH/src.linux-x86_64-2.6
+compile options: '-I/tmp/tmphB6teH/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+gcc: /tmp/tmphB6teH/src.linux-x86_64-2.6/fortranobject.c
+gcc: /tmp/tmphB6teH/src.linux-x86_64-2.6/libcell2boxmodule.c
+compiling Fortran sources
+Fortran f77 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -w90 -w95 -fPIC -cm -fast -tpp7 -xW
+Fortran f90 compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FR -fPIC -cm -fast -tpp7 -xW
+Fortran fix compiler: /opt/intel/composerxe-2011.0.084/bin/intel64/ifort -FI -fPIC -cm -fast -tpp7 -xW
+compile options: '-I/tmp/tmphB6teH/src.linux-x86_64-2.6 -I/usr/lib/python2.6/dist-packages/numpy/core/include -I/usr/include/python2.6 -c'
+ifort:f90: libcell2box.f90
+ifort: command line remark #10010: option '-cm' is deprecated and will be removed in a future release. See '-help deprecated'
+ifort: command line remark #10148: option '-tpp7' not supported
+ifort: command line remark #10279: option '-xW' is deprecated and will be removed in a future release. See '-help deprecated'
+/opt/intel/composerxe-2011.0.084/bin/intel64/ifort -shared -shared -nofor_main /tmp/tmphB6teH/tmp/tmphB6teH/src.linux-x86_64-2.6/libcell2boxmodule.o /tmp/tmphB6teH/tmp/tmphB6teH/src.linux-x86_64-2.6/fortranobject.o /tmp/tmphB6teH/libcell2box.o -o ./libcell2box.so
+ipo: remark #11001: performing single-file optimizations
+ipo: remark #11006: generating object file /tmp/ipo_ifortwTpX7U.o
+running scons
+Removing build directory /tmp/tmphB6teH
