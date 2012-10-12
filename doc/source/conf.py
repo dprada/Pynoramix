@@ -35,6 +35,7 @@ extensions = [
           'sphinx.ext.intersphinx', 
           'sphinx.ext.todo', 
           'sphinx.ext.ifconfig', 
+#          'sphinx.ext.pngmath', 
           'inheritance_diagram',
           'ipython_console_highlighting']
 

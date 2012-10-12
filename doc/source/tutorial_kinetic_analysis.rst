@@ -19,7 +19,7 @@ Some basic notions on python will be assumed along this tutorial.
 1D Trajectories
 ===============
 
-Given a trajectory 1D trajectory, its kinetic analysis can be done taking advantage of the class *kinetic_1D_analysis*. 
+Given a 1D trajectory , its kinetic analysis can be done taking advantage of the class *kinetic_1D_analysis*. 
 The following subsections are a description of how to deal with this class and the functions included.
 
 .. seealso:: The section XXX for the details of this function.
@@ -28,7 +28,10 @@ The following subsections are a description of how to deal with this class and t
 Loading a trajectory
 ++++++++++++++++++++
 
-Given a file named "traj.oup" with the 1D trajectory in its second column, the class *kinetic_1D_analysis* can be initialized:
+Given a file, :download:`traj.oup
+<../tutorials/kinetic_1D_analysis/traj.oup.gz>`, with the 1D
+trajectory in its second column, the class *kinetic_1D_analysis* can
+be initialized:
 
 .. sourcecode:: ipython
 
@@ -71,6 +74,159 @@ The histogram can be obtained with the following command:
 .. figure:: ../tutorials/kinetic_1D_analysis/histo_1D.png
    :align: center
    :scale: 70 %
+
+First order kinetic model
++++++++++++++++++++++++++
+
+At first glance the former distribution can be decompose in three
+peaks, called macro-states since we know that this histogram is coming
+from a dynamical system. Actually, the trajectory corresponds to the
+projection onto an arbitrary coordinate of a langevin dynamics of a
+particle embeded in a 2D potential.
+
+.. figure:: ../tutorials/kinetic_1D_analysis/histo_color.png
+   :align: center
+   :scale: 70 %
+
+According to this first superficial analysis, the particle moves
+through a landscape with 3 basins (green, orange, blue) separated by 2
+barriers (green-orange and orange-blue). Thereby, the particle goes
+from green to blue region bymeans of a necessary visit to the region orange. 
+
+A first order kinetic model can be computed with these three
+states. The model should be written as a master equation where the
+transition probabilities, or rates, between macrostates interplay to
+mimic the macroscopical dynamical behavior observed in the experiment.
+
+These transition probabilities are computed from the following trajectory:
+
+.. sourcecode:: ipython
+
+   In [6]: for xx in kin_test.traj[:]:
+      ...:     if xx <=-5.5:
+      ...:          kin_test.traj_clusters.append(0)   # Green region
+      ...:     elif xx <=-2.3:
+      ...:          kin_test.traj_clusters.append(1)   # Orange region
+      ...:     else:
+      ...:          kin_test.traj_clusters.append(2)   # Blue region
+      ...: 
+
+Notice that the term 'cluster' was used: a set of time steps belonging
+to the same macrostate. This way the cluster labeled '0' corresponds
+to region green, '1' to the orange one and '2' to the blue.  The
+transition probabilities can be computed building the corresponding
+kinetic network, or conformational space network. The trajectory is
+mapped into a network where weighted nodes and directed links accounts to
+the occupation of the clusters and the number of transitions among them.
+
+.. sourcecode:: ipython
+
+   In [7]: kin_test.kinetic_network(traj='clusters',verbose=True)
+   # Network:
+   # 3 nodes
+   # 9 links out
+   # 999900.0 total weight nodes
+
+Before getting the transision probabilities, or rates, detailed
+balance condition is impossed symmetrising the network.
+
+.. sourcecode:: ipython
+
+   In [8]: kin_test.network_clusters.symmetrize(new=False,verbose=False)
+
+   In [9]: kin_test.network_clusters.info()
+   # Network:
+   # 3 nodes
+   # 9 links out
+   # 1999800.0 total weight nodes
+
+.. seealso:: The section XXX for the details of this function.
+
+
+The network we have now is nothing but a kinetic model respresented as a graph. This way the master equations:
+
+.. math::
+
+   \frac{dP_{0}}{dt} = P_{01}P_{1} + P_{02}P_{2} - P_{10}P_{0} - P_{20}P_{0},
+
+\
+
+.. math::
+
+   \frac{dP_{1}}{dt} = P_{10}P_{0} + P_{12}P_{2} - P_{01}P_{1} - P_{21}P_{1},
+
+\
+
+.. math::
+
+   \frac{dP_{2}}{dt} = P_{20}P_{0} + P_{21}P_{1} - P_{02}P_{2} - P_{12}P_{2},
+
+
+can be written with the transition probabilities:
+
+.. sourcecode:: ipython
+
+   In [10]: for ii in range(3):
+      ....:    ww=kin_test.network_clusters.node[ii].weight
+      ....:        for jj in range(3):
+      ....:            if ii!=jj :
+      ....:                print 'P'+str(jj)+str(ii)+'=', kin_test.network_clusters.node[ii].link[jj]/ww
+      ....: 
+   P10= 0.00134372002214
+   P20= 0.000153059499211
+   P01= 0.00190455529265
+   P21= 0.0749385749386
+   P02= 8.25724981733e-05
+   P12= 0.0285230372469
+
+Where detailed balance condition, :math:`P_{ji}P^{s}_{i}=P_{ij}P^{s}_{j}`, is
+fullfilled by construction. Thereby, the stationary solution of this
+master equation is given by the occupation probabilities given found
+as weights of nodes.
+
+.. sourcecode:: ipython
+
+   In [11]: ww=kin_test.network_clusters.weight
+
+   In [12]: for ii in range(3):
+      ....:     print 'P'+str(ii)+'^s =', kin_test.network_clusters.node[ii].weight/ww
+      ....: 
+   P0^s = 0.28096459646
+   P1^s = 0.198228822882
+   P2^s = 0.520806580658
+
+
+
+We can now compare our kinetic model with the behavior observed in the
+original trajectory.  This can be done attending to magnitudes as the
+*mean dwell/life time* and its distribution or the *mean first passage
+time* and its distribution.
+
+Mean life time or life time distribution
+++++++++++++++++++++++++++++++++++++++++
+
+Up to here, in this tutorial we have built a kinetic model from a 1D
+trajectory. Now the accuracy of the model can be checked with
+observables as the life time of its macro-states.
+
+First of all, the life time distribution of the 3 macro-states can be
+computed from the original trajectory.
+
+
+
+
+
+We can build the *mean first passage time* distribution from region
+orange to green or from blue to green. These distributions should be
+similar to the ones obtained with the kinetic model we can build with
+the three states detected.
+
+
+
+.. figure:: ../tutorials/kinetic_1D_analysis/traj123.png
+   :align: center
+   :scale: 70 %
+
 
 Accurate kinetic decomposition
 ++++++++++++++++++++++++++++++

@@ -15,7 +15,8 @@ class kinetic_1D_analysis():
         self.length=0
         self.traj_nodes=None
         self.traj_clusters=None
-        self.network=None
+        self.network_nodes=None
+        self.network_clusters=None
 
         if traject==None:
             print 'Trajectory needed (name of file or array)'
@@ -27,13 +28,16 @@ class kinetic_1D_analysis():
         elif type(column) in [int]:
             self.num_particles=1
             self.traj=[]
+            self.traj_nodes=[]
+            self.traj_clusters=[]
         elif column in ['ALL','All','all']:
             fff=open(traject,'r')
             line=fff.readline().split()
             self.num_particles=len(line)
             fff.close()
             self.traj=[[] for ii in range(len(self.num_particles))]
-            
+            self.traj_nodes=[[] for ii in range(len(self.num_particles))]
+            self.traj_clusters=[[] for ii in range(len(self.num_particles))]
 
         if type(traject) in [str]:
             self.file_name=traject
@@ -63,6 +67,38 @@ class kinetic_1D_analysis():
             return pyn_math.histogram(self.traj,bins=bins,segment=segment,delta_x=delta_x,norm=norm,cumul=cumul,plot=False)
         else:
             return pyn_math.histogram(self.traj[0],bins=bins,segment=segment,delta_x=delta_x,norm=norm,cumul=cumul,plot=False)
+
+    def life_time(self,traj=None,state=None,mean=False,verbose=False):
+
+        if traj == None:
+            pass
+
+        elif traj in ['CLUSTERS','Clusters','clusters']:
+            pass
+
+        elif traj in ['NODES','Nodes','nodes']:
+            pass
+    
+
+    def kinetic_network(self,traj=None,verbose=False):
+
+        if traj in ['CLUSTERS','Clusters','clusters']:
+            if type(self.traj_clusters) not in ['numpy.ndarray']:
+                self.traj_clusters=array(self.traj_clusters,order="Fortran")
+            self.network_clusters=kinetic_network(self.traj_clusters,ranges=[self.traj_clusters.min(),self.traj_clusters.max()],verbose=verbose)
+            pass
+
+        elif traj in ['NODES','Nodes','nodes']:
+            if type(self.traj_nodes) not in ['numpy.ndarray']:
+                self.traj_nodes=array(self.traj_nodes,order="Fortran")
+            self.network_nodes=kinetic_network(self.traj_nodes,ranges=[self.traj_nodes.min(),self.traj_nodes.max()],verbose=verbose)
+            pass
+
+        else:
+            print 'traj= clusters or nodes'
+            pass
+
+
 
     def Ganna2012(self,window=None,ksi=0.5,granularity=1.2,bins=20,segment=None,delta_x=None,clusters=True,verbose=False):
 
