@@ -251,7 +251,7 @@ particle along x:
     
    In [8]: pylab.show()
 
-.. plot:: pyplots/2w_1D_fig1.py
+.. plot:: ../pyplots/2w_1D_fig1.py
 
 Symmetrize Network (detailed balance)
 +++++++++++++++++++++++++++++++++++++
