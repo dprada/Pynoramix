@@ -4,6 +4,8 @@ INTEGER,DIMENSION(:),ALLOCATABLE::T_ind,T_start
 DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::T_tau
 INTEGER,DIMENSION(:,:),ALLOCATABLE::labels
 
+DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::distrib
+
 TYPE array_pointer
 INTEGER,DIMENSION(:),POINTER::p1
 END TYPE array_pointer
@@ -586,5 +588,75 @@ subroutine ganna2 (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,
 
 
 END subroutine ganna2
+
+
+
+
+subroutine life_time_dist_int (opt_norm,traj,state,segment,num_part,dim,length,num_states,mean)
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN):: opt_norm,num_part,dim,length,num_states
+  INTEGER,DIMENSION(num_part,dim,length),INTENT(IN):: traj
+  DOUBLE PRECISION,DIMENSION(2),INTENT(IN):: segment
+  INTEGER,DIMENSION(num_states),INTENT(IN):: state
+  DOUBLE PRECISION,INTENT(OUT):: mean
+
+  INTEGER:: ii,jj,kk,ll,gg,contador,kkk,lll
+  LOGICAL::inside_old,inside
+  INTEGER:: contador_total
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::distrib_aux
+
+  gg=10
+  contador=0
+  contador_total=0
+  mean=0.0d0
+
+  IF (ALLOCATED(distrib)) DEALLOCATE(distrib)
+  ALLOCATE(distrib(gg))
+  distrib=0.0d0
+
+  inside_old=.false.
+  DO kkk=1,num_part
+     DO lll=1,dim
+        DO ii=1,length
+           inside=.false.
+           DO jj=1,num_states
+              IF (traj(kkk,lll,ii)==state(jj)) THEN
+                 inside=.true.
+                 contador=contador+1
+                 EXIT
+              END IF
+           END DO
+           
+           IF ((inside_old.eqv..true.).and.(inside.eqv..false.)) THEN
+              IF (contador>gg) THEN
+                 ALLOCATE(distrib_aux(gg))
+                 distrib_aux=distrib
+                 DEALLOCATE(distrib)
+                 ALLOCATE(distrib(contador))
+                 distrib(1:gg)=distrib_aux(:)
+                 gg=contador
+              END IF
+              distrib(contador)=distrib(contador)+1
+              contador_total=contador_total+contador
+              mean=mean+1.0d0
+              contador=0
+           END IF
+           
+           inside_old=inside
+     
+        END DO
+     END DO
+  END DO
+  
+  mean=(contador_total*1.0d0)/mean
+
+  IF (opt_norm==1) THEN
+     distrib(:)=distrib(:)/(contador_total*1.0d0)
+  END IF
+
+end subroutine life_time_dist_int
+
+
 
 END MODULE AUX

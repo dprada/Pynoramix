@@ -68,12 +68,14 @@ class kinetic_1D_analysis():
         else:
             return pyn_math.histogram(self.traj[0],bins=bins,segment=segment,delta_x=delta_x,norm=norm,cumul=cumul,plot=False)
 
-    def life_time(self,traj=None,state=None,mean=False,verbose=False):
+    def life_time(self,traj=None,state=None,segment=None,mean=False,verbose=False):
 
         if traj == None:
             pass
 
         elif traj in ['CLUSTERS','Clusters','clusters']:
+            
+
             pass
 
         elif traj in ['NODES','Nodes','nodes']:
