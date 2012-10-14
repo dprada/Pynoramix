@@ -1,3 +1,5 @@
+!!! traj: frame,num_part,dim
+
 MODULE AUX
 
 INTEGER,DIMENSION(:),ALLOCATABLE::T_ind,T_start
@@ -30,9 +32,9 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::len_str,num_parts,num_frames,dimensions
-  INTEGER,DIMENSION(num_parts,num_frames,dimensions),INTENT(IN)::traj_full
+  INTEGER,DIMENSION(num_frames,num_parts,dimensions),INTENT(IN)::traj_full
   INTEGER,DIMENSION(dimensions,2),INTENT(IN)::ranges
-  INTEGER,DIMENSION(num_parts,num_frames),INTENT(OUT)::tray
+  INTEGER,DIMENSION(num_frames,num_parts),INTENT(OUT)::tray
 
   INTEGER::N_nodes,Ktot
   INTEGER::index
@@ -61,7 +63,7 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
 
 
   DO cajon=1,dimensions
-     
+
      IF (cajon==1) THEN
         llevamos=1
         tray=1
@@ -74,8 +76,8 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
 
      DO ii=1,num_parts
         DO jj=1,num_frames
-           bb=tray(ii,jj)
-           aa=traj_full(ii,jj,cajon)
+           bb=tray(jj,ii)
+           aa=traj_full(jj,ii,cajon)
            ocupado(bb,aa)=.true.
         END DO
      END DO
@@ -120,9 +122,9 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
 
      DO ii=1,num_parts
         DO jj=1,num_frames
-           bb=tray(ii,jj)
-           aa=traj_full(ii,jj,cajon)
-           tray(ii,jj)=indice(bb,aa)
+           bb=tray(jj,ii)
+           aa=traj_full(jj,ii,cajon)
+           tray(jj,ii)=indice(bb,aa)
         END DO
      END DO
 
@@ -166,9 +168,9 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
 
   DO index=1,num_parts
 
-     x=tray(index,1)
+     x=tray(1,index)
      contador=contador+1
-     x2=tray(index,2)
+     x2=tray(2,index)
      contador=contador+1
 
      DO ii=3,num_frames
@@ -209,7 +211,7 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
 
         x=x2  !!bin
         
-        x2=tray(index,ii)
+        x2=tray(ii,index)
         contador=contador+1
         
      END DO
@@ -315,36 +317,36 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
 end subroutine traj2net
 
 
-subroutine rao_stat_1(tw,traj_dists,limits,num_parts,frames,len_lims,traj_bins)
-
-  IMPLICIT NONE
-  INTEGER,INTENT(IN)::frames,len_lims,tw,num_parts
-  DOUBLE PRECISION,DIMENSION(num_parts,frames),INTENT(IN)::traj_dists
-  DOUBLE PRECISION,DIMENSION(len_lims),INTENT(IN)::limits
-  INTEGER,DIMENSION(num_parts,frames-2*tw,len_lims+1),INTENT(OUT)::traj_bins
-
-  INTEGER::ii,jj,kk,gg
-
-  traj_bins=0
-
-  DO ii=1,num_parts
-     DO jj=1,frames
-        kk=len_lims+1
-        DO gg=1,len_lims
-           IF (traj_dists(ii,jj)<limits(gg)) THEN
-              kk=gg
-              exit
-           END IF
-        END DO
-        DO gg=jj-tw,jj+tw
-           IF ((tw<gg).and.(gg<=(frames-tw))) THEN
-              traj_bins(ii,gg-tw,kk)=traj_bins(ii,gg-tw,kk)+1
-           END IF
-        END DO
-     END DO
-  END DO
-
-end subroutine rao_stat_1
+!!$subroutine rao_stat_1(tw,traj_dists,limits,num_parts,frames,len_lims,traj_bins)
+!!$
+!!$  IMPLICIT NONE
+!!$  INTEGER,INTENT(IN)::frames,len_lims,tw,num_parts
+!!$  DOUBLE PRECISION,DIMENSION(num_parts,frames),INTENT(IN)::traj_dists
+!!$  DOUBLE PRECISION,DIMENSION(len_lims),INTENT(IN)::limits
+!!$  INTEGER,DIMENSION(num_parts,frames-2*tw,len_lims+1),INTENT(OUT)::traj_bins
+!!$
+!!$  INTEGER::ii,jj,kk,gg
+!!$
+!!$  traj_bins=0
+!!$
+!!$  DO ii=1,num_parts
+!!$     DO jj=1,frames
+!!$        kk=len_lims+1
+!!$        DO gg=1,len_lims
+!!$           IF (traj_dists(ii,jj)<limits(gg)) THEN
+!!$              kk=gg
+!!$              exit
+!!$           END IF
+!!$        END DO
+!!$        DO gg=jj-tw,jj+tw
+!!$           IF ((tw<gg).and.(gg<=(frames-tw))) THEN
+!!$              traj_bins(ii,gg-tw,kk)=traj_bins(ii,gg-tw,kk)+1
+!!$           END IF
+!!$        END DO
+!!$     END DO
+!!$  END DO
+!!$
+!!$end subroutine rao_stat_1
 
 
 subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,len_traj,traj_out)
@@ -353,8 +355,8 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
   INTEGER,INTENT(IN)::opt_range,opt,ibins,tw,len_traj,num_parts
   DOUBLE PRECISION,INTENT(IN)::idelta_x,imin,imax
   DOUBLE PRECISION,INTENT(IN)::ksi
-  DOUBLE PRECISION,DIMENSION(num_parts,len_traj),INTENT(IN)::traj
-  INTEGER,DIMENSION(num_parts,len_traj-2*tw),INTENT(OUT)::traj_out
+  DOUBLE PRECISION,DIMENSION(len_traj,num_parts,1),INTENT(IN)::traj
+  INTEGER,DIMENSION(len_traj-2*tw,num_parts,1),INTENT(OUT)::traj_out
 
   INTEGER::bins
   DOUBLE PRECISION::delta_x,min,max,sobra
@@ -407,7 +409,7 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
      DO ii=1,len_traj-2*tw
         cumul=0.0d0
         DO kk=ii,ii+Ltw1
-           tt=CEILING((traj(nn,kk)-min)/delta_x) 
+           tt=CEILING((traj(kk,nn,1)-min)/delta_x) 
            IF (tt==0) tt=1
            cumul(tt)=cumul(tt)+1.0d0
         END DO
@@ -417,11 +419,11 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
         END DO
         switch=.true.
         DO jj=ii-1,1,-1
-           gg=traj_out(nn,jj)
+           gg=traj_out(jj,nn,1)
            IF (filter(gg).eqv..true.) THEN
               dist=MAXVAL(abs(cumul_list(gg,:)-cumul(:)),DIM=1)
               IF (dist<=dsm) THEN
-                 traj_out(nn,ii)=gg
+                 traj_out(ii,nn,1)=gg
                  switch=.false.
                  EXIT
               END IF
@@ -442,13 +444,13 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
               cumul_list(1:(num_rep-1),:)=aux_list
               DEALLOCATE(aux_list)
               cumul_list(num_rep,:)=cumul
-              traj_out(nn,ii)=num_rep
+              traj_out(ii,nn,1)=num_rep
            ELSE
               num_rep=1
               ALLOCATE(cumul_list(num_rep,bins),filter(num_rep))
               filter=.true.
               cumul_list(num_rep,:)=cumul
-              traj_out(nn,ii)=num_rep
+              traj_out(ii,nn,1)=num_rep
            END IF
         END IF
      END DO
@@ -460,145 +462,149 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
 
 END subroutine ganna
 
-subroutine ganna2 (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,len_traj,traj_out)
+!!$subroutine ganna2 (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,len_traj,traj_out)
+!!$
+!!$  IMPLICIT NONE
+!!$  INTEGER,INTENT(IN)::opt_range,opt,ibins,tw,len_traj,num_parts
+!!$  DOUBLE PRECISION,INTENT(IN)::idelta_x,imin,imax
+!!$  DOUBLE PRECISION,INTENT(IN)::ksi
+!!$  DOUBLE PRECISION,DIMENSION(num_parts,len_traj),INTENT(IN)::traj
+!!$  INTEGER,DIMENSION(num_parts,len_traj-2*tw),INTENT(OUT)::traj_out
+!!$
+!!$  INTEGER::bins
+!!$  DOUBLE PRECISION::delta_x,min,max,sobra
+!!$  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::cumuli
+!!$  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::cumul
+!!$  INTEGER::Ltw,Ltw1,num_rep
+!!$  DOUBLE PRECISION::dsm
+!!$  DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::cumul_list,aux_list
+!!$  LOGICAL,DIMENSION(:),ALLOCATABLE::filter
+!!$  DOUBLE PRECISION::dist,Ltwi
+!!$  INTEGER::ii,jj,gg,kk,tt,lll,nn
+!!$  LOGICAL::switch
+!!$
+!!$  !!! For histogram:
+!!$
+!!$  bins=ibins
+!!$  max=imax
+!!$  min=imin
+!!$  delta_x=idelta_x
+!!$
+!!$  IF (opt_range==0) THEN
+!!$     IF (opt==1) THEN
+!!$        bins=CEILING((max-min)/delta_x)
+!!$        sobra=(bins*delta_x-(max-min))/2.0d0
+!!$        bins=bins+1
+!!$        min=min-sobra
+!!$        max=max+sobra
+!!$     ELSE
+!!$        delta_x=(max-min)/(bins*1.0d0)
+!!$     END IF
+!!$  ELSE
+!!$     IF (opt==1) THEN
+!!$        bins=CEILING((max-min)/delta_x)
+!!$     ELSE
+!!$        delta_x=(max-min)/(bins*1.0d0)
+!!$     END IF
+!!$  END IF
+!!$
+!!$  !!
+!!$  ALLOCATE(cumul(bins),cumuli(bins))
+!!$  cumul=0.0d0
+!!$  cumuli=0
+!!$
+!!$  Ltw=(2*tw+1)
+!!$  Ltw1=Ltw-1
+!!$  Ltwi=1.0d0/Ltw
+!!$
+!!$  traj_out=0
+!!$  num_rep=0
+!!$  dsm=sqrt(2.0d0/(1.0d0*Ltw))*ksi !Kolmogorov-Smirnov
+!!$
+!!$  DO nn=1,num_parts
+!!$     DO ii=1,len_traj-2*tw
+!!$        IF (ii==1) THEN
+!!$           cumul=0.0d0
+!!$           cumuli=0
+!!$           DO kk=ii,ii+Ltw1
+!!$              tt=CEILING((traj(nn,kk)-min)/delta_x) 
+!!$              IF (tt==0) tt=1
+!!$              cumuli(tt)=cumuli(tt)+1
+!!$           END DO
+!!$           DO kk=1,bins-1
+!!$              cumul(kk+1)=cumul(kk+1)+cumul(kk)
+!!$           END DO
+!!$           cumul=cumuli*Ltwi
+!!$        ELSE
+!!$           tt=CEILING((traj(nn,ii-1)-min)/delta_x)
+!!$           DO kk=tt,bins
+!!$              cumuli(kk)=cumuli(kk)-1
+!!$           END DO
+!!$           tt=CEILING((traj(nn,ii+Ltw1)-min)/delta_x)
+!!$           DO kk=tt,bins
+!!$              cumuli(kk)=cumuli(kk)+1
+!!$           END DO
+!!$           cumul=cumuli*Ltwi
+!!$        END IF
+!!$        switch=.true.
+!!$        DO jj=ii-1,1,-1
+!!$           gg=traj_out(nn,jj)
+!!$           IF (filter(gg).eqv..true.) THEN
+!!$              dist=MAXVAL(abs(cumul_list(gg,:)-cumul(:)),DIM=1)
+!!$              IF (dist<=dsm) THEN
+!!$                 traj_out(nn,ii)=gg
+!!$                 switch=.false.
+!!$                 EXIT
+!!$              END IF
+!!$              filter(gg)=.false.
+!!$              IF (COUNT(filter,DIM=1)==0) THEN
+!!$                 EXIT
+!!$              END IF
+!!$           END IF
+!!$        END DO
+!!$        IF (switch.eqv..true.) THEN
+!!$           IF (num_rep>0) THEN
+!!$              ALLOCATE(aux_list(num_rep,bins))
+!!$              aux_list=cumul_list
+!!$              DEALLOCATE(cumul_list,filter)
+!!$              num_rep=num_rep+1
+!!$              ALLOCATE(cumul_list(num_rep,bins),filter(num_rep))
+!!$              filter=.true.
+!!$              cumul_list(1:(num_rep-1),:)=aux_list
+!!$              DEALLOCATE(aux_list)
+!!$              cumul_list(num_rep,:)=cumul
+!!$              traj_out(nn,ii)=num_rep
+!!$           ELSE
+!!$              num_rep=1
+!!$              ALLOCATE(cumul_list(num_rep,bins),filter(num_rep))
+!!$              filter=.true.
+!!$              cumul_list(num_rep,:)=cumul
+!!$              traj_out(nn,ii)=num_rep
+!!$           END IF
+!!$        END IF
+!!$     END DO
+!!$  END DO
+!!$
+!!$  traj_out=traj_out-1
+!!$  DEALLOCATE(cumul_list,filter,cumul,cumuli)
+!!$
+!!$
+!!$END subroutine ganna2
+
+subroutine free_distrib ()
 
   IMPLICIT NONE
-  INTEGER,INTENT(IN)::opt_range,opt,ibins,tw,len_traj,num_parts
-  DOUBLE PRECISION,INTENT(IN)::idelta_x,imin,imax
-  DOUBLE PRECISION,INTENT(IN)::ksi
-  DOUBLE PRECISION,DIMENSION(num_parts,len_traj),INTENT(IN)::traj
-  INTEGER,DIMENSION(num_parts,len_traj-2*tw),INTENT(OUT)::traj_out
 
-  INTEGER::bins
-  DOUBLE PRECISION::delta_x,min,max,sobra
-  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::cumuli
-  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::cumul
-  INTEGER::Ltw,Ltw1,num_rep
-  DOUBLE PRECISION::dsm
-  DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::cumul_list,aux_list
-  LOGICAL,DIMENSION(:),ALLOCATABLE::filter
-  DOUBLE PRECISION::dist,Ltwi
-  INTEGER::ii,jj,gg,kk,tt,lll,nn
-  LOGICAL::switch
+  if (ALLOCATED(distrib)) DEALLOCATE(distrib)
 
-  !!! For histogram:
+end subroutine free_distrib
 
-  bins=ibins
-  max=imax
-  min=imin
-  delta_x=idelta_x
-
-  IF (opt_range==0) THEN
-     IF (opt==1) THEN
-        bins=CEILING((max-min)/delta_x)
-        sobra=(bins*delta_x-(max-min))/2.0d0
-        bins=bins+1
-        min=min-sobra
-        max=max+sobra
-     ELSE
-        delta_x=(max-min)/(bins*1.0d0)
-     END IF
-  ELSE
-     IF (opt==1) THEN
-        bins=CEILING((max-min)/delta_x)
-     ELSE
-        delta_x=(max-min)/(bins*1.0d0)
-     END IF
-  END IF
-
-  !!
-  ALLOCATE(cumul(bins),cumuli(bins))
-  cumul=0.0d0
-  cumuli=0
-
-  Ltw=(2*tw+1)
-  Ltw1=Ltw-1
-  Ltwi=1.0d0/Ltw
-
-  traj_out=0
-  num_rep=0
-  dsm=sqrt(2.0d0/(1.0d0*Ltw))*ksi !Kolmogorov-Smirnov
-
-  DO nn=1,num_parts
-     DO ii=1,len_traj-2*tw
-        IF (ii==1) THEN
-           cumul=0.0d0
-           cumuli=0
-           DO kk=ii,ii+Ltw1
-              tt=CEILING((traj(nn,kk)-min)/delta_x) 
-              IF (tt==0) tt=1
-              cumuli(tt)=cumuli(tt)+1
-           END DO
-           DO kk=1,bins-1
-              cumul(kk+1)=cumul(kk+1)+cumul(kk)
-           END DO
-           cumul=cumuli*Ltwi
-        ELSE
-           tt=CEILING((traj(nn,ii-1)-min)/delta_x)
-           DO kk=tt,bins
-              cumuli(kk)=cumuli(kk)-1
-           END DO
-           tt=CEILING((traj(nn,ii+Ltw1)-min)/delta_x)
-           DO kk=tt,bins
-              cumuli(kk)=cumuli(kk)+1
-           END DO
-           cumul=cumuli*Ltwi
-        END IF
-        switch=.true.
-        DO jj=ii-1,1,-1
-           gg=traj_out(nn,jj)
-           IF (filter(gg).eqv..true.) THEN
-              dist=MAXVAL(abs(cumul_list(gg,:)-cumul(:)),DIM=1)
-              IF (dist<=dsm) THEN
-                 traj_out(nn,ii)=gg
-                 switch=.false.
-                 EXIT
-              END IF
-              filter(gg)=.false.
-              IF (COUNT(filter,DIM=1)==0) THEN
-                 EXIT
-              END IF
-           END IF
-        END DO
-        IF (switch.eqv..true.) THEN
-           IF (num_rep>0) THEN
-              ALLOCATE(aux_list(num_rep,bins))
-              aux_list=cumul_list
-              DEALLOCATE(cumul_list,filter)
-              num_rep=num_rep+1
-              ALLOCATE(cumul_list(num_rep,bins),filter(num_rep))
-              filter=.true.
-              cumul_list(1:(num_rep-1),:)=aux_list
-              DEALLOCATE(aux_list)
-              cumul_list(num_rep,:)=cumul
-              traj_out(nn,ii)=num_rep
-           ELSE
-              num_rep=1
-              ALLOCATE(cumul_list(num_rep,bins),filter(num_rep))
-              filter=.true.
-              cumul_list(num_rep,:)=cumul
-              traj_out(nn,ii)=num_rep
-           END IF
-        END IF
-     END DO
-  END DO
-
-  traj_out=traj_out-1
-  DEALLOCATE(cumul_list,filter,cumul,cumuli)
-
-
-END subroutine ganna2
-
-
-
-
-subroutine life_time_dist_int (opt_norm,traj,state,segment,num_part,dim,length,num_states,mean)
+subroutine life_time_dist (opt_norm,traj,state,num_frames,num_parts,dims,num_states,mean)
 
   IMPLICIT NONE
-  INTEGER,INTENT(IN):: opt_norm,num_part,dim,length,num_states
-  INTEGER,DIMENSION(num_part,dim,length),INTENT(IN):: traj
-  DOUBLE PRECISION,DIMENSION(2),INTENT(IN):: segment
-  INTEGER,DIMENSION(num_states),INTENT(IN):: state
+  INTEGER,INTENT(IN):: opt_norm,num_parts,dims,num_frames,num_states
+  DOUBLE PRECISION,DIMENSION(num_frames,num_parts,dims),INTENT(IN):: traj
+  DOUBLE PRECISION,DIMENSION(num_states),INTENT(IN):: state
   DOUBLE PRECISION,INTENT(OUT):: mean
 
   INTEGER:: ii,jj,kk,ll,gg,contador,kkk,lll
@@ -606,7 +612,7 @@ subroutine life_time_dist_int (opt_norm,traj,state,segment,num_part,dim,length,n
   INTEGER:: contador_total
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::distrib_aux
 
-  gg=10
+  gg=100
   contador=0
   contador_total=0
   mean=0.0d0
@@ -616,12 +622,12 @@ subroutine life_time_dist_int (opt_norm,traj,state,segment,num_part,dim,length,n
   distrib=0.0d0
 
   inside_old=.false.
-  DO kkk=1,num_part
-     DO lll=1,dim
-        DO ii=1,length
+  DO kkk=1,num_parts
+     DO lll=1,dims
+        DO ii=1,num_frames
            inside=.false.
            DO jj=1,num_states
-              IF (traj(kkk,lll,ii)==state(jj)) THEN
+              IF (traj(ii,kkk,lll)==state(jj)) THEN
                  inside=.true.
                  contador=contador+1
                  EXIT
@@ -631,13 +637,14 @@ subroutine life_time_dist_int (opt_norm,traj,state,segment,num_part,dim,length,n
            IF ((inside_old.eqv..true.).and.(inside.eqv..false.)) THEN
               IF (contador>gg) THEN
                  ALLOCATE(distrib_aux(gg))
-                 distrib_aux=distrib
+                 distrib_aux(:)=distrib(:)
                  DEALLOCATE(distrib)
                  ALLOCATE(distrib(contador))
                  distrib(1:gg)=distrib_aux(:)
                  gg=contador
+                 DEALLOCATE(distrib_aux)
               END IF
-              distrib(contador)=distrib(contador)+1
+              distrib(contador)=distrib(contador)+1.0d0
               contador_total=contador_total+contador
               mean=mean+1.0d0
               contador=0
@@ -655,8 +662,12 @@ subroutine life_time_dist_int (opt_norm,traj,state,segment,num_part,dim,length,n
      distrib(:)=distrib(:)/(contador_total*1.0d0)
   END IF
 
-end subroutine life_time_dist_int
+  DO ii=1,gg
+     IF (distrib(ii)<0) THEN
+        print*,'aquiiii',ii,distrib(ii)
+     END IF
+  END DO
 
-
+end subroutine life_time_dist
 
 END MODULE AUX

@@ -2,6 +2,9 @@ import pyn_fort_anal_trajs as ftrajs
 from pyn_cl_net import *
 import pyn_math as pyn_math
 from numpy import *
+import copy as ccopy
+
+## frame, npart, dim
 
 class kinetic_1D_analysis():
 
@@ -12,7 +15,7 @@ class kinetic_1D_analysis():
         self.traj=None
         self.dimensions=1
         self.num_particles=0
-        self.length=0
+        self.num_frames=0
         self.traj_nodes=None
         self.traj_clusters=None
         self.network_nodes=None
@@ -50,16 +53,16 @@ class kinetic_1D_analysis():
  
             fff.close()
 
-        if type(self.traj) not in ['numpy.ndarray']:
+        if type(self.traj) not in [ndarray]:
             self.traj=array(self.traj,order="Fortran")
 
-        self.length=self.traj.shape[-1]
+        self.num_frames=self.traj.shape[-1]
 
         if verbose:
             if self.num_particles==1:
-                print '# Trajectory loaded:',self.length,'time steps'
+                print '# Trajectory loaded:',self.num_frames,'time steps'
             else:
-                print '# Trajectory loaded:',self.num_particles,'particles,',self.length,'time steps'
+                print '# Trajectory loaded:',self.num_particles,'particles,',self.num_frames,'time steps'
 
     def histogram(self,bins=20,segment=None,delta_x=None,norm=False,cumul=False):
 
@@ -68,30 +71,63 @@ class kinetic_1D_analysis():
         else:
             return pyn_math.histogram(self.traj[0],bins=bins,segment=segment,delta_x=delta_x,norm=norm,cumul=cumul,plot=False)
 
-    def life_time(self,traj=None,state=None,segment=None,mean=False,verbose=False):
+    def life_time(self,traj=None,state=None,segment=None,mean=False,norm=False,verbose=False):
+
+        opt_mean=0
+        opt_norm=0
+        if (mean):
+            opt_mean=1
+        if (norm):
+            opt_norm=1
 
         if traj == None:
             pass
 
         elif traj in ['CLUSTERS','Clusters','clusters']:
-            
 
-            pass
+            if type(state) in [int]:
+                num_states=1
+                state=[state]
+            elif type(state) in [list,tuple]:
+                num_states=len(state)
+
+            traj_inp=standard_traj(self.traj_clusters,num_parts=self.num_particles,dims=self.dimensions)
+            lt_mean=ftrajs.aux.life_time_dist(opt_norm,traj_inp,state,self.num_frames,self.num_particles,self.dimensions,num_states)
 
         elif traj in ['NODES','Nodes','nodes']:
-            pass
+
+            if type(state) in [int]:
+                num_states=1
+                state=[state]
+            elif type(state) in [list,tuple]:
+                num_states=len(state)
+
+            traj_inp=standard_traj(self.traj_nodes,num_parts=self.num_particles,dims=self.dimensions)
+            lt_mean=ftrajs.aux.life_time_dist(opt_norm,traj_inp,state,self.num_frames,self.num_particles,self.dimensions,num_states)
+
     
+        lt_dist=ccopy.deepcopy(ftrajs.aux.distrib)
+        ftrajs.aux.free_distrib()
+
+        if verbose:
+            print '# Mean life time:', lt_mean,'frames.'
+
+        if mean:
+            return lt_mean
+        else:
+            return lt_dist
+
 
     def kinetic_network(self,traj=None,verbose=False):
 
         if traj in ['CLUSTERS','Clusters','clusters']:
-            if type(self.traj_clusters) not in ['numpy.ndarray']:
+            if type(self.traj_clusters) not in [ndarray]:
                 self.traj_clusters=array(self.traj_clusters,order="Fortran")
             self.network_clusters=kinetic_network(self.traj_clusters,ranges=[self.traj_clusters.min(),self.traj_clusters.max()],verbose=verbose)
             pass
 
         elif traj in ['NODES','Nodes','nodes']:
-            if type(self.traj_nodes) not in ['numpy.ndarray']:
+            if type(self.traj_nodes) not in [ndarray]:
                 self.traj_nodes=array(self.traj_nodes,order="Fortran")
             self.network_nodes=kinetic_network(self.traj_nodes,ranges=[self.traj_nodes.min(),self.traj_nodes.max()],verbose=verbose)
             pass
@@ -120,9 +156,9 @@ class kinetic_1D_analysis():
             opt=2
 
         if self.num_particles==1:
-            self.traj_nodes=ftrajs.aux.ganna(opt_range,opt,bins,mmn,mmx,delta_x,array([self.traj],order='Fortran'),ksi,window,self.num_particles,self.length)[0]
+            self.traj_nodes=ftrajs.aux.ganna(opt_range,opt,bins,mmn,mmx,delta_x,array([self.traj],order='Fortran'),ksi,window,self.num_particles,self.num_frames)[0]
         else:
-            self.traj_nodes=ftrajs.aux.ganna(opt_range,opt,bins,mmn,mmx,delta_x,self.traj,ksi,window,self.num_particles,self.length)
+            self.traj_nodes=ftrajs.aux.ganna(opt_range,opt,bins,mmn,mmx,delta_x,self.traj,ksi,window,self.num_particles,self.num_frames)
 
 
         self.network=kinetic_network(self.traj_nodes,ranges=[self.traj_nodes.min(),self.traj_nodes.max()],verbose=False)
@@ -176,7 +212,7 @@ class kinetic_1D_analysis():
             pass
          
         traj_i=traj
-        if type(traj_i) not in ['numpy.ndarray']:
+        if type(traj_i) not in [ndarray]:
             traj_i=array(traj_i,order='Fortran')
          
         if len(traj_i.shape)==1:
@@ -190,3 +226,23 @@ class kinetic_1D_analysis():
             return salida[0]
         else:
             return salida
+
+
+
+
+#def standard_traj(traj,num_parts,dims):
+# 
+#    if type(traj) not in [numpy.ndarray]:
+#        traj=array(traj,order='Fortran')
+# 
+#    if len(traj.shape)==3:
+#        return traj
+#    elif len(traj.shape)==1:
+#        return [[traj]]
+#    else:
+#        if num_parts==1:
+#            return [traj]
+#        else:  #dims==1
+            
+
+

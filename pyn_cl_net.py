@@ -1227,72 +1227,84 @@ class network():
 # 
 #        pass
 
+def standard_ranges(ranges):
+
+    if type(ranges) not in [ndarray]:
+        ranges=array(ranges,order='Fortran')
+
+    if len(ranges.shape)==1:
+        ranges.resize(1,ranges.shape[0])
+
+    if ranges.shape[1]!=2:
+        print '# Error with ranges'
+        pass
+
+    return ranges
+
+def standard_traj(traj,num_parts=None,dims=None):
+
+    if type(traj) not in [ndarray]:
+        traj=array(traj,order='Fortran')
+
+    if len(traj.shape)==1:
+        num_parts=1
+        dims=1
+
+    elif len(traj.shape)==3:
+        num_parts=traj.shape[1]
+        dims=traj.shape[2]
+
+    else:
+
+        if num_parts==None and dims==None:
+            print '# Error: num_parts or dims needed'
+            pass
+        elif num_parts==None:
+            dims=1
+        elif dims==None:
+            num_parts=1
+        else:
+            print '# Error: num_parts or dims needed'
+            pass
+
+    if len(traj.shape)==1:
+        if num_parts!=1 or dims!=1:
+            print '# Error with dimensions'
+            pass
+        else:
+            traj.resize(traj.shape[0],1,1)
+    elif len(traj.shape)==2:
+        if num_parts!=1 and dims!=1:
+            print '# Error with dimensions'
+        else:
+            if num_parts==1 :
+                traj.resize(traj.shape[0],1,traj.shape[1])
+            else:
+                traj.resize(traj.shape[0],traj.shape[1],1)
+
+    return traj
+
 def kinetic_network(traj=None,ranges=None,traj_out=False,verbose=True):
 
     prov_net=network(directed=True,kinetic=True,verbose=False)
 
-    try:
-        rango_traj=traj.shape
-    except:
-        traj=array(traj,order='Fortran')
-        rango_traj=traj.shape
-
-    try:
-        rango_ranges=ranges.shape
-    except:
-        ranges=array(ranges,order='Fortran')
-        rango_ranges=ranges.shape
-
-    ###
-
-    if len(rango_ranges)==1:
-        ranges=[ranges]
-        ranges=array(ranges,order='Fortran')
-        rango_ranges=ranges.shape
-
-    dimensions=rango_ranges[0]
-    if (rango_ranges[1]!=2):
-        print '# Error with ranges'
-        pass
-
-    if len(rango_traj)==1:
-        if dimensions==1:
-            traj=[expand_dims(traj,1)]
-            traj=array(traj,order='Fortran')
-            rango_traj=traj.shape
-        else:
-            print '# Error with dimension of traj and ranges'
-            pass
-
-    if len(rango_traj)==2:
-        if dimensions>1:
-            traj=[traj]
-            traj=array(traj,order='Fortran')
-            rango_traj=traj.shape
-        else:
-            traj=expand_dims(traj,2)
-            traj=array(traj,order='Fortran')
-            rango_traj=traj.shape
-
-    num_parts=rango_traj[0]
-    num_frames=rango_traj[1]
-    if (rango_traj[2]!=dimensions):
-        print '# Error with dimension of traj and ranges'
-        pass
+    ranges=standard_ranges(ranges)
+    dimensions=ranges.shape[0]
+    traj=standard_traj(traj,dimensions)
+    num_frames=traj.shape[0]
+    num_parts=traj.shape[1]
 
     len_str=0
     for aa in ranges:
         bb=len(str(aa[0]))
-        if (bb>len_str): 
-            len_str=bb 
+        if (bb>len_str):
+            len_str=bb
         bb=len(str(aa[1]))
-        if (bb>len_str): 
-            len_str=bb 
+        if (bb>len_str):
+            len_str=bb
                 
     len_str=len_str+1
 
-    #print num_parts,num_frames,dimensions
-    #print ranges
 
     traj_net=ftrajs.aux.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
 
