@@ -804,7 +804,11 @@ class network():
 
         pass
 
-    def brownian_walker (self,node_origin,length,self_links=True):
+    def brownian_walker (self,origin=0,length=None,self_links=True):
+
+        if length==None:
+            print '# length needed.'
+            pass
 
         if self.Ts==False :
             self.build_Ts()
@@ -813,9 +817,9 @@ class network():
         iseed[3]=(iseed[3]/2)*2+1
 
         if self_links:
-            scratch=f_net.funcs.brownian_run(1,self.T_start,self.T_ind,self.T_wl,iseed,node_origin,length,self.num_nodes,self.k_total)
+            scratch=f_net.funcs.brownian_run(1,self.T_start,self.T_ind,self.T_wl,iseed,origin,length,self.num_nodes,self.k_total)
         else:
-            scratch=f_net.funcs.brownian_run(0,self.T_start,self.T_ind,self.T_wl,iseed,node_origin,length,self.num_nodes,self.k_total)
+            scratch=f_net.funcs.brownian_run(0,self.T_start,self.T_ind,self.T_wl,iseed,origin,length,self.num_nodes,self.k_total)
 
         return scratch
 

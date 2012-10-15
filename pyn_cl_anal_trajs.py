@@ -8,12 +8,12 @@ import copy as ccopy
 
 class kinetic_1D_analysis():
 
-    def __init__ (self,traject=None,column=None,verbose=True):
+    def __init__ (self,traject=None,column=None,num_particles=None,dimensions=None,verbose=True):
 
         self.file_name=''
         self.file_column=None
         self.traj=None
-        self.dimensions=1
+        self.dimensions=0
         self.num_particles=0
         self.num_frames=0
         self.traj_nodes=None
@@ -43,6 +43,24 @@ class kinetic_1D_analysis():
             self.traj_clusters=[[] for ii in range(len(self.num_particles))]
 
         if type(traject) in [str]:
+
+            if type(column) in [tuple,list]:
+                self.num_particles=len(column)
+                self.traj=[[] for ii in range(len(self.num_particles))]
+            elif type(column) in [int]:
+                self.num_particles=1
+                self.traj=[]
+                self.traj_nodes=[]
+                self.traj_clusters=[]
+            elif column in ['ALL','All','all']:
+                fff=open(traject,'r')
+                line=fff.readline().split()
+                self.num_particles=len(line)
+                fff.close()
+                self.traj=[[] for ii in range(len(self.num_particles))]
+                self.traj_nodes=[[] for ii in range(len(self.num_particles))]
+                self.traj_clusters=[[] for ii in range(len(self.num_particles))]
+
             self.file_name=traject
             self.file_column=column
             
@@ -53,10 +71,19 @@ class kinetic_1D_analysis():
  
             fff.close()
 
+        elif type(traject) in [list,tuple,ndarray]:
+            self.traj=traject
+            if num_particles==None and dimensions==None:
+                self.num_particles=1
+                self.dimensions=1
+                self.traj_nodes=[]
+                self.traj_clusters=[]
+
         if type(self.traj) not in [ndarray]:
             self.traj=array(self.traj,order="Fortran")
 
         self.num_frames=self.traj.shape[-1]
+        self.dimensions=1
 
         if verbose:
             if self.num_particles==1:
@@ -81,7 +108,16 @@ class kinetic_1D_analysis():
             opt_norm=1
 
         if traj == None:
-            pass
+
+            if type(state) in [int,float]:
+                num_states=1
+                state=[state]
+            elif type(state) in [list,tuple]:
+                num_states=len(state)
+
+            traj_inp=standard_traj(self.traj,num_parts=self.num_particles,dims=self.dimensions)
+            lt_mean=ftrajs.aux.life_time_dist(opt_norm,traj_inp,state,self.num_frames,self.num_particles,self.dimensions,num_states)
+
 
         elif traj in ['CLUSTERS','Clusters','clusters']:
 
@@ -107,6 +143,7 @@ class kinetic_1D_analysis():
 
     
         lt_dist=ccopy.deepcopy(ftrajs.aux.distrib)
+        lt_x=ccopy.deepcopy(ftrajs.aux.distrib_x)
         ftrajs.aux.free_distrib()
 
         if verbose:
@@ -115,7 +152,108 @@ class kinetic_1D_analysis():
         if mean:
             return lt_mean
         else:
-            return lt_dist
+            return lt_x, lt_dist
+
+    def first_passage_time (self,traj=None,from_state=None,from_segment=None,to_state=None,to_segment=None,mean=False,norm=False,verbose=False):
+
+        opt_mean=0
+        opt_norm=0
+        opt_to_segment=0
+        opt_from_segment=0
+        opt_to_state=0
+        opt_from_state=0
+
+        if (mean):
+            opt_mean=1
+        if (norm):
+            opt_norm=1
+
+        if from_state!=None:   
+            opt_from_state=1
+        else:
+            from_state=0
+
+        if from_segment!=None: 
+            opt_from_segment=1
+        else:
+            from_segment=[0.0,0.0]
+
+        if to_state!=None:     
+            opt_to_state=1
+        else:
+            to_state=0
+
+        if to_segment!=None:   
+            opt_to_segment=1
+        else:
+            to_segment=[0.0,0.0]
+        
+        if opt_to_segment==0 and opt_to_state==0:
+            print '# the input variable to_state or to_segment is needed'
+            pass
+
+        if traj == None:
+            traj_inp=standard_traj(self.traj,num_parts=self.num_particles,dims=self.dimensions)
+        elif traj in ['CLUSTERS','Clusters','clusters']:
+            traj_inp=standard_traj(self.traj_clusters,num_parts=self.num_particles,dims=self.dimensions)
+        elif traj in ['NODES','Nodes','nodes']:
+            traj_inp=standard_traj(self.traj_nodes,num_parts=self.num_particles,dims=self.dimensions)
+        else:
+            print '# A readable traj is needed'
+            pass
+
+        if type(from_state) in [int,float]:
+            from_num_states=1
+            from_state=[state]
+        elif type(state) in [list,tuple]:
+            from_num_states=len(from_state)
+
+        if type(to_state) in [int,float]:
+            to_num_states=1
+            to_state=[state]
+        elif type(to_state) in [list,tuple]:
+            to_num_states=len(to_state)
+
+
+        fpt_mean=ftrajs.aux.first_passage_time_dist(opt_norm,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, \
+                                                        from_state,from_segment,to_state,to_segment, \
+                                                        traj_inp,self.num_frames,self.num_particles,self.dimensions,\
+                                                        from_num_states,to_num_states)
+
+        fpt_dist=ccopy.deepcopy(ftrajs.aux.distrib)
+        fpt_x=ccopy.deepcopy(ftrajs.aux.distrib_x)
+        ftrajs.aux.free_distrib()
+
+        if verbose:
+            print '# Mean first passage time:', fpt_mean,'frames.'
+
+        if mean:
+            return fpt_mean
+        else:
+            return fpt_x, fpt_dist
+
+
+#        distrib={}
+#        ant=traj[-1]
+#        counter=0
+#        for ii in range(1,len(traj)):
+#            act=traj[-(ii+1)]
+#            if ant==target:
+#                counter=0
+#            counter+=1
+#            if act!=target:
+#                try:
+#                    distrib[counter]+=1
+#                except:
+#                    distrib[counter]=1
+#            ant=act
+#        xx=distrib.keys()
+#        yy=distrib.values()
+#        if norm:
+#            lll=sum(yy[:])
+#            for ii in range(len(yy)):
+#                yy[ii]=(yy[ii]*1.0)/(lll*1.0)
+#        return xx,yy
 
 
     def kinetic_network(self,traj=None,verbose=False):

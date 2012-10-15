@@ -6,7 +6,7 @@ INTEGER,DIMENSION(:),ALLOCATABLE::T_ind,T_start
 DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::T_tau
 INTEGER,DIMENSION(:,:),ALLOCATABLE::labels
 
-DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::distrib
+DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::distrib,distrib_x
 
 TYPE array_pointer
 INTEGER,DIMENSION(:),POINTER::p1
@@ -596,6 +596,7 @@ subroutine free_distrib ()
   IMPLICIT NONE
 
   if (ALLOCATED(distrib)) DEALLOCATE(distrib)
+  if (ALLOCATED(distrib_x)) DEALLOCATE(distrib_x)
 
 end subroutine free_distrib
 
@@ -618,12 +619,15 @@ subroutine life_time_dist (opt_norm,traj,state,num_frames,num_parts,dims,num_sta
   mean=0.0d0
 
   IF (ALLOCATED(distrib)) DEALLOCATE(distrib)
+  IF (ALLOCATED(distrib_x)) DEALLOCATE(distrib_x)
+
   ALLOCATE(distrib(gg))
   distrib=0.0d0
 
   inside_old=.false.
   DO kkk=1,num_parts
      DO lll=1,dims
+        contador=0
         DO ii=1,num_frames
            inside=.false.
            DO jj=1,num_states
@@ -640,7 +644,8 @@ subroutine life_time_dist (opt_norm,traj,state,num_frames,num_parts,dims,num_sta
                  distrib_aux(:)=distrib(:)
                  DEALLOCATE(distrib)
                  ALLOCATE(distrib(contador))
-                 distrib(1:gg)=distrib_aux(:)
+                 distrib(:gg)=distrib_aux(:)
+                 distrib((gg+1):)=0.0d0
                  gg=contador
                  DEALLOCATE(distrib_aux)
               END IF
@@ -662,12 +667,156 @@ subroutine life_time_dist (opt_norm,traj,state,num_frames,num_parts,dims,num_sta
      distrib(:)=distrib(:)/(contador_total*1.0d0)
   END IF
 
+  jj=0
   DO ii=1,gg
-     IF (distrib(ii)<0) THEN
-        print*,'aquiiii',ii,distrib(ii)
+     IF (distrib(ii)>0.0d0) THEN
+        jj=jj+1
      END IF
   END DO
 
+  ALLOCATE(distrib_aux(jj),distrib_x(jj))
+  jj=0
+  DO ii=1,gg
+     IF (distrib(ii)>0.0d0) THEN
+        jj=jj+1
+        distrib_aux(jj)=distrib(ii)
+        distrib_x(jj)=ii
+     END IF
+  END DO
+  DEALLOCATE(distrib)
+  ALLOCATE(distrib(jj))
+  distrib=distrib_aux
+  DEALLOCATE(distrib_aux)
+
 end subroutine life_time_dist
+
+subroutine first_passage_time_dist (opt_norm,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, &
+     from_state,from_segment,to_state,to_segment,traj,num_frames,num_parts,dims,from_num_states,to_num_states,mean)
+
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN):: opt_norm,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment
+  INTEGER,INTENT(IN):: num_parts,dims,num_frames
+  INTEGER,INTENT(IN):: from_num_states,to_num_states
+  DOUBLE PRECISION,DIMENSION(num_frames,num_parts,dims),INTENT(IN):: traj
+  DOUBLE PRECISION,DIMENSION(from_num_states),INTENT(IN):: from_state
+  DOUBLE PRECISION,DIMENSION(to_num_states),INTENT(IN):: to_state
+  DOUBLE PRECISION,DIMENSION(2),INTENT(IN)::from_segment,to_segment
+  DOUBLE PRECISION,INTENT(OUT):: mean
+
+  INTEGER:: ii,jj,kk,ll,gg,contador,kkk,lll
+  LOGICAL::entro,inside_to,inside_from
+  INTEGER:: contador_total
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::distrib_aux
+  DOUBLE PRECISION::pos
+
+  gg=100
+  contador=0
+  contador_total=0
+  mean=0.0d0
+
+  IF (ALLOCATED(distrib)) DEALLOCATE(distrib)
+  IF (ALLOCATED(distrib_x)) DEALLOCATE(distrib_x)
+
+  ALLOCATE(distrib(gg))
+  distrib=0.0d0
+
+  DO kkk=1,num_parts
+     DO lll=1,dims
+        entro=.false.
+        contador=0
+        DO ii=num_frames,-1,1
+           
+           pos=traj(ii,kkk,lll)
+
+           inside_to=.false.
+           IF (opt_to_segment==1) THEN
+              IF ((to_segment(1)<pos).and.(pos<to_segment(2))) THEN
+                 inside_to=.true.
+                 entro=.true.
+              END IF
+           ELSE
+              DO jj=1,to_num_states
+                 IF (pos==to_state(jj)) THEN
+                    inside_to=.true.
+                    entro=.true.
+                    EXIT
+                 END IF
+              END DO
+           END IF
+
+           inside_from=.false.
+           IF (inside_to.eqv..false.) THEN
+              IF (opt_from_segment==1) THEN
+                 IF ((from_segment(1)<pos).and.(pos<from_segment(2))) THEN
+                    inside_from=.true.
+                 END IF
+              ELSE IF (opt_from_state==1) THEN
+                 DO jj=1,from_num_states
+                    IF (pos==from_state(jj)) THEN
+                       inside_from=.true.
+                       EXIT
+                    END IF
+                 END DO
+              ELSE
+                 inside_from=.true.
+              END IF
+           END IF
+
+           IF ((inside_to.eqv..false.).and.(entro.eqv..true.)) THEN
+              contador=contador+1
+           ELSE
+              contador=0
+           END IF
+
+           IF ((inside_from.eqv..true.).and.(entro.eqv..true.)) THEN
+              IF (contador>gg) THEN
+                 ALLOCATE(distrib_aux(gg))
+                 distrib_aux(:)=distrib(:)
+                 DEALLOCATE(distrib)
+                 ALLOCATE(distrib(contador))
+                 distrib(:gg)=distrib_aux(:)
+                 distrib((gg+1):)=0.0d0
+                 gg=contador
+                 DEALLOCATE(distrib_aux)
+              END IF
+              distrib(contador)=distrib(contador)+1.0d0
+              contador_total=contador_total+contador
+              mean=mean+1.0d0
+           END IF
+     
+        END DO
+     END DO
+  END DO
+  
+  mean=(contador_total*1.0d0)/mean
+
+  IF (opt_norm==1) THEN
+     distrib(:)=distrib(:)/(contador_total*1.0d0)
+  END IF
+
+  jj=0
+  DO ii=1,gg
+     IF (distrib(ii)>0.0d0) THEN
+        jj=jj+1
+     END IF
+  END DO
+
+  ALLOCATE(distrib_aux(jj),distrib_x(jj))
+  jj=0
+  DO ii=1,gg
+     IF (distrib(ii)>0.0d0) THEN
+        jj=jj+1
+        distrib_aux(jj)=distrib(ii)
+        distrib_x(jj)=ii
+     END IF
+  END DO
+  DEALLOCATE(distrib)
+  ALLOCATE(distrib(jj))
+  distrib=distrib_aux
+  DEALLOCATE(distrib_aux)
+
+end subroutine first_passage_time_dist
+
 
 END MODULE AUX

@@ -210,18 +210,79 @@ trajectory. Now the accuracy of the model can be checked with
 observables as the life time of its macro-states.
 
 First of all, the life time distribution of the 3 macro-states can be
-computed from the original trajectory.
+computed from our clusters trajectory.
+
+.. sourcecode:: ipython
+
+   In [13]: ltx_1,lty_1=kin_test.life_time(traj='clusters',state=1,norm=True,verbose=True)
+   # Mean life time: 16.3446993094 frames.
+
+   In [14]: ltx_2,lty_2=kin_test.life_time(traj='clusters',state=2,norm=True,verbose=True)
+   # Mean life time: 34.0213561056 frames.
+
+.. Note:: This analysis was applied not to the trajectory found in the
+   file 'traj.oup' but to a trajectory 10 times larges.
+
+.. Seealso:: Function for further details.
+
+The distributions can be fitted to exponential functions:
+:math:`\exp{(At+B)}`. The next plot shows the fitting together with
+the distributions, where approximately A=-0.008 and B=-9.763 for
+cluster 1 (orange), and A=-0.026 and B=-7.311 for cluster 2 (blue).
+
+.. figure:: ../tutorials/kinetic_1D_analysis/lf_dist_bad.png
+   :align: center
+   :scale: 70 %
+
+We observe how the long time behavior fits to an exponential
+distribution but **many non expected short life events appear**.
+
+Now, we can compare with the life time distributions obtained by the
+kinetic model although from the previous plot we can guess that our
+clusters are not well defined. To this aim a random walker over the
+kinetic network can be run according to the transition probabilities.
+
+.. sourcecode:: ipython
+
+   In [15]: bw_traj=kin_test.network_clusters.brownian_walker(origin=0,length=10000000)
+
+   In [16]: bw=kinetic_1D_analysis(bw_traj)
+   # Trajectory loaded: 10000001 time steps
+
+   In [17]: ltbw_x_1,ltbw_y_1=bw.life_time(state=1,norm=True,verbose=True)
+   # Mean life time: 16.2835161764 frames.
+
+   In [18]: ltbw_x_2,ltbw_y_2=bw.life_time(state=2,norm=True,verbose=True)
+   # Mean life time: 34.1362159764 frames.
+
+This time the distributions and their exponential fits, A=-0.068 and B=-5.504 for
+cluster 1 (orange) and A=-0.029 and B=-7.034 for cluster 2 (blue), shows a different behavior:
+
+.. figure:: ../tutorials/kinetic_1D_analysis/lf_dist_model_bad.png
+   :align: center
+   :scale: 70 %
+
+
+We can see how, **although the mean life time (in [13],[14] and
+[17],[18]) are similar, the relaxations times are different from
+those previously computed**. Cluster 1 (orange) has a faster
+relaxation than Cluster 2 (blue). It is up to the reader trying to
+understand the origin of these different behaviors, even with the same
+*mlt* (check section XXX to find some help).
+
+
+These observations point to the possibility of having a bad kinetic
+description of our system, but before showing how to do it better,
+lets check another kinetic magnitude: the *first passage time distribution*.
 
 
 
+Mean first passage time or fpt distribution
++++++++++++++++++++++++++++++++++++++++++++
 
 
-We can build the *mean first passage time* distribution from region
-orange to green or from blue to green. These distributions should be
-similar to the ones obtained with the kinetic model we can build with
-the three states detected.
 
-
+asdf
 
 .. figure:: ../tutorials/kinetic_1D_analysis/traj123.png
    :align: center
