@@ -706,7 +706,7 @@ subroutine first_passage_time_dist (opt_norm,opt_from_state,opt_from_segment,opt
 
   INTEGER:: ii,jj,kk,ll,gg,contador,kkk,lll
   LOGICAL::entro,inside_to,inside_from
-  INTEGER:: contador_total
+  INTEGER(KIND=8):: contador_total
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::distrib_aux
   DOUBLE PRECISION::pos
 
@@ -725,8 +725,7 @@ subroutine first_passage_time_dist (opt_norm,opt_from_state,opt_from_segment,opt
      DO lll=1,dims
         entro=.false.
         contador=0
-        DO ii=num_frames,-1,1
-           
+        DO ii=num_frames,1,-1
            pos=traj(ii,kkk,lll)
 
            inside_to=.false.
@@ -789,10 +788,18 @@ subroutine first_passage_time_dist (opt_norm,opt_from_state,opt_from_segment,opt
      END DO
   END DO
   
-  mean=(contador_total*1.0d0)/mean
+  IF (mean>0.0d0) THEN
+     mean=(contador_total*1.0d0)/mean
+  ELSE
+     mean=0.0d0
+  END IF
 
   IF (opt_norm==1) THEN
-     distrib(:)=distrib(:)/(contador_total*1.0d0)
+     IF (contador_total==0) THEN
+        distrib=0.0d0
+     ELSE
+        distrib(:)=distrib(:)/(contador_total*1.0d0)
+     END IF
   END IF
 
   jj=0
@@ -802,21 +809,220 @@ subroutine first_passage_time_dist (opt_norm,opt_from_state,opt_from_segment,opt
      END IF
   END DO
 
-  ALLOCATE(distrib_aux(jj),distrib_x(jj))
+  IF (jj/=0) THEN
+     ALLOCATE(distrib_aux(jj),distrib_x(jj))
+     jj=0
+     DO ii=1,gg
+        IF (distrib(ii)>0.0d0) THEN
+           jj=jj+1
+           distrib_aux(jj)=distrib(ii)
+           distrib_x(jj)=ii
+        END IF
+     END DO
+     DEALLOCATE(distrib)
+     ALLOCATE(distrib(jj))
+     distrib=distrib_aux
+     DEALLOCATE(distrib_aux)
+  ELSE
+     DEALLOCATE(distrib)
+     ALLOCATE(distrib(1),distrib_x(1))
+     distrib=0.0d0
+     distrib_x=0.0d0
+  END IF
+
+end subroutine first_passage_time_dist
+
+subroutine first_committed_passage_time_dist (opt_norm,opt_states,opt_segments, &
+     states,segments,commitment,traj,num_frames,num_parts,dims,num_states,num_segments,num_commits,mean)
+
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN):: opt_norm,opt_states,opt_segments
+  INTEGER,INTENT(IN):: num_parts,dims,num_frames
+  INTEGER,INTENT(IN):: num_states,num_segments,num_commits
+  DOUBLE PRECISION,DIMENSION(num_frames,num_parts,dims),INTENT(IN):: traj
+  DOUBLE PRECISION,DIMENSION(num_states),INTENT(IN):: states
+  DOUBLE PRECISION,DIMENSION(num_segments,2),INTENT(IN)::segments
+  INTEGER,DIMENSION(num_commits),INTENT(IN)::commitment
+  DOUBLE PRECISION,INTENT(OUT):: mean
+
+  INTEGER:: ii,jj,kk,ll,gg,contador,kkk,lll,toca
+  INTEGER,DIMENSION(num_commits)::visited
+  LOGICAL::entro,inside_to,inside_false
+  LOGICAL:: hecho,listo
+  INTEGER(KIND=8):: contador_total
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::distrib_aux
+  DOUBLE PRECISION::pos
+
+  gg=100
+  contador=0
+  contador_total=0
+  mean=0.0d0
+  visited=0
+  toca=0
+
+  IF (ALLOCATED(distrib)) DEALLOCATE(distrib)
+  IF (ALLOCATED(distrib_x)) DEALLOCATE(distrib_x)
+
+  ALLOCATE(distrib(gg))
+  distrib=0.0d0
+
+  DO kkk=1,num_parts
+     DO lll=1,dims
+        entro=.false.
+        contador=0
+        DO ii=num_frames,1,-1
+
+           pos=traj(ii,kkk,lll)
+
+           inside_to=.false.
+           listo=.false.
+           IF (opt_segments==1) THEN
+              IF ((segments(num_segments,1)<pos).and.(pos<segments(num_segments,2))) THEN
+                 inside_to=.true.
+                 entro=.true.
+                 visited=0
+                 visited(num_segments)=1
+                 toca=num_segments-1
+              END IF
+           ELSE
+              IF (pos==states(num_states)) THEN
+                 print*,'SI',ii
+                 inside_to=.true.
+                 entro=.true.
+                 visited=0
+                 visited(num_states)=1
+                 toca=num_states-1
+              END IF
+           END IF
+
+           listo=.false.
+           IF ((entro==.true.).and.(inside_to.eqv..false.)) THEN
+              print*,'SI2',ii
+              IF (opt_segments==1) THEN
+                 !IF ((from_segment(1)<pos).and.(pos<from_segment(2))) THEN
+                 !   !!...
+                 !END IF
+              ELSE 
+                 print*,'SI22',ii
+                 IF ((commitment(toca+1)==1).and.(pos==states(toca+1))) THEN
+                    listo=.true.
+                 END IF
+                 IF (listo==.false.) THEN
+                    IF ((pos==states(toca)).and.(commitment(toca)==1)) THEN
+                       visited(toca)=1
+                       toca=toca-1
+                       IF (toca==0) toca=1
+                       listo=.true.
+                    END IF
+                    IF ((pos/=states(toca)).and.(commitment(toca)==0)) THEN
+                       visited(toca)=0
+                       toca=toca-1
+                       IF (toca==0) toca=1
+                       listo=.true.
+                    END IF
+                 END IF
+                 IF (listo==.false.) THEN
+                    IF (commitment(toca+1)==0) THEN
+                       listo=.true.
+                    END IF
+                 END IF
+                 IF (listo==.false.) THEN
+                    contador=0
+                    visited=0
+                    entro=.false.
+                 END IF
+              END IF
+           END IF
+           
+           IF (listo==.true.) THEN
+              contador=contador+1
+              print*,'SI3',ii
+              IF (visited(1)==1) THEN
+                 HECHO=.true.
+                 IF (opt_states==1) THEN
+                    DO kk=num_states,1,-1
+                       IF (visited(kk)/=commitment(kk)) THEN
+                          HECHO=.false.
+                          EXIT
+                       END IF
+                    END DO
+                 ELSE
+                    DO kk=num_segments,1,-1
+                       IF (visited(kk)/=commitment(kk)) THEN
+                          HECHO=.false.
+                          EXIT
+                       END IF
+                    END DO
+                 END IF
+                 IF (HECHO==.true.) THEN
+                    IF (contador>gg) THEN
+                       ALLOCATE(distrib_aux(gg))
+                       distrib_aux(:)=distrib(:)
+                       DEALLOCATE(distrib)
+                       ALLOCATE(distrib(contador))
+                       distrib(:gg)=distrib_aux(:)
+                       distrib((gg+1):)=0.0d0
+                       gg=contador
+                       DEALLOCATE(distrib_aux)
+                    END IF
+                    distrib(contador)=distrib(contador)+1.0d0
+                    contador_total=contador_total+contador
+                    mean=mean+1.0d0
+                 END IF
+              END IF
+           ELSE
+              contador=0
+           END IF
+
+        END DO
+     END DO
+  END DO
+  
+  IF (mean>0.0d0) THEN
+     mean=(contador_total*1.0d0)/mean
+  ELSE
+     mean=0.0d0
+  END IF
+
+  IF (opt_norm==1) THEN
+     IF (contador_total==0) THEN
+        distrib=0.0d0
+     ELSE
+        distrib(:)=distrib(:)/(contador_total*1.0d0)
+     END IF
+  END IF
+
   jj=0
   DO ii=1,gg
      IF (distrib(ii)>0.0d0) THEN
         jj=jj+1
-        distrib_aux(jj)=distrib(ii)
-        distrib_x(jj)=ii
      END IF
   END DO
-  DEALLOCATE(distrib)
-  ALLOCATE(distrib(jj))
-  distrib=distrib_aux
-  DEALLOCATE(distrib_aux)
 
-end subroutine first_passage_time_dist
+  IF (jj/=0) THEN
+     ALLOCATE(distrib_aux(jj),distrib_x(jj))
+     jj=0
+     DO ii=1,gg
+        IF (distrib(ii)>0.0d0) THEN
+           jj=jj+1
+           distrib_aux(jj)=distrib(ii)
+           distrib_x(jj)=ii
+        END IF
+     END DO
+     DEALLOCATE(distrib)
+     ALLOCATE(distrib(jj))
+     distrib=distrib_aux
+     DEALLOCATE(distrib_aux)
+  ELSE
+     DEALLOCATE(distrib)
+     ALLOCATE(distrib(1),distrib_x(1))
+     distrib=0.0d0
+     distrib_x=0.0d0
+  END IF
+
+
+end subroutine first_committed_passage_time_dist
 
 
 END MODULE AUX

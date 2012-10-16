@@ -280,9 +280,103 @@ lets check another kinetic magnitude: the *first passage time distribution*.
 Mean first passage time or fpt distribution
 +++++++++++++++++++++++++++++++++++++++++++
 
+Following the same strategy as in the previous section, we can compare
+some distributions computed over the original clusters trajectory and
+over its kinetic model. The first passage time distribution can be
+computed to a certain state from a given state or from any one.
+
+The original clusters trajectory shows the following distributions for
+this three different cases: from any cluster to cluster 2 (blue), from
+cluster 0 (green) to cluster 2 and from cluster 1 (orange) to cluster 2.
+
+.. sourcecode:: ipython
+
+   In [19]: fptx2,fpty2=kin_test.first_passage_time(traj='clusters',to_state=2,norm=False,verbose=True)
+   # Mean first passage time: 700.403755073 frames.
+
+   In [20]: fptx02,fpty02=kin_test.first_passage_time(traj='clusters',from_state=0,to_state=2,norm=False,verbose=True)
+   # Mean first passage time: 1175.03303483 frames.
+
+   In [21]: fptx12,fpty12=kin_test.first_passage_time(traj='clusters',from_state=1,to_state=2,norm=False,verbose=True)
+   # Mean first passage time: 124.958081567 frames.
 
 
-asdf
+.. figure:: ../tutorials/kinetic_1D_analysis/fpt_bad_to2.png
+   :align: center
+   :scale: 70 %
+
+There are two things not expected in this plot. The **short time
+behavior looks anomalous** and both distributions '1 to 2' and '0 to
+2' should be bi-exponential. Since we made the first guest of having the
+particle going from **0 to 2** with a necessary stay in cluster 1, this
+distribution **should be bi-exponential**.
+
+
+Now, we can compare with the first passage time distributions obtained
+by the kinetic model. As it was done with the life time distributions,
+a random walker over the kinetic network can be run according to the
+transition probabilities.
+
+.. sourcecode:: ipython
+
+   In [22]: bw_traj=kin_test.network_clusters.brownian_walker(origin=0,length=9999000)
+
+   In [23]: bw=kinetic_1D_analysis(bw_traj,verbose=False)
+
+   In [24]: fptbwx2, fptbwy2= bw.first_passage_time(to_state=2,norm=False,verbose=True)
+   # Mean first passage time: 430.700895225 frames.
+
+   In [25]: fptbwx02,fptbwy02=bw.first_passage_time(from_state=0,to_state=2,norm=False,verbose=True)	
+   # Mean first passage time: 751.240082388 frames.
+
+   In [26]: fptbwx12,fptbwy12=bw.first_passage_time(from_state=1,to_state=2,norm=False,verbose=True)
+   # Mean first passage time: 36.4134420305 frames.
+
+
+.. figure:: ../tutorials/kinetic_1D_analysis/fpt_bad_to2_model.png
+   :align: center
+   :scale: 70 %
+
+
+This time we atleast observe a bi-exponential behavior in the '1 to 2'
+distribution in agreement with our first guess. But if we compare the
+relaxation times, **by simple inspection we conclude that distributions
+are different** from those obtained before from the clusters trajectory,
+**even the mean first passage times are different (in [19-21] and
+[24-26])**.
+
+These analysis reinforce the idea of having a wrong analysis, the way
+we have define the macro-states or cluster is not kinetically
+consistent.  But before improving this analysis, let see one kinetic
+observable more: what we have define as *first committed passage time*
+(from the magnitude: committor probabilities)
+
+It is up to the reader trying to understand the origin of these
+different behaviors (check section XXX to find some help).
+
+
+
+Mean first committed passage time or fcpt distribution
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+In Physics of stochastic processes the *committor probability*,
+*C_{a,b}*, is the probability of going from *b* to *a* without passing
+through any other state. Based on this idea, we can compute the first
+passage time from a state *b* to *a* with a requirement: passing or
+not by other states.
+
+In this tutorial we defined 3 macro-states or clusters from a 1D
+trajectory (see above). And in our naive first analysis we made an
+observation: to go from cluster 0 (green) to cluster 2 (blue), a visit
+to cluster 1 (orange) is needed. For the sake of completeness lets
+study the first passage time of going from 0 to 2 with and without
+passing by cluster 1.
+
+fcpt_without1=kin_test.first_committed_passage_time(traj='clusters',states=[0,2],verbose=True)
+fcpt_with1=   kin_test.first_committed_passage_time(traj='clusters',states=[0,1,2],commitment=[True,False,True],verbose=True)
+fcpt_without1=kin_test.first_committed_passage_time(traj='clusters',states=[0,1,2],commitment=[True,True,True],verbose=True)
+
+
 
 .. figure:: ../tutorials/kinetic_1D_analysis/traj123.png
    :align: center
