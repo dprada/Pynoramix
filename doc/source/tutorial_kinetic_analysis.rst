@@ -544,12 +544,59 @@ different behaviors (in the next section some help can be found).
 Accurate kinetic decomposition
 ++++++++++++++++++++++++++++++
 
-bla bla bla
+We have study along the tutorial a dynamical system which, according
+to what was previously computed: we have 3 clusters with strange life
+time distributions at short times, with strange first passage times,
+and with direct transitions 0 to 1, and with two different mechanisms
+of transitions 0 to 1 to 2.
+
+But we have important doubts about our study: the kinetic model does
+not reproduce the kinetics from the trajectory. The three cluster with
+which the model was built are not well defined. Have a look to a piece
+of trajectory to understand all the previous results and conclussions:
 
 .. figure:: ../tutorials/kinetic_1D_analysis/traj123.png
    :align: center
    :scale: 70 %
 
+The colors correspond to the three macro-states or clusters comming
+from the barriers observed in the histogram (XXX).
+
+It is up to the reader understanding now how the description obtained
+before matches with the wrong definition of macro-states.
+
+
+
+But the trajectory was a projection onto one dimmension of a dynamics
+embedded in a larger dimensional space (2 in this case).  Before
+propossing how to get a better description, a better kinetic model,
+let see how the system behaves in the original 2 dimmensions:
+
+.. figure:: ../tutorials/kinetic_1D_analysis/histo_2d.png
+   :align: center
+   :scale: 70 %
+
+
+The trajectory studied was the projection over the black axe. Knowing
+now that we can define the three macro-states, clusters or basins of
+attraction, with the barriers X=-5.5 and Y=5.5, we can rebuild the histogram:
+
+.. figure:: ../tutorials/kinetic_1D_analysis/histo_color_good.png
+   :align: center
+   :scale: 70 %
+
+
+We understand now why, trying to understand the mechanisms of
+transition 0 to 1 to 2 made no sense. Actually, there are no such
+transitions, they were just an artifact.
+
+With these three well defined clusters we can have a look now to the
+kinetic magnitudes previously computed for the wrong model.
+
+
+
+But can we define a good kinetic model without going to the original
+2-dimensional trajectory? The next section shows how this can be done.
 
 
 Ganna2012
@@ -579,7 +626,7 @@ kinetic model.
    Please cite the following reference if the method is used for a scientific publication: XXXXXXX
 
 Rao's method
-++++++++++++
+............
 
 .. sourcecode:: ipython
 
