@@ -690,7 +690,7 @@ subroutine life_time_dist (opt_norm,traj,state,num_frames,num_parts,dims,num_sta
 
 end subroutine life_time_dist
 
-subroutine first_passage_time_dist (opt_norm,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, &
+subroutine fpt_dist (opt_norm,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, &
      from_state,from_segment,to_state,to_segment,traj,num_frames,num_parts,dims,from_num_states,to_num_states,mean)
 
 
@@ -830,14 +830,14 @@ subroutine first_passage_time_dist (opt_norm,opt_from_state,opt_from_segment,opt
      distrib_x=0.0d0
   END IF
 
-end subroutine first_passage_time_dist
+end subroutine fpt_dist
 
-subroutine first_committed_passage_time_dist (opt_norm,opt_states,opt_segments, &
+subroutine fcpt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
      states,segments,commitment,traj,num_frames,num_parts,dims,num_states,num_segments,num_commits,mean)
 
 
   IMPLICIT NONE
-  INTEGER,INTENT(IN):: opt_norm,opt_states,opt_segments
+  INTEGER,INTENT(IN):: opt_norm,opt_states,opt_segments,opt_noreturn
   INTEGER,INTENT(IN):: num_parts,dims,num_frames
   INTEGER,INTENT(IN):: num_states,num_segments,num_commits
   DOUBLE PRECISION,DIMENSION(num_frames,num_parts,dims),INTENT(IN):: traj
@@ -849,7 +849,7 @@ subroutine first_committed_passage_time_dist (opt_norm,opt_states,opt_segments, 
   INTEGER:: ii,jj,kk,ll,gg,contador,kkk,lll,toca
   INTEGER,DIMENSION(num_commits)::visited
   LOGICAL::entro,inside_to,inside_false
-  LOGICAL:: hecho,listo
+  LOGICAL:: hecho,listo,touch
   INTEGER(KIND=8):: contador_total
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::distrib_aux
   DOUBLE PRECISION::pos
@@ -870,6 +870,7 @@ subroutine first_committed_passage_time_dist (opt_norm,opt_states,opt_segments, 
   DO kkk=1,num_parts
      DO lll=1,dims
         entro=.false.
+        touch=.false.
         contador=0
         DO ii=num_frames,1,-1
 
@@ -881,15 +882,16 @@ subroutine first_committed_passage_time_dist (opt_norm,opt_states,opt_segments, 
               IF ((segments(num_segments,1)<pos).and.(pos<segments(num_segments,2))) THEN
                  inside_to=.true.
                  entro=.true.
+                 touch=.false.
                  visited=0
                  visited(num_segments)=1
                  toca=num_segments-1
               END IF
            ELSE
               IF (pos==states(num_states)) THEN
-                 print*,'SI',ii
                  inside_to=.true.
                  entro=.true.
+                 touch=.false.
                  visited=0
                  visited(num_states)=1
                  toca=num_states-1
@@ -898,46 +900,73 @@ subroutine first_committed_passage_time_dist (opt_norm,opt_states,opt_segments, 
 
            listo=.false.
            IF ((entro==.true.).and.(inside_to.eqv..false.)) THEN
-              print*,'SI2',ii
               IF (opt_segments==1) THEN
                  !IF ((from_segment(1)<pos).and.(pos<from_segment(2))) THEN
                  !   !!...
                  !END IF
               ELSE 
-                 print*,'SI22',ii
+                 print*,'---'
+                 print*,ii,pos,states(toca)
                  IF ((commitment(toca+1)==1).and.(pos==states(toca+1))) THEN
-                    listo=.true.
+                    IF (visited(1)/=1) THEN
+                       print*,'listo 1'
+                       listo=.true.
+                    END IF
                  END IF
                  IF (listo==.false.) THEN
                     IF ((pos==states(toca)).and.(commitment(toca)==1)) THEN
+                       print*,'listo 2'
                        visited(toca)=1
                        toca=toca-1
                        IF (toca==0) toca=1
                        listo=.true.
                     END IF
                     IF ((pos/=states(toca)).and.(commitment(toca)==0)) THEN
+                       print*,'listo3'
                        visited(toca)=0
                        toca=toca-1
                        IF (toca==0) toca=1
+                       IF (pos==states(toca).and.(commitment(toca)==1)) THEN ! traj=[1,1,2] for states [1,0,2][T,F,T]
+                          visited(toca)=1
+                          toca=toca-1
+                          IF (toca==0) toca=1
+                       END IF
                        listo=.true.
                     END IF
                  END IF
                  IF (listo==.false.) THEN
-                    IF (commitment(toca+1)==0) THEN
+                    IF (pos/=states(toca+1).and.commitment(toca+1)==0) THEN
+                       print*,'listo4'
+                       visited(1)=0   ! [1,3,1,2] with [1,0,2][T,F,T]
                        listo=.true.
                     END IF
                  END IF
                  IF (listo==.false.) THEN
+                    print*,'nolisto5'
                     contador=0
                     visited=0
+                    touch=.false.
                     entro=.false.
                  END IF
+                 print*,'---'
               END IF
            END IF
            
+           IF (pos==states(1)) THEN
+              touch=.true.
+           END IF
+           IF (opt_noreturn==1) THEN
+              IF ((touch==.true.).and.(pos/=states(1))) THEN
+                 listo=.false.
+                 contador=0
+                 visited=0
+                 touch=.false.
+                 entro=.false.
+              END IF
+           END IF
+
            IF (listo==.true.) THEN
               contador=contador+1
-              print*,'SI3',ii
               IF (visited(1)==1) THEN
                  HECHO=.true.
                  IF (opt_states==1) THEN
@@ -1022,7 +1051,7 @@ subroutine first_committed_passage_time_dist (opt_norm,opt_states,opt_segments, 
   END IF
 
 
-end subroutine first_committed_passage_time_dist
+end subroutine fcpt_dist
 
 
 END MODULE AUX

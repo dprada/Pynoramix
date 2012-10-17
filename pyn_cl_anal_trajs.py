@@ -215,7 +215,7 @@ class kinetic_1D_analysis():
             to_num_states=len(to_state)
 
 
-        fpt_mean=ftrajs.aux.first_passage_time_dist(opt_norm,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, \
+        fpt_mean=ftrajs.aux.fpt_dist(opt_norm,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, \
                                                         from_state,from_segment,to_state,to_segment, \
                                                         traj_inp,self.num_frames,self.num_particles,self.dimensions,\
                                                         from_num_states,to_num_states)
@@ -233,17 +233,20 @@ class kinetic_1D_analysis():
             return fpt_x, fpt_dist
 
 
-    def first_committed_passage_time (self,traj=None,states=None,segments=None,commitment=None,mean=False,norm=False,verbose=False):
+    def first_committed_passage_time (self,traj=None,states=None,segments=None,commitment=None,no_return=False,mean=False,norm=False,verbose=False):
 
         opt_mean=0
         opt_norm=0
         opt_segments=0
         opt_states=0
+        opt_noreturn=0
 
         if (mean):
             opt_mean=1
         if (norm):
             opt_norm=1
+        if (no_return):
+            opt_noreturn=1
 
         if states!=None:   
             opt_states=1
@@ -287,7 +290,7 @@ class kinetic_1D_analysis():
             num_commits=len(commitment)
 
         commitment_in=[int(ii) for ii in commitment]
-        fcpt_mean=ftrajs.aux.first_committed_passage_time_dist(opt_norm,opt_states,opt_segments, states,segments,commitment_in,\
+        fcpt_mean=ftrajs.aux.fcpt_dist(opt_norm,opt_noreturn,opt_states,opt_segments, states,segments,commitment_in,\
                                                         traj_inp,self.num_frames,self.num_particles,self.dimensions,\
                                                         num_states,num_segments,num_commits)
 
