@@ -905,24 +905,19 @@ subroutine fcpt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
                  !   !!...
                  !END IF
               ELSE 
-                 print*,'---'
-                 print*,ii,pos,states(toca)
                  IF ((commitment(toca+1)==1).and.(pos==states(toca+1))) THEN
                     IF (visited(1)/=1) THEN
-                       print*,'listo 1'
                        listo=.true.
                     END IF
                  END IF
                  IF (listo==.false.) THEN
                     IF ((pos==states(toca)).and.(commitment(toca)==1)) THEN
-                       print*,'listo 2'
                        visited(toca)=1
                        toca=toca-1
                        IF (toca==0) toca=1
                        listo=.true.
                     END IF
                     IF ((pos/=states(toca)).and.(commitment(toca)==0)) THEN
-                       print*,'listo3'
                        visited(toca)=0
                        toca=toca-1
                        IF (toca==0) toca=1
@@ -936,19 +931,16 @@ subroutine fcpt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
                  END IF
                  IF (listo==.false.) THEN
                     IF (pos/=states(toca+1).and.commitment(toca+1)==0) THEN
-                       print*,'listo4'
                        visited(1)=0   ! [1,3,1,2] with [1,0,2][T,F,T]
                        listo=.true.
                     END IF
                  END IF
                  IF (listo==.false.) THEN
-                    print*,'nolisto5'
                     contador=0
                     visited=0
                     touch=.false.
                     entro=.false.
                  END IF
-                 print*,'---'
               END IF
            END IF
            

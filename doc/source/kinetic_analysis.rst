@@ -4,8 +4,6 @@ Kinetic Analysis
 1D trajectories
 ===============
 
-
-
 bla, bla, bla
 
 Ejemplos de committed:
