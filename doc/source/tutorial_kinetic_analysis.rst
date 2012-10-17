@@ -202,8 +202,8 @@ original trajectory.  This can be done attending to magnitudes as the
 *mean dwell/life time* and its distribution or the *mean first passage
 time* and its distribution.
 
-Mean life time or life time distribution
-++++++++++++++++++++++++++++++++++++++++
+Life time distribution
+++++++++++++++++++++++
 
 Up to here, in this tutorial we have built a kinetic model from a 1D
 trajectory. Now the accuracy of the model can be checked with
@@ -277,8 +277,8 @@ lets check another kinetic magnitude: the *first passage time distribution*.
 
 
 
-Mean first passage time or fpt distribution
-+++++++++++++++++++++++++++++++++++++++++++
+First Passage Time distribution
++++++++++++++++++++++++++++++++
 
 Following the same strategy as in the previous section, we can compare
 some distributions computed over the original clusters trajectory and
@@ -356,8 +356,8 @@ different behaviors (check section XXX to find some help).
 
 
 
-Mean first committed passage time or fcpt distribution
-++++++++++++++++++++++++++++++++++++++++++++++++++++++
+First Committed Passage Time distribution
++++++++++++++++++++++++++++++++++++++++++
 
 In Physics of stochastic processes the *committor probability*,
 *C_{a,b}*, is the probability of going from *b* to *a* without passing
@@ -409,8 +409,8 @@ can remove this the several independent trips origin by this fact.
 
 
 
-Mean trip time or trip time distribution
-++++++++++++++++++++++++++++++++++++++++
+Trip Time distribution
+++++++++++++++++++++++
 
 An other kinetic magnitude we can observe is the time distribution of
 those segments of trajectory in between the stay of an initial cluster
@@ -483,8 +483,8 @@ help us to enlight the question.
 
 
 
-Mean committed trip time or ctt distribution
-++++++++++++++++++++++++++++++++++++++++++++
+Committed Trip Time distribution
+++++++++++++++++++++++++++++++++
 
 Similar as it was done for the *first committed passage time* (see
 section XXX), we can also study committed trip distributions (see
@@ -544,6 +544,7 @@ different behaviors (in the next section some help can be found).
 Accurate kinetic decomposition
 ++++++++++++++++++++++++++++++
 
+bla bla bla
 
 .. figure:: ../tutorials/kinetic_1D_analysis/traj123.png
    :align: center
