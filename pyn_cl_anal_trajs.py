@@ -307,6 +307,161 @@ class kinetic_1D_analysis():
             return fcpt_x, fcpt_dist
 
 
+    def trip_time (self,traj=None,from_state=None,from_segment=None,to_state=None,to_segment=None,no_return=False,mean=False,norm=False,verbose=False):
+
+        opt_mean=0
+        opt_norm=0
+        opt_no_return=0
+        opt_to_segment=0
+        opt_from_segment=0
+        opt_to_state=0
+        opt_from_state=0
+
+        if (mean):
+            opt_mean=1
+        if (norm):
+            opt_norm=1
+        if (no_return):
+            opt_no_return=1
+
+        if from_state!=None:   
+            opt_from_state=1
+        else:
+            from_state=0
+
+        if from_segment!=None: 
+            opt_from_segment=1
+        else:
+            from_segment=[0.0,0.0]
+
+        if to_state!=None:     
+            opt_to_state=1
+        else:
+            to_state=0
+
+        if to_segment!=None:   
+            opt_to_segment=1
+        else:
+            to_segment=[0.0,0.0]
+        
+        if opt_to_segment==0 and opt_to_state==0:
+            print '# the input variable to_state or to_segment is needed'
+            pass
+
+        if traj == None:
+            traj_inp=standard_traj(self.traj,num_parts=self.num_particles,dims=self.dimensions)
+        elif traj in ['CLUSTERS','Clusters','clusters']:
+            traj_inp=standard_traj(self.traj_clusters,num_parts=self.num_particles,dims=self.dimensions)
+        elif traj in ['NODES','Nodes','nodes']:
+            traj_inp=standard_traj(self.traj_nodes,num_parts=self.num_particles,dims=self.dimensions)
+        else:
+            print '# A readable traj is needed'
+            pass
+
+        if type(from_state) in [int,float]:
+            from_num_states=1
+            from_state=[from_state]
+        elif type(state) in [list,tuple]:
+            from_num_states=len(from_state)
+
+        if type(to_state) in [int,float]:
+            to_num_states=1
+            to_state=[to_state]
+        elif type(to_state) in [list,tuple]:
+            to_num_states=len(to_state)
+
+
+        tt_mean=ftrajs.aux.tt_dist(opt_norm,opt_no_return,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, \
+                                                        from_state,from_segment,to_state,to_segment, \
+                                                        traj_inp,self.num_frames,self.num_particles,self.dimensions,\
+                                                        from_num_states,to_num_states)
+
+        tt_dist=ccopy.deepcopy(ftrajs.aux.distrib)
+        tt_x=ccopy.deepcopy(ftrajs.aux.distrib_x)
+        ftrajs.aux.free_distrib()
+
+        if verbose:
+            print '# Mean first passage time:', tt_mean,'frames.'
+
+        if mean:
+            return tt_mean
+        else:
+            return tt_x, tt_dist
+
+    def committed_trip_time (self,traj=None,states=None,segments=None,commitment=None,no_return=False,mean=False,norm=False,verbose=False):
+
+        opt_mean=0
+        opt_norm=0
+        opt_segments=0
+        opt_states=0
+        opt_noreturn=0
+
+        if (mean):
+            opt_mean=1
+        if (norm):
+            opt_norm=1
+        if (no_return):
+            opt_noreturn=1
+
+        if states!=None:   
+            opt_states=1
+            segments=[[0,0]]
+            num_segments=1
+        else:
+            opt_segments=0
+            states=[0]
+            num_states=1
+
+        if opt_segments==0 and opt_states==0:
+            print '# the input variable states or segments is needed'
+            pass
+
+        if traj == None:
+            traj_inp=standard_traj(self.traj,num_parts=self.num_particles,dims=self.dimensions)
+        elif traj in ['CLUSTERS','Clusters','clusters']:
+            traj_inp=standard_traj(self.traj_clusters,num_parts=self.num_particles,dims=self.dimensions)
+        elif traj in ['NODES','Nodes','nodes']:
+            traj_inp=standard_traj(self.traj_nodes,num_parts=self.num_particles,dims=self.dimensions)
+        else:
+            print '# A readable traj is needed'
+            pass
+
+        if type(states) in [int,float]:
+            num_states=1
+            states=[states]
+        elif type(states) in [list,tuple]:
+            num_states=len(states)
+
+        if opt_segments:
+            num_segments=len(segments)
+
+        if commitment==None:
+            if opt_segments:
+                num_commits=num_segments
+            else:
+                num_commits=num_states
+            commitment=[True for ii in range(num_commits)]
+        else:
+            num_commits=len(commitment)
+
+        commitment_in=[int(ii) for ii in commitment]
+        ctt_mean=ftrajs.aux.ctt_dist(opt_norm,opt_noreturn,opt_states,opt_segments, states,segments,commitment_in,\
+                                                        traj_inp,self.num_frames,self.num_particles,self.dimensions,\
+                                                        num_states,num_segments,num_commits)
+
+        ctt_dist=ccopy.deepcopy(ftrajs.aux.distrib)
+        ctt_x=ccopy.deepcopy(ftrajs.aux.distrib_x)
+        ftrajs.aux.free_distrib()
+
+        if verbose:
+            print '# Mean first passage time:', ctt_mean,'frames.'
+
+        if mean:
+            return ctt_mean
+        else:
+            return ctt_x, ctt_dist
+
+
     def kinetic_network(self,traj=None,verbose=False):
 
         if traj in ['CLUSTERS','Clusters','clusters']:

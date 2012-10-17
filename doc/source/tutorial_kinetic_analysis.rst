@@ -283,10 +283,10 @@ Mean first passage time or fpt distribution
 Following the same strategy as in the previous section, we can compare
 some distributions computed over the original clusters trajectory and
 over its kinetic model. The first passage time distribution can be
-computed to a certain state from a given state or from any one.
+computed to a certain state from a given state or from any one (*Global first passage time*).
 
 The original clusters trajectory shows the following distributions for
-this three different cases: from any cluster to cluster 2 (blue), from
+this three different cases: the Global first passage time to cluster 2 (blue), from
 cluster 0 (green) to cluster 2 and from cluster 1 (orange) to cluster 2.
 
 .. sourcecode:: ipython
@@ -338,7 +338,7 @@ transition probabilities.
    :scale: 70 %
 
 
-This time we atleast observe a bi-exponential behavior in the '1 to 2'
+This time we **at least observe a bi-exponential** behavior in the '1 to 2'
 distribution in agreement with our first guess. But if we compare the
 relaxation times, **by simple inspection we conclude that distributions
 are different** from those obtained before from the clusters trajectory,
@@ -372,19 +372,183 @@ to cluster 1 (orange) is needed. For the sake of completeness lets
 study the first passage time of going from 0 to 2 with and without
 passing by cluster 1.
 
-fcpt_without1=kin_test.first_committed_passage_time(traj='clusters',states=[0,2],verbose=True)
-fcpt_with1=   kin_test.first_committed_passage_time(traj='clusters',states=[0,1,2],commitment=[True,False,True],verbose=True)
-fcpt_without1=kin_test.first_committed_passage_time(traj='clusters',states=[0,1,2],commitment=[True,True,True],verbose=True)
+.. sourcecode:: ipython
 
+   In [27]: fcptx012,fcpty012=kin_test.first_committed_passage_time(traj='clusters',states=[0,1,2],commitment=[True,True,True],norm=False,verbose=True)
+   # Mean first passage time: 888.282178077 frames.
+
+   In [28]: fcptx0no12,fcpty0no12=kin_test.first_committed_passage_time(traj='clusters',states=[0,1,2],commitment=[True,False,True],norm=False,verbose=True)
+   # Mean first passage time: 861.446234118 frames.
+
+.. figure:: ../tutorials/kinetic_1D_analysis/fcpt_bad_0to2.png
+   :align: center
+   :scale: 70 %
+
+The first passage time distribution of going from 0 to 2 without
+passing by 1 it is not negligible as we assumed at the begining of
+this tutorial just looking at the histogram.
+
+The kinetic model shows also a similar behavior:
+
+.. sourcecode:: ipython
+
+   In [29]: fcptbwx012,fcptbwy012=bw.first_committed_passage_time(states=[0,1,2],commitment=[True,True,True],norm=False,verbose=True)
+   # Mean first passage time: 705.085477589 frames.
+
+   In [30]: fcptbwx0no12,fcptbwy0no12=bw.first_committed_passage_time(states=[0,1,2],commitment=[True,False,True],norm=False,verbose=True)
+   # Mean first passage time: 682.339500433 frames.
+
+.. figure:: ../tutorials/kinetic_1D_analysis/fcpt_bad_0to2_model.png
+   :align: center
+   :scale: 70 %
+
+
+But in this distributions, the life time of each stay in 0 is included
+(as with the first passage time). Let see how in the next section we
+can remove this the several independent trips origin by this fact.
+
+
+
+Mean trip time or trip time distribution
+++++++++++++++++++++++++++++++++++++++++
+
+An other kinetic magnitude we can observe is the time distribution of
+those segments of trajectory in between the stay of an initial cluster
+or macro-state and the arrival to an other certain cluster. In this
+case, unlike the first passage time, not every single step in the
+initial cluster accounts for the distribution.
+
+Lets check the trip time distribution from cluster 0 to cluster 2:
+
+.. sourcecode:: ipython
+
+   In [31]: tt02x,tt02y=kin_test.trip_time(traj='clusters',from_state=0,to_state=2,verbose=True)
+   # Mean first passage time: 295.365182591 frames.
+
+   In [32]: ttbw02x,ttbw02y=bw.trip_time(from_state=0,to_state=2,verbose=True)
+   # Mean first passage time: 33.0993065874 frames.
+
+.. figure:: ../tutorials/kinetic_1D_analysis/tt_bad_0to2_1.png
+   :align: center
+   :scale: 70 %
+
+Once more the kinetics observed in the model is different from what
+can be computed in the trajectory. This observation points, once again,
+to the fact of having a wrong built kinetic model.
+
+While in the kinetic model the trip time looks like single
+exponential, two different time scales (two different mechanisms
+driving the particle from 0 to 1) are observed from the
+trajectory. And this time is clear that the first fast decay
+(steps<=10) is shorter than the tipical life time of the intermediate
+cluster 1 (mfpt1~=16). Again, we have evidences of straight 0 to 2
+jumps not expected looking at the histogram. This can lead us to
+invest our precious time trying to answer: How is this mechanism not
+previously expected? But as we will see shortly, this fact it is just
+an artifact. In addition, if we look in detail to the distribution
+from the trajectory, the point at steps=1 does not take part of any of
+the hypothetical mechanisms. Its value (tt(1)) is high enough to be
+considered as noise. There is probably 3 different mechanisms, and
+only the long time noisy tail makes sense for us given that its time
+range is comparable with the life time distribution of the
+intermediate cluster 1. 
+
+
+
+
+
+We could also argue that, if along the trip the initial state is
+visited again, this stay is observed as part of the trip. If we want
+to discard this events the option 'no_return' is required:
+
+.. sourcecode:: ipython
+
+   In [33]: tt02x,tt02y=kin_test.trip_time(traj='clusters',from_state=0,to_state=2,no_return=True,verbose=True)
+   # Mean first passage time: 10.895183175 frames.
+
+   In [34]: ttbw02x,ttbw02y=bw.trip_time(from_state=0,to_state=2,no_return=True,verbose=True)
+   # Mean first passage time: 15.7288866345 frames.
+
+
+.. figure:: ../tutorials/kinetic_1D_analysis/tt_bad_0to2_2.png
+   :align: center
+   :scale: 70 %
+
+The observations we can make are the same written above. The kinetic
+model does not offer a good representation of the system. Regarding
+the clusters trajectory, those jumps observed in just one time step
+could be not expected straight transitions. But whats the first
+exponential decay? Is it physically meaninful? The next section can
+help us to enlight the question.
+
+
+
+Mean committed trip time or ctt distribution
+++++++++++++++++++++++++++++++++++++++++++++
+
+Similar as it was done for the *first committed passage time* (see
+section XXX), we can also study committed trip distributions (see
+section above).
+
+Let see the trip time distribution of going from 0 to 2 passing by
+cluster 1 or going straightforward without visiting the intermediate
+cluster.
+
+.. sourcecode:: ipython
+
+   In [35]: tt012x,tt012y=kin_test.committed_trip_time(traj='clusters',states=[0,1,2],commitment=[True,True,True],no_return=True,verbose=True)
+   # Mean first passage time: 12.2196153846 frames.
+
+   In [36]: tt0no12x,tt0no12y=kin_test.committed_trip_time(traj='clusters',states=[0,1,2],commitment=[True,False,True],no_return=True,verbose=True)
+   # Mean first passage time: 1.0 frames.
+
+.. figure:: ../tutorials/kinetic_1D_analysis/ctt_bad_0to2.png
+   :align: center
+   :scale: 70 %
+
+It is clear now that the one step trips are straight transitions 0
+to 1. We can now state that there are two time scales or mechanisms
+over the path 0 to 1 to 2. We can again wonder what the origin of this
+is. But as we will see later, there is not such misterious hidden
+mechanism, not even logical transitions 0 to 2 with expected standard
+stays in cluster 1.
+
+This could not be unveiled just looking at our kinetic model, because
+it is not properly built up.
+
+.. sourcecode:: ipython
+
+   In [37]: ttbw012x,ttbw012y=bw.committed_trip_time(states=[0,1,2],commitment=[True,True,True],no_return=True,verbose=True)
+   # Mean first passage time: 17.24049217 frames.
+
+   In [38]: ttbw0no12x,ttbw0no12y=bw.committed_trip_time(states=[0,1,2],commitment=[True,False,True],no_return=True,verbose=True)
+   # Mean first passage time: 1.0 frames.
+
+.. figure:: ../tutorials/kinetic_1D_analysis/ctt_bad_0to2_model.png
+   :align: center
+   :scale: 70 %
+
+Although there exist straight transitions from 0 to 2 in just one time
+step, it is part of the same mechanism (exponential decay). The saving
+frequency of the trajectory could be large enough to see straight
+transitions when they briefly visited cluster 1. 
+
+
+It is up to the reader trying to understand the origin of these
+different behaviors (in the next section some help can be found).
+
+
+
+
+
+Accurate kinetic decomposition
+++++++++++++++++++++++++++++++
 
 
 .. figure:: ../tutorials/kinetic_1D_analysis/traj123.png
    :align: center
    :scale: 70 %
 
-
-Accurate kinetic decomposition
-++++++++++++++++++++++++++++++
 
 
 Ganna2012

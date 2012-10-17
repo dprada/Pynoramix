@@ -832,6 +832,160 @@ subroutine fpt_dist (opt_norm,opt_from_state,opt_from_segment,opt_to_state,opt_t
 
 end subroutine fpt_dist
 
+
+subroutine tt_dist (opt_norm,opt_noreturn,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, &
+     from_state,from_segment,to_state,to_segment,traj,num_frames,num_parts,dims,from_num_states,to_num_states,mean)
+
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN):: opt_norm,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment,opt_noreturn
+  INTEGER,INTENT(IN):: num_parts,dims,num_frames
+  INTEGER,INTENT(IN):: from_num_states,to_num_states
+  DOUBLE PRECISION,DIMENSION(num_frames,num_parts,dims),INTENT(IN):: traj
+  DOUBLE PRECISION,DIMENSION(from_num_states),INTENT(IN):: from_state
+  DOUBLE PRECISION,DIMENSION(to_num_states),INTENT(IN):: to_state
+  DOUBLE PRECISION,DIMENSION(2),INTENT(IN)::from_segment,to_segment
+  DOUBLE PRECISION,INTENT(OUT):: mean
+
+  INTEGER:: ii,jj,kk,ll,gg,contador,kkk,lll
+  LOGICAL::entro,inside_to,inside_from,last_from
+  INTEGER(KIND=8):: contador_total
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::distrib_aux
+  DOUBLE PRECISION::pos
+
+  gg=100
+  contador=0
+  contador_total=0
+  mean=0.0d0
+
+  IF (ALLOCATED(distrib)) DEALLOCATE(distrib)
+  IF (ALLOCATED(distrib_x)) DEALLOCATE(distrib_x)
+
+  ALLOCATE(distrib(gg))
+  distrib=0.0d0
+
+  DO kkk=1,num_parts
+     DO lll=1,dims
+        entro=.false.
+        last_from=.false.
+        contador=0
+        DO ii=num_frames,1,-1
+           pos=traj(ii,kkk,lll)
+
+           inside_to=.false.
+           IF (opt_to_segment==1) THEN
+              IF ((to_segment(1)<pos).and.(pos<to_segment(2))) THEN
+                 inside_to=.true.
+                 entro=.true.
+              END IF
+           ELSE
+              DO jj=1,to_num_states
+                 IF (pos==to_state(jj)) THEN
+                    inside_to=.true.
+                    entro=.true.
+                    EXIT
+                 END IF
+              END DO
+           END IF
+
+           inside_from=.false.
+           IF (inside_to.eqv..false.) THEN
+              IF (opt_from_segment==1) THEN
+                 IF ((from_segment(1)<pos).and.(pos<from_segment(2))) THEN
+                    inside_from=.true.
+                 END IF
+              ELSE IF (opt_from_state==1) THEN
+                 DO jj=1,from_num_states
+                    IF (pos==from_state(jj)) THEN
+                       inside_from=.true.
+                       EXIT
+                    END IF
+                 END DO
+              ELSE
+                 inside_from=.true.
+              END IF
+           END IF
+
+           IF ((inside_to.eqv..false.).and.(entro.eqv..true.)) THEN
+              contador=contador+1
+           ELSE
+              contador=0
+           END IF
+
+           IF ((inside_from.eqv..true.).and.(entro.eqv..true.).and.(last_from.eqv..false.)) THEN
+              
+              IF (contador>gg) THEN
+                 ALLOCATE(distrib_aux(gg))
+                 distrib_aux(:)=distrib(:)
+                 DEALLOCATE(distrib)
+                 ALLOCATE(distrib(contador))
+                 distrib(:gg)=distrib_aux(:)
+                 distrib((gg+1):)=0.0d0
+                 gg=contador
+                 DEALLOCATE(distrib_aux)
+              END IF
+              distrib(contador)=distrib(contador)+1.0d0
+              contador_total=contador_total+contador
+              mean=mean+1.0d0
+
+              IF (opt_noreturn==1) THEN
+                 entro=.false.
+                 contador=0
+              END IF
+
+           END IF
+
+           last_from=inside_from
+
+        END DO
+     END DO
+  END DO
+  
+  IF (mean>0.0d0) THEN
+     mean=(contador_total*1.0d0)/mean
+  ELSE
+     mean=0.0d0
+  END IF
+
+  IF (opt_norm==1) THEN
+     IF (contador_total==0) THEN
+        distrib=0.0d0
+     ELSE
+        distrib(:)=distrib(:)/(contador_total*1.0d0)
+     END IF
+  END IF
+
+  jj=0
+  DO ii=1,gg
+     IF (distrib(ii)>0.0d0) THEN
+        jj=jj+1
+     END IF
+  END DO
+
+  IF (jj/=0) THEN
+     ALLOCATE(distrib_aux(jj),distrib_x(jj))
+     jj=0
+     DO ii=1,gg
+        IF (distrib(ii)>0.0d0) THEN
+           jj=jj+1
+           distrib_aux(jj)=distrib(ii)
+           distrib_x(jj)=ii
+        END IF
+     END DO
+     DEALLOCATE(distrib)
+     ALLOCATE(distrib(jj))
+     distrib=distrib_aux
+     DEALLOCATE(distrib_aux)
+  ELSE
+     DEALLOCATE(distrib)
+     ALLOCATE(distrib(1),distrib_x(1))
+     distrib=0.0d0
+     distrib_x=0.0d0
+  END IF
+
+end subroutine tt_dist
+
+
 subroutine fcpt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
      states,segments,commitment,traj,num_frames,num_parts,dims,num_states,num_segments,num_commits,mean)
 
@@ -1044,6 +1198,224 @@ subroutine fcpt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
 
 
 end subroutine fcpt_dist
+
+
+subroutine ctt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
+     states,segments,commitment,traj,num_frames,num_parts,dims,num_states,num_segments,num_commits,mean)
+
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN):: opt_norm,opt_states,opt_segments,opt_noreturn
+  INTEGER,INTENT(IN):: num_parts,dims,num_frames
+  INTEGER,INTENT(IN):: num_states,num_segments,num_commits
+  DOUBLE PRECISION,DIMENSION(num_frames,num_parts,dims),INTENT(IN):: traj
+  DOUBLE PRECISION,DIMENSION(num_states),INTENT(IN):: states
+  DOUBLE PRECISION,DIMENSION(num_segments,2),INTENT(IN)::segments
+  INTEGER,DIMENSION(num_commits),INTENT(IN)::commitment
+  DOUBLE PRECISION,INTENT(OUT):: mean
+
+  INTEGER:: ii,jj,kk,ll,gg,contador,kkk,lll,toca
+  INTEGER,DIMENSION(num_commits)::visited
+  LOGICAL::entro,inside_to,inside_false
+  LOGICAL:: hecho,listo,touch,last_in
+  INTEGER(KIND=8):: contador_total
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::distrib_aux
+  DOUBLE PRECISION::pos
+
+  gg=100
+  contador=0
+  contador_total=0
+  mean=0.0d0
+  visited=0
+  toca=0
+
+  IF (ALLOCATED(distrib)) DEALLOCATE(distrib)
+  IF (ALLOCATED(distrib_x)) DEALLOCATE(distrib_x)
+
+  ALLOCATE(distrib(gg))
+  distrib=0.0d0
+
+  DO kkk=1,num_parts
+     DO lll=1,dims
+        entro=.false.
+        touch=.false.
+        contador=0
+        last_in=.false.
+        DO ii=num_frames,1,-1
+
+           pos=traj(ii,kkk,lll)
+
+           inside_to=.false.
+           listo=.false.
+           IF (opt_segments==1) THEN
+              IF ((segments(num_segments,1)<pos).and.(pos<segments(num_segments,2))) THEN
+                 inside_to=.true.
+                 entro=.true.
+                 touch=.false.
+                 visited=0
+                 visited(num_segments)=1
+                 toca=num_segments-1
+              END IF
+           ELSE
+              IF (pos==states(num_states)) THEN
+                 inside_to=.true.
+                 entro=.true.
+                 touch=.false.
+                 visited=0
+                 visited(num_states)=1
+                 toca=num_states-1
+              END IF
+           END IF
+
+           listo=.false.
+           IF ((entro==.true.).and.(inside_to.eqv..false.)) THEN
+              IF (opt_segments==1) THEN
+                 !IF ((from_segment(1)<pos).and.(pos<from_segment(2))) THEN
+                 !   !!...
+                 !END IF
+              ELSE 
+                 IF ((commitment(toca+1)==1).and.(pos==states(toca+1))) THEN
+                    IF (visited(1)/=1) THEN
+                       listo=.true.
+                    END IF
+                 END IF
+                 IF (listo==.false.) THEN
+                    IF ((pos==states(toca)).and.(commitment(toca)==1)) THEN
+                       visited(toca)=1
+                       toca=toca-1
+                       IF (toca==0) toca=1
+                       listo=.true.
+                    END IF
+                    IF ((pos/=states(toca)).and.(commitment(toca)==0)) THEN
+                       visited(toca)=0
+                       toca=toca-1
+                       IF (toca==0) toca=1
+                       IF (pos==states(toca).and.(commitment(toca)==1)) THEN ! traj=[1,1,2] for states [1,0,2][T,F,T]
+                          visited(toca)=1
+                          toca=toca-1
+                          IF (toca==0) toca=1
+                       END IF
+                       listo=.true.
+                    END IF
+                 END IF
+                 IF (listo==.false.) THEN
+                    IF (pos/=states(toca+1).and.commitment(toca+1)==0) THEN
+                       visited(1)=0   ! [1,3,1,2] with [1,0,2][T,F,T]
+                       listo=.true.
+                    END IF
+                 END IF
+                 IF (listo==.false.) THEN
+                    contador=0
+                    visited=0
+                    touch=.false.
+                    entro=.false.
+                 END IF
+              END IF
+           END IF
+           
+           IF (pos==states(1)) THEN
+              touch=.true.
+           END IF
+           IF (opt_noreturn==1) THEN
+              IF ((touch==.true.).and.(pos/=states(1))) THEN
+                 listo=.false.
+                 contador=0
+                 visited=0
+                 touch=.false.
+                 entro=.false.
+              END IF
+           END IF
+
+           IF (listo==.true.) THEN
+              contador=contador+1
+              IF ((visited(1)==1).and.(last_in==.false.)) THEN
+                 HECHO=.true.
+                 IF (opt_states==1) THEN
+                    DO kk=num_states,1,-1
+                       IF (visited(kk)/=commitment(kk)) THEN
+                          HECHO=.false.
+                          EXIT
+                       END IF
+                    END DO
+                 ELSE
+                    DO kk=num_segments,1,-1
+                       IF (visited(kk)/=commitment(kk)) THEN
+                          HECHO=.false.
+                          EXIT
+                       END IF
+                    END DO
+                 END IF
+                 IF (HECHO==.true.) THEN
+                    IF (contador>gg) THEN
+                       ALLOCATE(distrib_aux(gg))
+                       distrib_aux(:)=distrib(:)
+                       DEALLOCATE(distrib)
+                       ALLOCATE(distrib(contador))
+                       distrib(:gg)=distrib_aux(:)
+                       distrib((gg+1):)=0.0d0
+                       gg=contador
+                       DEALLOCATE(distrib_aux)
+                    END IF
+                    distrib(contador)=distrib(contador)+1.0d0
+                    contador_total=contador_total+contador
+                    mean=mean+1.0d0
+                 END IF
+              END IF
+           ELSE
+              contador=0
+           END IF
+           
+           last_in=touch
+
+        END DO
+     END DO
+  END DO
+  
+  IF (mean>0.0d0) THEN
+     mean=(contador_total*1.0d0)/mean
+  ELSE
+     mean=0.0d0
+  END IF
+
+  IF (opt_norm==1) THEN
+     IF (contador_total==0) THEN
+        distrib=0.0d0
+     ELSE
+        distrib(:)=distrib(:)/(contador_total*1.0d0)
+     END IF
+  END IF
+
+  jj=0
+  DO ii=1,gg
+     IF (distrib(ii)>0.0d0) THEN
+        jj=jj+1
+     END IF
+  END DO
+
+  IF (jj/=0) THEN
+     ALLOCATE(distrib_aux(jj),distrib_x(jj))
+     jj=0
+     DO ii=1,gg
+        IF (distrib(ii)>0.0d0) THEN
+           jj=jj+1
+           distrib_aux(jj)=distrib(ii)
+           distrib_x(jj)=ii
+        END IF
+     END DO
+     DEALLOCATE(distrib)
+     ALLOCATE(distrib(jj))
+     distrib=distrib_aux
+     DEALLOCATE(distrib_aux)
+  ELSE
+     DEALLOCATE(distrib)
+     ALLOCATE(distrib(1),distrib_x(1))
+     distrib=0.0d0
+     distrib_x=0.0d0
+  END IF
+
+
+end subroutine ctt_dist
+
 
 
 END MODULE AUX
