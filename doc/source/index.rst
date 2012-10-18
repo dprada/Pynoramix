@@ -6,6 +6,12 @@
 Welcome to the tentative Pynoramix's documentation!
 ===================================================
 
+**Be aware, some sections are...**
+
+.. image:: _static/Under_Construction.jpg
+   :align: center
+   :scale: 70 %
+
 Contents:
 +++++++++
 
@@ -35,6 +41,11 @@ Tutorials:
    :maxdepth: 4
 
    tutorial_kinetic_analysis.rst
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorial_berezovska2012.rst
 
 
 Indices and tables

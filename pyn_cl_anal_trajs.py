@@ -20,6 +20,8 @@ class kinetic_1D_analysis():
         self.traj_clusters=None
         self.network_nodes=None
         self.network_clusters=None
+        self.__type_nodes__=None
+        self.__type_clusters__=None
 
         if traject==None:
             print 'Trajectory needed (name of file or array)'
@@ -91,12 +93,36 @@ class kinetic_1D_analysis():
             else:
                 print '# Trajectory loaded:',self.num_particles,'particles,',self.num_frames,'time steps'
 
-    def histogram(self,bins=20,segment=None,delta_x=None,norm=False,cumul=False):
+    def histogram(self,cluster=None,node=None,bins=20,segment=None,delta_x=None,norm=False,cumul=False):
 
-        if self.num_particles==1:
-            return pyn_math.histogram(self.traj,bins=bins,segment=segment,delta_x=delta_x,norm=norm,cumul=cumul,plot=False)
-        else:
-            return pyn_math.histogram(self.traj[0],bins=bins,segment=segment,delta_x=delta_x,norm=norm,cumul=cumul,plot=False)
+        if cluster==None and node==None:
+            if self.num_particles==1:
+                return pyn_math.histogram(self.traj,bins=bins,segment=segment,delta_x=delta_x,norm=norm,cumul=cumul,plot=False)
+            else:
+                return pyn_math.histogram(self.traj[0],bins=bins,segment=segment,delta_x=delta_x,norm=norm,cumul=cumul,plot=False)
+
+        if cluster!=None:
+
+            if self.num_particles==1:
+                
+                if self.__type_clusters__=='berezovska2012':
+
+                    traj_inp=[]
+                    tw=(self.num_frames-len(self.traj_clusters))/2
+                    for ii in range(len(self.traj_clusters)):
+                        if (self.traj_clusters[ii]==cluster):
+                            traj_inp.append(self.traj[ii+tw])
+
+                return pyn_math.histogram(traj_inp,bins=bins,segment=segment,delta_x=delta_x,norm=norm,cumul=cumul,plot=False)
+
+            else:
+                print 'Not included yet'
+                pass
+
+        if node!=None:
+
+            print 'Not included yet'
+            pass
 
     def life_time(self,traj=None,state=None,segment=None,mean=False,norm=False,verbose=False):
 
@@ -217,7 +243,7 @@ class kinetic_1D_analysis():
 
         fpt_mean=ftrajs.aux.fpt_dist(opt_norm,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, \
                                                         from_state,from_segment,to_state,to_segment, \
-                                                        traj_inp,self.num_frames,self.num_particles,self.dimensions,\
+                                                        traj_inp,traj_inp.shape[0],traj_inp.shape[1],traj_inp.shape[2],\
                                                         from_num_states,to_num_states)
 
         fpt_dist=ccopy.deepcopy(ftrajs.aux.distrib)
@@ -522,52 +548,30 @@ class kinetic_1D_analysis():
              
             self.traj_clusters=array(self.traj_clusters,order="Fortran")
 
+        self.__type_clusters__='berezovska2012'
 
 
-    def fpt_rao(self,traj=None,target=0,norm=False):
-        distrib={}
-        ant=traj[-1]
-        counter=0
-        for ii in range(1,len(traj)):
-            act=traj[-(ii+1)]
-            if ant==target:
-                counter=0
-            counter+=1
-            if act!=target:
-                try:
-                    distrib[counter]+=1
-                except:
-                    distrib[counter]=1
-            ant=act
-        xx=distrib.keys()
-        yy=distrib.values()
-        if norm:
-            lll=sum(yy[:])
-            for ii in range(len(yy)):
-                yy[ii]=(yy[ii]*1.0)/(lll*1.0)
-        return xx,yy
-
-    def rao(self,traj=None,window=None,separators=None):
-
-        if traj==None or window==None or separators==None:
-            print 'Not enough input variables.'
-            pass
-         
-        traj_i=traj
-        if type(traj_i) not in [ndarray]:
-            traj_i=array(traj_i,order='Fortran')
-         
-        if len(traj_i.shape)==1:
-            traj_i=array([traj_i],order='Fortran')
-         
-        num_parts=traj_i.shape[0]
-        frames=traj_i.shape[1]
-        salida=ftrajs.aux.rao_stat_1(window,traj,separators,num_parts,frames,len(separators))
-         
-        if num_parts==1:
-            return salida[0]
-        else:
-            return salida
+#    def rao(self,traj=None,window=None,separators=None):
+# 
+#        if traj==None or window==None or separators==None:
+#            print 'Not enough input variables.'
+#            pass
+#         
+#        traj_i=traj
+#        if type(traj_i) not in [ndarray]:
+#            traj_i=array(traj_i,order='Fortran')
+#         
+#        if len(traj_i.shape)==1:
+#            traj_i=array([traj_i],order='Fortran')
+#         
+#        num_parts=traj_i.shape[0]
+#        frames=traj_i.shape[1]
+#        salida=ftrajs.aux.rao_stat_1(window,traj,separators,num_parts,frames,len(separators))
+#         
+#        if num_parts==1:
+#            return salida[0]
+#        else:
+#            return salida
 
 
 

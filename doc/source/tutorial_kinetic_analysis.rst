@@ -676,83 +676,6 @@ But can we define a good kinetic model without going to the original
 2-dimensional trajectory? The next section shows how this can be done.
 
 
-Berezovska2012
-..............
-
-The following method implements the analysis propossed by
-G. Berezovska et al. [CITE] to unveil the conformational macrostates
-kinetically "well defined" (see sections above) and the underlying
-accurate first order kinetic model.
-
-After loading the trajectory traj.oup (section XXX), the method is applied
-choosing at least three parameters:
-
-- windows: The cumulative distribution of the fluctuations around time
-  step t will be studied in a time windos [t-window,t+window]
-
-- bins: The former cumulative distribution has to be built up in a discrete way.
-
-- granularity: The kinetic model obtained will have a degree of
-  resolution up to the granularity parameter used by the Markov Clustering Algorithm.
-
-
-.. sourcecode:: ipython
-
-   In [3]: kin_test.berezovska2012(window=10,granularity=1.2,bins=15,verbose=True)
-   # Network:
-   # 1260 nodes
-   # 49972 links out
-   # 1999700.0 total weight nodes
-   # Number of clusters:  3
-
-The algorithm decomposes the trajectory into 3 clusters. The clusters
- trajectory stores the label of each frame according to this
- decomposition. Be aware of the **different lengths**:
-
-.. sourcecode:: ipython
-
-   In [7]: print len(kin_test.traj), len(kin_test.traj_clusters)
-   999901 999881
-
-The method dismisses the first and last segments of 'window=10' time steps.
-
-First of all, we can have a look to the histogram of the histogram of
-these 3 macro-states.
-
-.. sourcecode:: ipython
-
-   In [8]: traj_c0=[]
-   In [9]: traj_c1=[]
-   In [10]: traj_c2=[]
-   In [11]: for ii in range(tw,kin_test.num_frames-10):
-     .....:         gg=kin_test.traj_clusters[ii-10]
-     .....:     if gg==0:
-     .....:             traj_c0.append(kin_test.traj[ii])
-     .....:     elif gg==1:
-     .....:             traj_c1.append(kin_test.traj[ii])
-     .....:     elif gg==2:
-     .....:             traj_c2.append(kin_test.traj[ii])
-     .....: 
-   In [12]: hxx_c0,hyy_c0=pyn_math.histogram(traj_c0, delta_x=0.250,segment=[-21.0,21.0],norm=False,plot=False)
-   In [13]: hxx_c1,hyy_c1=pyn_math.histogram(traj_c1, delta_x=0.250,segment=[-21.0,21.0],norm=False,plot=False)
-   In [14]: hxx_c2,hyy_c2=pyn_math.histogram(traj_c2, delta_x=0.250,segment=[-21.0,21.0],norm=False,plot=False)
-
-
-.. figure:: ../tutorials/kinetic_1D_analysis/histo_color_ganna.png
-   :align: center
-   :scale: 70 %
-
-
-The kinetic model can be built now. As it was explained in the section XXX, this model is enconded as a network:
-
-.. sourcecode:: ipython
-
-   In [15]: kin_test.kinetic_network(traj='clusters',verbose=True)
-   # Network:
-   # 3 nodes
-   # 9 links out
-   # 999880.0 total weight nodes
-
 And to compare with the kinetic model coming from the 2D trajectory,
 the *Global First Passage Time* distribution to cluster blue, and from
 green or orange to blue, can be computed. With this aim we can create
@@ -785,6 +708,8 @@ a trajectory from a brownian walker over the kinetic network (see XXX).
 .. Warning::
 
    Please cite the following reference if the method is used for a scientific publication: XXXXXXX
+
+
 
 .. nada:
 	Rao's method
