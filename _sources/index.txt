@@ -22,17 +22,17 @@ Tutorials:
 ++++++++++
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
 
    tutorial_molecular_systems.rst
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
 
    tutorial_networks.rst
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
 
    tutorial_kinetic_analysis.rst
 
