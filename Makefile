@@ -1,11 +1,17 @@
 ## Checking compilers and libraries
 
-F2PY=             # f2py command
-FCOMP=            # fortran compiler command
-FTYPE=            # fortran compiler for f2py (not manually given)
-LAPACK_LIBS=      # lapack libraries
-FOPTS=-checkall            # options fortran compiler
-FFLAGS=           # additional fortran flags
+# f2py command
+F2PY=
+# fortran compiler command
+FCOMP=
+# fortran compiler for f2py (not manually given)
+FTYPE=
+# lapack libraries
+LAPACK_LIBS=
+# options fortran compiler (-checkall, -fast, ..)
+FOPTS=
+# additional fortran flags
+FFLAGS=
 
 
 # Detecting 32 or 64 bits

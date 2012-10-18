@@ -544,6 +544,8 @@ different behaviors (in the next section some help can be found).
 Accurate kinetic decomposition
 ++++++++++++++++++++++++++++++
 
+The wrong description will change with the saving frequency, the good one no.
+
 We have study along the tutorial a dynamical system which, according
 to what was previously computed: we have 3 clusters with strange life
 time distributions at short times, with strange first passage times,
@@ -593,69 +595,229 @@ transitions, they were just an artifact.
 With these three well defined clusters we can have a look now to the
 kinetic magnitudes previously computed for the wrong model.
 
+.. sourcecode:: ipython
+
+   In [11]: original_clusters=[]
+
+   In [12]: for ii in traj:
+      ....:         if (ii[0]<-5.50):
+      ....:             original_clusters.append(0)
+      ....:     elif (ii[1]>5.50):
+      ....:             original_clusters.append(2)
+      ....:     else:
+      ....:             original_clusters.append(1)
+      ....: 
+
+   In [16]: kin_test.traj_clusters=original_clusters
+
+   In [17]: kin_test.kinetic_network(traj='clusters',verbose=True)
+   # Network:
+   # 3 nodes
+   # 7 links out
+   # 9999000.0 total weight nodes
+
+.. sourcecode:: ipython
+
+   In [59]: ltx_1,lty_1=kin_test.life_time(traj='clusters',state=1,norm=False,verbose=True)
+   # Mean life time: 4919.53658537 frames.
+
+   In [60]: ltx_2,lty_2=kin_test.life_time(traj='clusters',state=2,norm=False,verbose=True)
+   # Mean life time: 1247.09804915 frames.
+
+Long life times comparable with long traj.
+
+.. sourcecode:: ipython
+
+   In [78]: fptx2,fpty2=kin_test.first_passage_time(traj='clusters',to_state=2,norm=False,verbose=True)
+   # Mean first passage time: 3123.39159882 frames.
+
+   In [79]: fptx02,fpty02=kin_test.first_passage_time(traj='clusters',from_state=0,to_state=2,norm=False,verbose=True)
+   # Mean first passage time: 995.111802212 frames.
+
+   In [80]: fptx12,fpty12=kin_test.first_passage_time(traj='clusters',from_state=1,to_state=2,norm=False,verbose=True)
+   # Mean first passage time: 5863.2847721 frames.
+
+
+.. figure:: ../tutorials/kinetic_1D_analysis/fpt_dist_good.png
+   :align: center
+   :scale: 70 %
+
+The order is different. I have to writte before that the kinetics was
+absurdo. 0 to 2 was faster than 1 to 2 even with a barrier higher. It
+is not possible since it has to go through 1. The times are also different.
+
+Having an apparantly exponential behavior it is not saying that our kinetics is ok.
+
+.. figure:: ../tutorials/kinetic_1D_analysis/fpt_dist_good_model.png
+   :align: center
+   :scale: 70 %
+
+
+First committed_passage_time:
+
+.. sourcecode:: ipython
+
+   In [136]: fcptx012,fcpty012=kin_test.first_committed_passage_time(traj='clusters',states=[0,1,2],commitment=[True,True,True],norm=False,verbose=True)
+   # Mean first passage time: 0.0 frames.
+
+   In [137]: fcptx0no12,fcpty0no12=kin_test.first_committed_passage_time(traj='clusters',states=[0,1,2],commitment=[True,False,True],norm=False,verbose=True)
+   # Mean first passage time: 995.111802212 frames.
+
+
+.. sourcecode:: ipython
+
+   In [138]: tt02x,tt02y=kin_test.trip_time(traj='clusters',from_state=0,to_state=2,verbose=True)
+   # Mean first passage time: 1.0 frames.
+
+
 
 
 But can we define a good kinetic model without going to the original
 2-dimensional trajectory? The next section shows how this can be done.
 
 
-Ganna2012
-.........
+Berezovska2012
+..............
 
 The following method implements the analysis propossed by
 G. Berezovska et al. [CITE] to unveil the conformational macrostates
-kinetically "well defined" and the underlying accurate first order
-kinetic model.
+kinetically "well defined" (see sections above) and the underlying
+accurate first order kinetic model.
+
+After loading the trajectory traj.oup (section XXX), the method is applied
+choosing at least three parameters:
+
+- windows: The cumulative distribution of the fluctuations around time
+  step t will be studied in a time windos [t-window,t+window]
+
+- bins: The former cumulative distribution has to be built up in a discrete way.
+
+- granularity: The kinetic model obtained will have a degree of
+  resolution up to the granularity parameter used by the Markov Clustering Algorithm.
+
 
 .. sourcecode:: ipython
 
-   In [3]: kin_test.Ganna2012(window=25,granularity=1.2,bins=20,verbose=True)
+   In [3]: kin_test.berezovska2012(window=10,granularity=1.2,bins=15,verbose=True)
    # Network:
    # 1260 nodes
    # 49972 links out
    # 1999700.0 total weight nodes
    # Number of clusters:  3
 
+The algorithm decomposes the trajectory into 3 clusters. The clusters
+ trajectory stores the label of each frame according to this
+ decomposition. Be aware of the **different lengths**:
+
+.. sourcecode:: ipython
+
+   In [7]: print len(kin_test.traj), len(kin_test.traj_clusters)
+   999901 999881
+
+The method dismisses the first and last segments of 'window=10' time steps.
+
+First of all, we can have a look to the histogram of the histogram of
+these 3 macro-states.
+
+.. sourcecode:: ipython
+
+   In [8]: traj_c0=[]
+   In [9]: traj_c1=[]
+   In [10]: traj_c2=[]
+   In [11]: for ii in range(tw,kin_test.num_frames-10):
+     .....:         gg=kin_test.traj_clusters[ii-10]
+     .....:     if gg==0:
+     .....:             traj_c0.append(kin_test.traj[ii])
+     .....:     elif gg==1:
+     .....:             traj_c1.append(kin_test.traj[ii])
+     .....:     elif gg==2:
+     .....:             traj_c2.append(kin_test.traj[ii])
+     .....: 
+   In [12]: hxx_c0,hyy_c0=pyn_math.histogram(traj_c0, delta_x=0.250,segment=[-21.0,21.0],norm=False,plot=False)
+   In [13]: hxx_c1,hyy_c1=pyn_math.histogram(traj_c1, delta_x=0.250,segment=[-21.0,21.0],norm=False,plot=False)
+   In [14]: hxx_c2,hyy_c2=pyn_math.histogram(traj_c2, delta_x=0.250,segment=[-21.0,21.0],norm=False,plot=False)
+
+
+.. figure:: ../tutorials/kinetic_1D_analysis/histo_color_ganna.png
+   :align: center
+   :scale: 70 %
+
+
+The kinetic model can be built now. As it was explained in the section XXX, this model is enconded as a network:
+
+.. sourcecode:: ipython
+
+   In [15]: kin_test.kinetic_network(traj='clusters',verbose=True)
+   # Network:
+   # 3 nodes
+   # 9 links out
+   # 999880.0 total weight nodes
+
+And to compare with the kinetic model coming from the 2D trajectory,
+the *Global First Passage Time* distribution to cluster blue, and from
+green or orange to blue, can be computed. With this aim we can create
+a trajectory from a brownian walker over the kinetic network (see XXX).
+
+.. sourcecode:: ipython
+
+   In [16]: bw_traj=kin_test.network_clusters.brownian_walker(origin=0,length=9999000)
+   In [17]: bw=kinetic_1D_analysis(bw_traj,verbose=False)
+
+.. sourcecode:: ipython
+
+   In [18]: fptbwx2, fptbwy2= bw.first_passage_time(to_state=0,norm=False,verbose=True)
+   # Mean first passage time: 2128.84780171 frames.
+
+   In [19]: fptbwx02,fptbwy02=bw.first_passage_time(from_state=1,to_state=0,norm=False,verbose=True)
+   # Mean first passage time: 1060.31735473 frames.
+
+   In [20]: fptbwx12,fptbwy12=bw.first_passage_time(from_state=2,to_state=0,norm=False,verbose=True)
+   # Mean first passage time: 3571.33044323 frames.
+
+
+.. figure:: ../tutorials/kinetic_1D_analysis/fpt_ganna.png
+   :align: center
+   :scale: 70 %
+
+
 .. seealso:: The section XXX for the details of this function.
-
-
-
 
 .. Warning::
 
    Please cite the following reference if the method is used for a scientific publication: XXXXXXX
 
-Rao's method
-............
-
-.. sourcecode:: ipython
-
-   In [2]: traj_rao=rao(traj1D,window=25,separators=[-6.00,-2.40])
-    
-   In [3]: net,traj_nodes=kinetic_network(traj_rao,ranges=[[0,51],[0,51],[0,51]],traj_out=True,verbose=False)
-    
-   In [4]: len(traj_nodes[0])
-   Out[4]: 9998951
-    
-   In [5]: net.node[0].label
-   Out[5]: '[ 0  0 51]'
-    
-   In [6]: net.info()
-   # Network:
-   # 754 nodes
-   # 2618 links out
-   # 9998950.0 total weight nodes
-
-   In [7]: net_s=net.symmetrize(verbose=False)
-
-   In [8]: net_s.mcl(granularity=1.2,pruning=True,verbose=True)
-
-   In [9]: traj_mcl_clusts=[[] for ii in range(net_s.num_clusters)]
-    
-   In [10]: for ii in range(len(traj_nodes[0])):
-      ....:       cluster=net_s.node[traj_nodes[0][ii]].cluster
-      ....:       traj_mcl_clusts[cluster].append(traj1D[tw+ii])
-      ....: 
+.. nada:
+	Rao's method
+	............
+	 
+	.. sourcecode:: ipython
+	 
+	   In [2]: traj_rao=rao(traj1D,window=25,separators=[-6.00,-2.40])
+	    
+	   In [3]: net,traj_nodes=kinetic_network(traj_rao,ranges=[[0,51],[0,51],[0,51]],traj_out=True,verbose=False)
+	    
+	   In [4]: len(traj_nodes[0])
+	   Out[4]: 9998951
+	    
+	   In [5]: net.node[0].label
+	   Out[5]: '[ 0	 0 51]'
+	    
+	   In [6]: net.info()
+	   # Network:
+	   # 754 nodes
+	   # 2618 links out
+	   # 9998950.0 total weight nodes
+	 
+	   In [7]: net_s=net.symmetrize(verbose=False)
+	 
+	   In [8]: net_s.mcl(granularity=1.2,pruning=True,verbose=True)
+	 
+	   In [9]: traj_mcl_clusts=[[] for ii in range(net_s.num_clusters)]
+	    
+	   In [10]: for ii in range(len(traj_nodes[0])):
+	      ....:	  cluster=net_s.node[traj_nodes[0][ii]].cluster
+	      ....:	  traj_mcl_clusts[cluster].append(traj1D[tw+ii])
+	      ....: 
 
 
 

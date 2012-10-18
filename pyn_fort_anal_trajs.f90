@@ -1053,7 +1053,7 @@ subroutine fcpt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
            END IF
 
            listo=.false.
-           IF ((entro==.true.).and.(inside_to.eqv..false.)) THEN
+           IF ((entro.eqv..true.).and.(inside_to.eqv..false.)) THEN
               IF (opt_segments==1) THEN
                  !IF ((from_segment(1)<pos).and.(pos<from_segment(2))) THEN
                  !   !!...
@@ -1064,7 +1064,7 @@ subroutine fcpt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
                        listo=.true.
                     END IF
                  END IF
-                 IF (listo==.false.) THEN
+                 IF (listo.eqv..false.) THEN
                     IF ((pos==states(toca)).and.(commitment(toca)==1)) THEN
                        visited(toca)=1
                        toca=toca-1
@@ -1083,13 +1083,13 @@ subroutine fcpt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
                        listo=.true.
                     END IF
                  END IF
-                 IF (listo==.false.) THEN
+                 IF (listo.eqv..false.) THEN
                     IF (pos/=states(toca+1).and.commitment(toca+1)==0) THEN
                        visited(1)=0   ! [1,3,1,2] with [1,0,2][T,F,T]
                        listo=.true.
                     END IF
                  END IF
-                 IF (listo==.false.) THEN
+                 IF (listo.eqv..false.) THEN
                     contador=0
                     visited=0
                     touch=.false.
@@ -1102,7 +1102,7 @@ subroutine fcpt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
               touch=.true.
            END IF
            IF (opt_noreturn==1) THEN
-              IF ((touch==.true.).and.(pos/=states(1))) THEN
+              IF ((touch.eqv..true.).and.(pos/=states(1))) THEN
                  listo=.false.
                  contador=0
                  visited=0
@@ -1111,7 +1111,7 @@ subroutine fcpt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
               END IF
            END IF
 
-           IF (listo==.true.) THEN
+           IF (listo.eqv..true.) THEN
               contador=contador+1
               IF (visited(1)==1) THEN
                  HECHO=.true.
@@ -1130,7 +1130,7 @@ subroutine fcpt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
                        END IF
                     END DO
                  END IF
-                 IF (HECHO==.true.) THEN
+                 IF (HECHO.eqv..true.) THEN
                     IF (contador>gg) THEN
                        ALLOCATE(distrib_aux(gg))
                        distrib_aux(:)=distrib(:)
@@ -1268,7 +1268,7 @@ subroutine ctt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
            END IF
 
            listo=.false.
-           IF ((entro==.true.).and.(inside_to.eqv..false.)) THEN
+           IF ((entro.eqv..true.).and.(inside_to.eqv..false.)) THEN
               IF (opt_segments==1) THEN
                  !IF ((from_segment(1)<pos).and.(pos<from_segment(2))) THEN
                  !   !!...
@@ -1279,7 +1279,7 @@ subroutine ctt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
                        listo=.true.
                     END IF
                  END IF
-                 IF (listo==.false.) THEN
+                 IF (listo.eqv..false.) THEN
                     IF ((pos==states(toca)).and.(commitment(toca)==1)) THEN
                        visited(toca)=1
                        toca=toca-1
@@ -1298,13 +1298,13 @@ subroutine ctt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
                        listo=.true.
                     END IF
                  END IF
-                 IF (listo==.false.) THEN
+                 IF (listo.eqv..false.) THEN
                     IF (pos/=states(toca+1).and.commitment(toca+1)==0) THEN
                        visited(1)=0   ! [1,3,1,2] with [1,0,2][T,F,T]
                        listo=.true.
                     END IF
                  END IF
-                 IF (listo==.false.) THEN
+                 IF (listo.eqv..false.) THEN
                     contador=0
                     visited=0
                     touch=.false.
@@ -1317,7 +1317,7 @@ subroutine ctt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
               touch=.true.
            END IF
            IF (opt_noreturn==1) THEN
-              IF ((touch==.true.).and.(pos/=states(1))) THEN
+              IF ((touch.eqv..true.).and.(pos/=states(1))) THEN
                  listo=.false.
                  contador=0
                  visited=0
@@ -1326,9 +1326,9 @@ subroutine ctt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
               END IF
            END IF
 
-           IF (listo==.true.) THEN
+           IF (listo.eqv..true.) THEN
               contador=contador+1
-              IF ((visited(1)==1).and.(last_in==.false.)) THEN
+              IF ((visited(1)==1).and.(last_in.eqv..false.)) THEN
                  HECHO=.true.
                  IF (opt_states==1) THEN
                     DO kk=num_states,1,-1
@@ -1345,7 +1345,7 @@ subroutine ctt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
                        END IF
                     END DO
                  END IF
-                 IF (HECHO==.true.) THEN
+                 IF (HECHO.eqv..true.) THEN
                     IF (contador>gg) THEN
                        ALLOCATE(distrib_aux(gg))
                        distrib_aux(:)=distrib(:)

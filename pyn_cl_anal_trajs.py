@@ -482,7 +482,7 @@ class kinetic_1D_analysis():
 
 
 
-    def Ganna2012(self,window=None,ksi=0.5,granularity=1.2,bins=20,segment=None,delta_x=None,clusters=True,verbose=False):
+    def berezovska2012(self,window=None,ksi=0.5,granularity=1.2,bins=20,segment=None,delta_x=None,clusters=True,verbose=False):
 
         if segment==None:
             opt_range=0
@@ -499,11 +499,9 @@ class kinetic_1D_analysis():
             delta_x=1.0 # Its given by gannas function
             opt=2
 
-        if self.num_particles==1:
-            self.traj_nodes=ftrajs.aux.ganna(opt_range,opt,bins,mmn,mmx,delta_x,array([self.traj],order='Fortran'),ksi,window,self.num_particles,self.num_frames)[0]
-        else:
-            self.traj_nodes=ftrajs.aux.ganna(opt_range,opt,bins,mmn,mmx,delta_x,self.traj,ksi,window,self.num_particles,self.num_frames)
 
+        traj_inp=standard_traj(self.traj,num_parts=self.num_particles,dims=self.dimensions)
+        self.traj_nodes=ftrajs.aux.ganna(opt_range,opt,bins,mmn,mmx,delta_x,traj_inp,ksi,window,self.num_particles,self.num_frames)
 
         self.network=kinetic_network(self.traj_nodes,ranges=[self.traj_nodes.min(),self.traj_nodes.max()],verbose=False)
 
