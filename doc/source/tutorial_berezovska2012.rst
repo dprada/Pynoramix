@@ -3,9 +3,9 @@ Berezovska2012
 
 The set of python libraries **Pynoramix** allows us to analyse 1-D
 trajectories as it has been propossed by G. Berezovska et al. in
-[CITE]. This method unveils the conformational macrostates kinetically
-"well defined" (see sections above) and the underlying accurate first
-order kinetic model..
+[`Accepted in JChemPhys <http://arxiv.org/abs/1208.3584>`_]. This method unveils the conformational macrostates kinetically
+"well defined" (see :ref:`accurate_kin_dec`) and the underlying accurate first
+order kinetic model.
 
 The following tutorial shows how this analysis can be easily done with
 Pynoramix.
@@ -288,10 +288,11 @@ Now as we did with the original trajectory:
    :align: center
    :scale: 70 %
 
+.. note:: The figures were obtained with a trajectory x10 larger for a better statistics.
 
-
-.. seealso:: The section XXX for the details of this function.
+.. seealso:: :ref:`tutorial_kin_anal` for further details on attributes and methods related with this analysis. 
 
 .. Warning::
 
    Please cite the following reference if the method is used for a scientific publication: XXXXXXX
+

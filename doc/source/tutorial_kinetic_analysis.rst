@@ -1,3 +1,5 @@
+.. _tutorial_kin_anal:
+
 Tutorial Kinetic Analysis
 *************************
 
@@ -540,6 +542,7 @@ different behaviors (in the next section some help can be found).
 
 
 
+.. _accurate_kin_dec:
 
 Accurate kinetic decomposition
 ++++++++++++++++++++++++++++++
