@@ -14,8 +14,18 @@ FOPTS=
 FFLAGS=
 
 
+# Detecting platform (Linux,Mac,Cygwin)
+PLATF_TYPE=$(shell uname -s)
 # Detecting 32 or 64 bits
 MACHINE_TYPE=$(shell uname -m)
+
+ifeq ($(findstring,$(PLATF_TYPE),Darwin),Darwin)
+PLATF_TYPE=Mac
+endif
+ifeq ($(PLATF_TYPE),Linux)
+PLATF_TYPE=Linux
+endif
+
 
 # Detecting f2py if "F2PY= "
 ifeq ($(F2PY),)
@@ -113,9 +123,9 @@ CHECK=0
 default: options prexdr io_formats/libxdrfile.so pref90 f90_libraries fin
 
 options:
-	@ echo "-----------------------------------"
-	@ echo "# COMPILING WITH:"
-	@ echo "-----------------------------------"
+	@ echo "--------------------------------------------"
+	@ echo "# COMPILING in" $(PLATF_TYPE)"-"$(MACHINE_TYPE) "WITH:"
+	@ echo "--------------------------------------------"
 	@ echo "Fortran Compiler:" $(FCOMP) "("$(FTYPE)")"
 	@ echo "Fortran 2 Python:" $(F2PY)
 	@ echo "Lapack libraries:" $(LAPACK_LIBS)
@@ -123,21 +133,21 @@ options:
 	@ if [ -e INSTALL.log ]; then rm INSTALL.log; fi
 
 pref90:
-	@ echo "-----------------------------------"
+	@ echo "--------------------------------------------"
 	@ echo "# COMPILING FORTRAN LIBRARIES:"
 
 prexdr:
-	@ echo "-----------------------------------"
+	@ echo "--------------------------------------------"
 	@ echo "# COMPILING XDR LIBRARY:"
 
 fin:
-	@ echo "-----------------------------------"
+	@ echo "--------------------------------------------"
 	@ echo "# Check INSTALL.log for further info"
-	@ echo "-----------------------------------"
+	@ echo "--------------------------------------------"
 
 io_formats/libxdrfile.so: xdrfile-1.1.1.tar.gz
 	@ echo '>>>>>> Installing the xdr library...' > INSTALL.log
-	@ tar -zxvf xdrfile-1.1.1.tar.gz 1>/dev/null
+	@ tar -zxvf xdrfile-1.1.1.tar.gz 1>/dev/null 2>/dev/null
 	@ cd xdrfile-1.1.1/ ; ./configure --prefix=$(PWD)/xdrfiles --enable-fortran F77=$(FCOMP) --enable-shared $(SOUT)
 	@ cd xdrfile-1.1.1/ ; make install $(SOUT)
 	@ cd xdrfile-1.1.1/ ; make test $(SOUT)
