@@ -148,7 +148,7 @@ fin:
 io_formats/libxdrfile.so: xdrfile-1.1.1.tar.gz
 	@ echo '>>>>>> Installing the xdr library...' > INSTALL.log
 	@ tar -zxvf xdrfile-1.1.1.tar.gz 1>/dev/null 2>/dev/null
-	@ cd xdrfile-1.1.1/ ; ./configure --prefix=$(PWD)/xdrfiles --enable-fortran F77=$(FCOMP) --enable-shared $(SOUT)
+	@ cd xdrfile-1.1.1/ ; echo $(PWD); ./configure --prefix=$(PWD)/xdrfiles --enable-fortran F77=$(FCOMP) --enable-shared $(SOUT)
 	@ cd xdrfile-1.1.1/ ; make install $(SOUT)
 	@ cd xdrfile-1.1.1/ ; make test $(SOUT)
 	@ rm -r xdrfile-1.1.1
