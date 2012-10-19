@@ -26,6 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="Pynoramix 0.1 documentation" href="index.html" />
+    <link rel="next" title="Berezovska2012" href="tutorial_berezovska2012.html" />
     <link rel="prev" title="Tutorial Networks" href="tutorial_networks.html" /> 
   </head>
   <body>
@@ -43,6 +44,9 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial_berezovska2012.html" title="Berezovska2012"
+             accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="tutorial_networks.html" title="Tutorial Networks"
              accesskey="P">previous</a> |</li>
@@ -68,10 +72,7 @@
 <li><a class="reference internal" href="#first-committed-passage-time-distribution">First Committed Passage Time distribution</a></li>
 <li><a class="reference internal" href="#trip-time-distribution">Trip Time distribution</a></li>
 <li><a class="reference internal" href="#committed-trip-time-distribution">Committed Trip Time distribution</a></li>
-<li><a class="reference internal" href="#accurate-kinetic-decomposition">Accurate kinetic decomposition</a><ul>
-<li><a class="reference internal" href="#berezovska2012">Berezovska2012</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#accurate-kinetic-decomposition">Accurate kinetic decomposition</a></li>
 </ul>
 </li>
 </ul>
@@ -81,6 +82,9 @@
   <h4>Previous topic</h4>
   <p class="topless"><a href="tutorial_networks.html"
                         title="previous chapter">Tutorial Networks</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial_berezovska2012.html"
+                        title="next chapter">Berezovska2012</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/tutorial_kinetic_analysis.txt"
@@ -108,7 +112,7 @@
           <div class="body">
             
   <div class="section" id="tutorial-kinetic-analysis">
-<h1>Tutorial Kinetic Analysis<a class="headerlink" href="#tutorial-kinetic-analysis" title="Permalink to this headline">¶</a></h1>
+<span id="tutorial-kin-anal"></span><h1>Tutorial Kinetic Analysis<a class="headerlink" href="#tutorial-kinetic-analysis" title="Permalink to this headline">¶</a></h1>
 <p>First of all, lets load Pynoramix in our script or in a ipython session:</p>
 <div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [1]: </span><span class="kn">from</span> <span class="nn">pynoramix_beta</span> <span class="kn">import</span> <span class="o">*</span>
 </pre></div>
@@ -525,7 +529,7 @@ transitions when they briefly visited cluster 1.</p>
 different behaviors (in the next section some help can be found).</p>
 </div>
 <div class="section" id="accurate-kinetic-decomposition">
-<h3>Accurate kinetic decomposition<a class="headerlink" href="#accurate-kinetic-decomposition" title="Permalink to this headline">¶</a></h3>
+<span id="accurate-kin-dec"></span><h3>Accurate kinetic decomposition<a class="headerlink" href="#accurate-kinetic-decomposition" title="Permalink to this headline">¶</a></h3>
 <p>The wrong description will change with the saving frequency, the good one no.</p>
 <p>We have study along the tutorial a dynamical system which, according
 to what was previously computed: we have 3 clusters with strange life
@@ -623,69 +627,6 @@ is not possible since it has to go through 1. The times are also different.</p>
 </div>
 <p>But can we define a good kinetic model without going to the original
 2-dimensional trajectory? The next section shows how this can be done.</p>
-<div class="section" id="berezovska2012">
-<h4>Berezovska2012<a class="headerlink" href="#berezovska2012" title="Permalink to this headline">¶</a></h4>
-<p>The following method implements the analysis propossed by
-G. Berezovska et al. [CITE] to unveil the conformational macrostates
-kinetically &#8220;well defined&#8221; (see sections above) and the underlying
-accurate first order kinetic model.</p>
-<p>After loading the trajectory traj.oup (section XXX), the method is applied
-choosing at least three parameters:</p>
-<ul class="simple">
-<li>windows: The cumulative distribution of the fluctuations around time
-step t will be studied in a time windos [t-window,t+window]</li>
-<li>bins: The former cumulative distribution has to be built up in a discrete way.</li>
-<li>granularity: The kinetic model obtained will have a degree of
-resolution up to the granularity parameter used by the Markov Clustering Algorithm.</li>
-</ul>
-<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [3]: </span><span class="n">kin_test</span><span class="o">.</span><span class="n">berezovska2012</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">granularity</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span><span class="n">bins</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="c"># Network:</span>
-<span class="c"># 1260 nodes</span>
-<span class="c"># 49972 links out</span>
-<span class="c"># 1999700.0 total weight nodes</span>
-<span class="c"># Number of clusters:  3</span>
-</pre></div>
-</div>
-<dl class="docutils">
-<dt>The algorithm decomposes the trajectory into 3 clusters. The clusters</dt>
-<dd>trajectory stores the label of each frame according to this
-decomposition. Be aware of the <strong>different lengths</strong>:</dd>
-</dl>
-<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [7]: </span><span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">kin_test</span><span class="o">.</span><span class="n">traj</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">kin_test</span><span class="o">.</span><span class="n">traj_clusters</span><span class="p">)</span>
-<span class="go">999901 999881</span>
-</pre></div>
-</div>
-<p>The method dismisses the first and last segments of &#8216;window=10&#8217; time steps.</p>
-<p>First of all, we can have a look to the histogram of the histogram of
-these 3 macro-states.</p>
-<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [8]: </span><span class="n">traj_c0</span><span class="o">=</span><span class="p">[]</span>
-<span class="gp">In [9]: </span><span class="n">traj_c1</span><span class="o">=</span><span class="p">[]</span>
-<span class="gp">In [10]: </span><span class="n">traj_c2</span><span class="o">=</span><span class="p">[]</span>
-<span class="gp">In [11]: </span><span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tw</span><span class="p">,</span><span class="n">kin_test</span><span class="o">.</span><span class="n">num_frames</span><span class="o">-</span><span class="mi">10</span><span class="p">):</span>
-<span class="go">  .....:         gg=kin_test.traj_clusters[ii-10]</span>
-<span class="go">  .....:     if gg==0:</span>
-<span class="go">  .....:             traj_c0.append(kin_test.traj[ii])</span>
-<span class="go">  .....:     elif gg==1:</span>
-<span class="go">  .....:             traj_c1.append(kin_test.traj[ii])</span>
-<span class="go">  .....:     elif gg==2:</span>
-<span class="go">  .....:             traj_c2.append(kin_test.traj[ii])</span>
-<span class="go">  .....:</span>
-<span class="gp">In [12]: </span><span class="n">hxx_c0</span><span class="p">,</span><span class="n">hyy_c0</span><span class="o">=</span><span class="n">pyn_math</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">traj_c0</span><span class="p">,</span> <span class="n">delta_x</span><span class="o">=</span><span class="mf">0.250</span><span class="p">,</span><span class="n">segment</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">21.0</span><span class="p">,</span><span class="mf">21.0</span><span class="p">],</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">plot</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="gp">In [13]: </span><span class="n">hxx_c1</span><span class="p">,</span><span class="n">hyy_c1</span><span class="o">=</span><span class="n">pyn_math</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">traj_c1</span><span class="p">,</span> <span class="n">delta_x</span><span class="o">=</span><span class="mf">0.250</span><span class="p">,</span><span class="n">segment</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">21.0</span><span class="p">,</span><span class="mf">21.0</span><span class="p">],</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">plot</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="gp">In [14]: </span><span class="n">hxx_c2</span><span class="p">,</span><span class="n">hyy_c2</span><span class="o">=</span><span class="n">pyn_math</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">traj_c2</span><span class="p">,</span> <span class="n">delta_x</span><span class="o">=</span><span class="mf">0.250</span><span class="p">,</span><span class="n">segment</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">21.0</span><span class="p">,</span><span class="mf">21.0</span><span class="p">],</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">plot</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="figure align-center">
-<a class="reference internal image-reference" href="_images/histo_color_ganna.png"><img alt="_images/histo_color_ganna.png" src="_images/histo_color_ganna.png" style="width: 568.4px; height: 428.4px;" /></a>
-</div>
-<p>The kinetic model can be built now. As it was explained in the section XXX, this model is enconded as a network:</p>
-<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [15]: </span><span class="n">kin_test</span><span class="o">.</span><span class="n">kinetic_network</span><span class="p">(</span><span class="n">traj</span><span class="o">=</span><span class="s">&#39;clusters&#39;</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="c"># Network:</span>
-<span class="c"># 3 nodes</span>
-<span class="c"># 9 links out</span>
-<span class="c"># 999880.0 total weight nodes</span>
-</pre></div>
-</div>
 <p>And to compare with the kinetic model coming from the 2D trajectory,
 the <em>Global First Passage Time</em> distribution to cluster blue, and from
 green or orange to blue, can be computed. With this aim we can create
@@ -718,7 +659,6 @@ a trajectory from a brownian walker over the kinetic network (see XXX).</p>
 </div>
 </div>
 </div>
-</div>
 
 
           </div>
@@ -735,6 +675,9 @@ a trajectory from a brownian walker over the kinetic network (see XXX).</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial_berezovska2012.html" title="Berezovska2012"
+             >next</a> |</li>
         <li class="right" >
           <a href="tutorial_networks.html" title="Tutorial Networks"
              >previous</a> |</li>
