@@ -26,7 +26,6 @@ ifeq ($(PLATF_TYPE),Linux)
 PLATF_TYPE=Linux
 endif
 
-
 # Detecting f2py if "F2PY= "
 ifeq ($(F2PY),)
 F2PY_IN=$(shell which f2py 2>/dev/null)
@@ -103,6 +102,12 @@ ifeq ($(FCOMP),gfortran)
 LAPACK_LIBS= -llapack
 endif
 
+# Correction of libxdrfile name:
+lxdrlib = libxdrfile.so.4.0.0
+ifeq ($(PLATF_TYPE),Mac)
+lxdrlib = libxdrfile.4.0.0.dylib
+endif
+
 # Checking everything right
 ifeq ($(FCOMP),)
 $(warning No Fortran compiler detected!)
@@ -154,7 +159,7 @@ io_formats/libxdrfile.so: xdrfile-1.1.1.tar.gz
 	@ rm -r xdrfile-1.1.1
 	@ if grep ': FAILED' INSTALL.log 1>/dev/null ; then echo '> Error: check the file INSTALL.log'; fi
 	@ if ! grep ': FAILED' INSTALL.log 1>/dev/null ; then echo '> io_formats/libxdrfile.so ...   OK';\
-	cp xdrfiles/lib/libxdrfile.so.4.0.0 io_formats/libxdrfile.so; fi # rm -r xdrfiles; fi
+	cp xdrfiles/lib/$(lxdrlib) io_formats/libxdrfile.so; rm -r xdrfiles; fi
 
 f90_libraries: pyn_fort_general.so pyn_water.so pyn_fort_enm.so pyn_fort_net.so pyn_fort_math.so pyn_fort_anal_trajs.so \
 	io_formats/libdcdfile.so io_formats/libbinfile.so io_formats/libcell2box.so
