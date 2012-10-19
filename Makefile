@@ -148,13 +148,13 @@ fin:
 io_formats/libxdrfile.so: xdrfile-1.1.1.tar.gz
 	@ echo '>>>>>> Installing the xdr library...' > INSTALL.log
 	@ tar -zxvf xdrfile-1.1.1.tar.gz 1>/dev/null 2>/dev/null
-	@ cd xdrfile-1.1.1/ ; echo $(PWD); ./configure --prefix=$(PWD)/xdrfiles --enable-fortran F77=$(FCOMP) --enable-shared $(SOUT)
+	@ cd xdrfile-1.1.1/ ; ./configure --prefix=$(PWD)/xdrfiles --enable-fortran F77=$(FCOMP) --enable-shared $(SOUT)
 	@ cd xdrfile-1.1.1/ ; make install $(SOUT)
 	@ cd xdrfile-1.1.1/ ; make test $(SOUT)
 	@ rm -r xdrfile-1.1.1
 	@ if grep ': FAILED' INSTALL.log 1>/dev/null ; then echo '> Error: check the file INSTALL.log'; fi
 	@ if ! grep ': FAILED' INSTALL.log 1>/dev/null ; then echo '> io_formats/libxdrfile.so ...   OK';\
-	cp xdrfiles/lib/libxdrfile.so.4.0.0 io_formats/libxdrfile.so; rm -r xdrfiles; fi
+	cp xdrfiles/lib/libxdrfile.so.4.0.0 io_formats/libxdrfile.so; fi # rm -r xdrfiles; fi
 
 f90_libraries: pyn_fort_general.so pyn_water.so pyn_fort_enm.so pyn_fort_net.so pyn_fort_math.so pyn_fort_anal_trajs.so \
 	io_formats/libdcdfile.so io_formats/libbinfile.so io_formats/libcell2box.so
