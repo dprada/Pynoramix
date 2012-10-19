@@ -19,7 +19,7 @@ PLATF_TYPE=$(shell uname -s)
 # Detecting 32 or 64 bits
 MACHINE_TYPE=$(shell uname -m)
 
-ifeq ($(findstring,$(PLATF_TYPE),Darwin),Darwin)
+ifeq ($(PLATF_TYPE),Darwin)
 PLATF_TYPE=Mac
 endif
 ifeq ($(PLATF_TYPE),Linux)
