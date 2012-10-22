@@ -220,59 +220,36 @@ MODULE stats
   END SUBROUTINE histograma_2d
 
 
-  SUBROUTINE binning (opt_prec,opt_range,opt,idatos,ibins,imin_x,imax_x,idelta_x,iprec,l,tray_bins)
+  SUBROUTINE binning (opt_range,opt_delta_x,idatos,ibins,imin_x,imax_x,idelta_x,l,tray_bins)
     
     implicit none
-    INTEGER,INTENT(IN)::opt_prec,opt_range,opt,l,ibins
+    INTEGER,INTENT(IN)::opt_range,opt_delta_x,l,ibins
     DOUBLE PRECISION,DIMENSION(l),INTENT(IN)::idatos
-    DOUBLE PRECISION,INTENT(IN)::idelta_x,imax_x,imin_x,iprec
+    DOUBLE PRECISION,INTENT(IN)::idelta_x,imax_x,imin_x
     INTEGER,DIMENSION(l),INTENT(OUT)::tray_bins
 
     DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::frecuencias
-    INTEGER::i,j,k,prec,aux,bins
+    INTEGER::i,j,k,aux,bins,tt
     DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::datos
     DOUBLE PRECISION::max,min,delta_x,total,sobra
     
     tray_bins=0
     bins=ibins
 
+
     ALLOCATE(datos(l))
     datos=0.0d0
 
-    !! Por un problema que hay con python 2.6 corrijo la precision
-    IF (opt_prec==1) THEN
-       prec=nint(1.0/iprec)
-       datos=0.0d0
-       DO i=1,l
-          aux=nint(idatos(i)*prec)
-          datos(i)=(aux*1.0d0)/(prec*1.0d0)
-       END DO
-       max=(nint(imax_x*prec)*1.0d0)/(prec*1.0d0)
-       min=(nint(imin_x*prec)*1.0d0)/(prec*1.0d0)
-       delta_x=idelta_x
-    ELSE
-       datos=idatos
-       max=imax_x
-       min=imin_x
-       delta_x=idelta_x
-    END IF
-    
     IF (opt_range==0) THEN
-       IF (opt==1) THEN
+       max=MAXVAL(idatos(:),DIM=1)
+       min=MINVAL(idatos(:),DIM=1)
+       IF (opt_delta_x==1) THEN
           bins=CEILING((max-min)/delta_x)
-          sobra=(bins*delta_x-(max-min))/2.0d0
-          bins=bins+1
-          min=min-sobra
-          max=max+sobra
        ELSE
           delta_x=(max-min)/(bins*1.0d0)
-          sobra=delta_x/2.0d0
-          min=min-sobra
-          max=max+sobra
-          bins=bins+1
        END IF
     ELSE
-       IF (opt==1) THEN
+       IF (opt_delta_x==1) THEN
           bins=CEILING((max-min)/delta_x)
        ELSE
           delta_x=(max-min)/(bins*1.0d0)
@@ -280,12 +257,9 @@ MODULE stats
     END IF
     
     DO k=1,l
-       DO j=bins,1,-1
-          IF (((min+(j-1)*delta_x)<=datos(k)).and.(datos(k)<(min+j*delta_x))) THEN
-             tray_bins(k)=j-1
-             EXIT
-          END IF
-       END DO
+       tt=CEILING((idatos(k)-min)/delta_x) 
+       IF (tt==0) tt=1
+       tray_bins(k)=tt-1
     END DO
     
     
@@ -303,14 +277,14 @@ MODULE stats
   END SUBROUTINE binning
   
 
-  SUBROUTINE binning_x (opt_range,opt,ibins,imin_x,imax_x,idelta_x,iprec,delta_x)
+  SUBROUTINE binning_x (opt_range,opt,ibins,imin_x,imax_x,idelta_x,delta_x)
     
     implicit none
     INTEGER,INTENT(IN)::opt_range,opt,ibins
-    DOUBLE PRECISION,INTENT(IN)::idelta_x,imax_x,imin_x,iprec
+    DOUBLE PRECISION,INTENT(IN)::idelta_x,imax_x,imin_x
 
     DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::frecuencias
-    INTEGER::i,j,k,prec,aux,bins
+    INTEGER::i,j,k,aux,bins
     DOUBLE PRECISION::max,min,total,sobra
     DOUBLE PRECISION,INTENT(OUT)::delta_x
     

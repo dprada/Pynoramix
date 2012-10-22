@@ -18,8 +18,7 @@ class cl_io():
         self.reset_H2()
         pass
     
-    def reset_H1(self):
-        
+    def reset_H1(self):        
         self.v['num_nodes']=0
         self.v['with_index']=False
         self.v['directed']=False
@@ -1231,6 +1230,23 @@ class network():
 # 
 #        pass
 
+def build_ranges(traj):
+
+    dims=traj.shape[2]
+    num_parts=traj.shape[1]
+    ranges=zeros((dims,2),dtype=int,order='Fortran')
+    for jj in range(dims):
+        ranges[jj,0]=traj[:,0,jj].min()
+        ranges[jj,1]=traj[:,0,jj].max()
+    for ii in range(1,num_parts):
+        for jj in range(dims):
+            posmin=traj[:,ii,jj].min()
+            posmax=traj[:,ii,jj].max()
+            if (posmin<ranges[jj,0]): ranges[jj,0]=posmin
+            if (posmax>ranges[jj,1]): ranges[jj,1]=posmax
+
+    return ranges
+
 def standard_ranges(ranges):
 
     if type(ranges) not in [ndarray]:
@@ -1254,12 +1270,7 @@ def standard_traj(traj,num_parts=None,dims=None):
         num_parts=1
         dims=1
 
-    elif len(traj.shape)==3:
-        num_parts=traj.shape[1]
-        dims=traj.shape[2]
-
-    else:
-
+    elif len(traj.shape)==2:
         if num_parts==None and dims==None:
             print '# Error: num_parts or dims needed'
             pass
@@ -1267,9 +1278,6 @@ def standard_traj(traj,num_parts=None,dims=None):
             dims=1
         elif dims==None:
             num_parts=1
-        else:
-            print '# Error: num_parts or dims needed'
-            pass
 
     if len(traj.shape)==1:
         if num_parts!=1 or dims!=1:

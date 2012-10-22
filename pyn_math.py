@@ -116,30 +116,24 @@ def histogram2d(traj,bins=[20,20],segment=None,delta_x=None,prec=None,norm=False
 def binning(traj=None,bins=20,segment=None,delta_x=None,prec=None):
 
 
-    if prec==None:
-        opt_prec=0
-        prec=1.0
-    else:
-        opt_prec=1
-
     if segment==None:
         opt_range=0
-        mmx=max(a)
-        mmn=min(a)
+        mmx=0.0
+        mmn=0.0
     else:
         opt_range=1
         mmn=segment[0]
         mmx=segment[1]
 
-    if delta_x!=None:
-        opt=1
-    else:
+    if delta_x==None:
+        opt_delta_x=0
         delta_x=1.0
-        opt=2
+    else:
+        opt_delta_x=1
 
     if traj==None:
 
-        o_delta_x=f.stats.binning_x(opt_range,opt,bins,mmn,mmx,delta_x,prec)
+        o_delta_x=f.stats.binning_x(opt_range,opt,bins,mmn,mmx,delta_x)
         h_x=ccopy.deepcopy(f.stats.histo_x)
         f.stats.free_mem()
         
@@ -147,7 +141,7 @@ def binning(traj=None,bins=20,segment=None,delta_x=None,prec=None):
 
     else:
 
-        tray_bins=f.stats.binning(opt_prec,opt_range,opt,traj,bins,mmn,mmx,delta_x,prec,len(traj))
+        tray_bins=f.stats.binning(opt_range,opt_delta_x,traj,bins,mmn,mmx,delta_x,len(traj))
 
         h_x=ccopy.deepcopy(f.stats.histo_x)
     

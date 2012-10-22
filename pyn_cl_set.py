@@ -287,14 +287,20 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             ### Setting up the subsets.
 
             for residue in self.resid[:]:
-
+             
                 if residue.type=='Water':       ### Waters
+             
+                    for aa in residue.list_atoms:
+                        if self.atom[aa].name in ['H1']:
+                            self.atom[aa].__int_name__='atHW1'
+                        if self.atom[aa].name in ['H2']:
+                            self.atom[aa].__int_name__='atHW2'
 
                     if without_hs:
                         residue.__int_name__='SOL3'
                     else:
                         residue.__int_name__='SOL'+str(len(residue.list_atoms))
-
+             
                     temp_water=cl_water()
                     temp_water.name=residue.name
                     temp_water.index=residue.index
@@ -304,21 +310,21 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                     temp_water.__int_name__=residue.__int_name__
                     for aa in residue.list_atoms:
                         self.atom[aa].resid.__int_name__=residue.__int_name__
-
+             
                     if 'atO' in residue.__int_dict_atoms__.keys():
                         xxx=residue.__int_dict_atoms__.pop('atO')
                         residue.__int_dict_atoms__['atOW']=xxx
                         self.atom[xxx].__int_name__='atOW'
-
+             
                     for aa in [[False,'atOW',temp_water.O],[without_hs,'atHW1',temp_water.H1],[without_hs,'atHW2',temp_water.H2]]:
                         if not aa[0]:
                             xxx=residue.__int_dict_atoms__[aa[1]]
                             aa[2].index=xxx
                             aa[2].pdb_index=self.atom[xxx].pdb_index
                             aa[2].name=self.atom[xxx].name
-
+             
                     self.water.append(temp_water)
-
+             
                 if residue.type=='Ion':        ### Ions
                     temp_residue=cl_residue()
                     temp_residue.list_atoms=residue.list_atoms

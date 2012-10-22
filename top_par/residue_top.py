@@ -933,6 +933,11 @@ terminal_bonds['none']['atNT']  = 'atC'
 terminal_bonds['none']['atHT1']  = 'atNT'
 terminal_bonds['none']['atHT2']  = 'atNT'
 
+terminal_bonds['atH']['atH1'] = 'atN'
+terminal_bonds['atH']['atH2'] = 'atN'
+terminal_bonds['atH']['atH3'] = 'atN'
+
+
 #### NHE for ACEMD
 terminal_bonds['atH']['atHT1'] = 'atN'
 terminal_bonds['atH']['atHT2'] = 'atN'

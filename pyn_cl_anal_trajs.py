@@ -488,11 +488,12 @@ class kinetic_1D_analysis():
             return ctt_x, ctt_dist
 
 
-    def kinetic_network(self,traj=None,verbose=False):
+    def kinetic_network(self,traj=None,ranges=None,verbose=False):
 
         if traj in ['CLUSTERS','Clusters','clusters']:
             if type(self.traj_clusters) not in [ndarray]:
                 self.traj_clusters=array(self.traj_clusters,order="Fortran")
+
             self.network_clusters=kinetic_network(self.traj_clusters,ranges=[self.traj_clusters.min(),self.traj_clusters.max()],verbose=verbose)
             pass
 
@@ -503,7 +504,12 @@ class kinetic_1D_analysis():
             pass
 
         else:
-            print 'traj= clusters or nodes'
+            self.traj=standard_traj(self.traj,num_parts=self.num_particles,dims=self.dimensions)
+            if ranges==None:
+                ranges=build_ranges(self.traj)
+            else:
+                ranges=standard_ranges(ranges)
+            self.network_nodes,self.traj_nodes=kinetic_network(self.traj,ranges=ranges,traj_out=True,verbose=verbose)                
             pass
 
 

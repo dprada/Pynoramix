@@ -151,8 +151,8 @@ atom={
 'MW'   : 'atvir'  ,
 'LP1'  : 'atvir'  ,
 'LP2'  : 'atvir'  ,
-'H1'   : 'atHW1'  ,   # This can be a problem. To be watched. 
-'H2'   : 'atHW2'  ,   # This can be a problem. To be watched. 
+#'H1'   : 'atHW1'  ,   # This is fixed by the program
+#'H2'   : 'atHW2'  ,   # This is fixed by the program 
 'OM'   : 'atvir'  ,
 'DOH2' : 'atvir'  ,
 
