@@ -694,23 +694,40 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         list_condition=selection(self,condition,traj,frame,pbc)
         return list_condition
 
-    def selection_hbonds(self,setA='ALL'):
+    def selection_hbonds(self,setA='ALL',verbose=False):
      
         setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system,diff_set=__read_sets_opt__(self,setA,None,None)
 
-        donors_A=[[],[]]
-        accepts_A=[]
+        don_X=[]
+        don_H=[]
+        don_start_H=[0]
+        acc=[]
+        all_wat=1
 
+        gg=0
         for ii in setA:
             if self.atom[ii].donor:
+                don_X.append(ii)
+                if self.atom[ii].resid.type!='Water': all_wat=0
                 for jj in self.atom[ii].covalent_bonds:
                     if self.atom[jj].type=='H':
-                        donors_A[0].append(ii)
-                        donors_A[1].append(jj)
+                        don_H.append(jj)
+                        gg+=1
+                don_start_H.append(gg)
             if self.atom[ii].acceptor:
-                accepts_A.append(ii)
+                acc.append(ii)
 
-        return [array(accepts_A,order='Fortran'),array(donors_A,order='Fortran')]
+        if verbose:
+            print '# [ Donor, Hydrogen ]'
+            for ii in range(len(don_X)):
+                for jj in range(don_start_H[ii],don_start_H[ii+1]):
+                    print don_X[ii], don_H[jj]
+            print ' '
+            print '# [ Acceptor ]'
+            for ii in acc:
+                print ii
+
+        return [array(acc,order='F'),array(don_X,order='F'),array(don_H,order='F'),array(don_start_H,order='F'),all_wat]
 
 ###############################################################
 ###############################################################
@@ -884,7 +901,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             else:
                 return neighbs
 
-    def hbonds (self,definition=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,pbc=True,verbose=False):
+    def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,pbc=True,verbose=False):
 
         print definition, acc_don_A, acc_don_B
 
@@ -905,39 +922,41 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         if faux.hbonds.definition == 6 : faux.hbonds.cos_angooh_param= cos(radians(angooh_param))
         if faux.hbonds.definition == 7 : pass
 
-        try:
-            num_acc_A=acc_don_A[0].shape[0]
-            num_don_A=acc_don_A[1].shape[1]
-        except:
-            try:
-                acc_don_A[0]=array(acc_don_A[0],order='Fortran')
-                acc_don_A[1]=array(acc_don_A[1],order='Fortran')
-            except:
-                acc_don_A=self.selection_hbonds(setA=acc_don_A)
-                num_acc_A=acc_don_A[0].shape[0]
-                num_don_A=acc_don_A[1].shape[1]
+        if acc_don_A==None and acc_don_B==None:
+            if set_A==None:
+                print 'set_A and/or set_B needed'
+                return
+            else:
+                acc_don_A=self.selection_hbonds(setA=set_A,verbose=False)
+                if set_B==None:
+                    acc_don_B=acc_don_A
+                else:
+                    acc_don_B=self.selection_hbonds(setA=set_B,verbose=False)
 
-        if acc_don_B==None:
-            acc_don_B=acc_don_A
+        num_acc_A  = acc_don_A[0].shape[0]
+        num_don_A  = acc_don_A[1].shape[0]
+        num_H_A    = acc_don_A[2].shape[0]
+        num_s_H_A  = acc_don_A[3].shape[0]
+        allwat_A   = acc_don_A[4]
+        num_acc_B  = acc_don_B[0].shape[0]
+        num_don_B  = acc_don_B[1].shape[0]
+        num_H_B    = acc_don_B[2].shape[0]
+        num_s_H_B  = acc_don_B[3].shape[0]
+        allwat_B   = acc_don_B[4]
 
-        try:
-            num_acc_B=acc_don_B[0].shape[0]
-            num_don_B=acc_don_B[1].shape[1]
-        except:
-            try:
-                acc_don_B[0]=array(acc_don_B[0],order='Fortran')
-                acc_don_B[1]=array(acc_don_B[1],order='Fortran')
-            except:
-                acc_don_B=self.selection_hbonds(setA=acc_don_B)
-                num_acc_B=acc_don_B[0].shape[0]
-                num_don_B=acc_don_B[1].shape[1]
+        natomA=self.num_atoms
+        natomB=self.num_atoms
 
         num_frames=__length_frame_opt__(self,traj,frame)
         for iframe in __read_frame_opt__(self,traj,frame):
             
             faux.hbonds.get_hbonds(opt_effic, opt_diff_syst, opt_diff_set, opt_pbc,\
-                                       acc_don_A[0],acc_don_A[1],iframe.coors,iframe.box,iframe.orthogonal,\
-                                       acc_don_B[0],acc_don_B[1],iframe.coors,num_acc_A,num_don_A,num_acc_B,num_don_B)
+                                       acc_don_A[0],acc_don_A[1],acc_don_A[2],acc_don_A[3],allwat_A,\
+                                       iframe.coors,iframe.box,iframe.orthogonal,\
+                                       acc_don_B[0],acc_don_B[1],acc_don_B[2],acc_don_B[3],allwat_B,\
+                                       iframe.coors,num_acc_A,num_don_A,num_H_A,num_s_H_A,\
+                                       num_acc_B,num_don_B,num_H_B,num_s_H_B,\
+                                       natomA,natomB)
 
             pass
 
