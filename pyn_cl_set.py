@@ -696,7 +696,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
     def selection_hbonds(self,setA='ALL'):
      
-        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system=__read_sets_opt__(self,setA,None,None)
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system,diff_set=__read_sets_opt__(self,setA,None,None)
 
         donors_A=[[],[]]
         accepts_A=[]
@@ -884,9 +884,16 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             else:
                 return neighbs
 
-    def hbonds (self,definition=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,verbose=False):
+    def hbonds (self,definition=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,pbc=True,verbose=False):
 
         print definition, acc_don_A, acc_don_B
+
+        opt_effic=0
+        opt_diff_syst=0
+        opt_diff_set=1
+        opt_pbc=0
+        if pbc:
+            opt_pbc=1
 
         faux.hbonds.definition=hbonds_type(definition,verbose=False)
         if faux.hbonds.definition == 0 : return
@@ -928,7 +935,8 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         num_frames=__length_frame_opt__(self,traj,frame)
         for iframe in __read_frame_opt__(self,traj,frame):
             
-            faux.hbonds.get_hbonds(pbc,acc_don_A[0],acc_don_A[1],iframe.coors,iframe.box,iframe.orthogonal,\
+            faux.hbonds.get_hbonds(opt_effic, opt_diff_syst, opt_diff_set, opt_pbc,\
+                                       acc_don_A[0],acc_don_A[1],iframe.coors,iframe.box,iframe.orthogonal,\
                                        acc_don_B[0],acc_don_B[1],iframe.coors,num_acc_A,num_don_A,num_acc_B,num_don_B)
 
             pass
