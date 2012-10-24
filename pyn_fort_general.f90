@@ -1273,8 +1273,8 @@ INTEGER::definition
 DOUBLE PRECISION::sk_param,roh_param,roo_param
 DOUBLE PRECISION::cos_angooh_param  ! the cosine
 
-INTEGER,DIMENSION(:,:)::ind_perp_acc_a,ind_perp_acc_b
-DOUBLE PRECISION,DIMENSION(:,:)::vect_perp_acc_a,vect_perp_acc_b
+!INTEGER,DIMENSION(:,:)::ind_perp_acc_a,ind_perp_acc_b
+!DOUBLE PRECISION,DIMENSION(:,:)::vect_perp_acc_a,vect_perp_acc_b
 
 
 !!Output
