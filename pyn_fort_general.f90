@@ -1282,283 +1282,283 @@ INTEGER,DIMENSION(:,:),ALLOCATABLE::hbonds_out
 
 CONTAINS
 
-SUBROUTINE FREE_MEMORY ()
-
-  IF (ALLOCATED(hbonds_out)) DEALLOCATE(hbonds_out)
-
-END SUBROUTINE FREE_MEMORY
-
-
-SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,H_A,H_s_A,allwatA,coors1,box1,ortho1,acc_B,don_B,H_B,H_s_B,allwatB,coors2,num_acc_A,num_don_A,num_H_A,num_s_H_A,num_acc_B,num_don_B,num_H_B,num_s_H_B,natomA,natomB)
-
-  TYPE iarray_pointer
-     INTEGER,DIMENSION(:),POINTER::i1
-  END TYPE iarray_pointer
-  TYPE darray_pointer
-     DOUBLE PRECISION,DIMENSION(:),POINTER::d1
-  END TYPE darray_pointer
-
-  INTEGER,INTENT(IN)::effic,diff_syst,diff_set,pbc_opt
-  INTEGER,INTENT(IN)::num_acc_A,num_don_A,num_H_A,num_s_H_A,natomA,allwatA
-  INTEGER,INTENT(IN)::num_acc_B,num_don_B,num_H_B,num_s_H_B,natomB,allwatB
-  INTEGER,DIMENSION(num_acc_A),INTENT(IN)::acc_A
-  INTEGER,DIMENSION(num_acc_B),INTENT(IN)::acc_B
-  INTEGER,DIMENSION(num_don_A),INTENT(IN)::don_A
-  INTEGER,DIMENSION(num_don_B),INTENT(IN)::don_B
-  INTEGER,DIMENSION(num_H_A),INTENT(IN)::H_A
-  INTEGER,DIMENSION(num_H_A),INTENT(IN)::H_B
-  INTEGER,DIMENSION(num_s_H_A),INTENT(IN)::H_s_A
-  INTEGER,DIMENSION(num_s_H_B),INTENT(IN)::H_s_B
-  double precision,dimension(natomA,3),intent(in)::coors1
-  double precision,DIMENSION(3,3),INTENT(IN)::box1
-  double precision,dimension(natomB,3),intent(in)::coors2
-
-
-  TYPE(iarray_pointer),DIMENSION(:),POINTER::hbs_a_ind,hbs_b_ind 
-  TYPE(darray_pointer),DIMENSION(:),POINTER::hbs_a_val,hbs_b_val 
-
-  !INTEGER,DIMENSION(:),ALLOCATABLE::aux_box_ind,num_hbs_a,num_hbs_a
-  !DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::aux_vox_vel
-
-  LOGICAL::bound
-  INTEGER::ii,jj,gg
-  INTEGER::don_o,don_h,acc
-  INTEGER::lim_hbs
-
-  DOUBLE PRECISION::dist_don_oh,val_out
-  DOUBLE PRECISION,DIMENSION(3)::vect_don_o_acc
-  DOUBLE PRECISION,DIMENSION(3)::vect_don_oh,pos_don_o,pos_acc
-  DOUBLE PRECISION,DIMENSION(3)::aux_vect_1,aux_vect_2,aux_vect_3
-
-  lim_hbs=8
-
-  ALLOCATE(aux_box_ind(lim_hbs),aux_box_vel(lim_hbs))
-
-  ALLOCATE(hbs_a_ind(num_H_A),hbs_a_val(num_H_A))
-  ALLOCATE(hbs_b_ind(num_H_B),hbs_b_val(num_H_B))
-  ALLOCATE(num_hbs_a(num_H_A),num_hbs_b(num_H_B))
-
-  num_hbs_a=0
-  num_hbs_b=0
-
-  ! PREV: Data needed for hbonds calculation
-  IF (definition==1) THEN ! Skinner needs the perpendicular vector to X-H1 and X-H2
-     ALLOCATE(vect_perp_acc_b(num_acc_b,:))
-     DO ii=1,num_acc_b
-        acc=acc_b(jj)+1
-        acc_H1=ind_perp_acc_b(ii,1)+1
-        acc_H2=ind_perp_acc_b(ii,2)+1
-        pos_acc=coors2(acc,:)
-        aux_vect_1=coors2(acc_H1,:)-pos_acc(:)
-        aux_vect_2=coors2(acc_H2,:)-pos_acc(:)
-        CALL PERPENDICULAR_NORMED_VECT (aux_vect1,aux_vect2,aux_vect_3)
-        vect_perp_acc_b(ii,:)=aux_vect_3
-     END DO
-     IF (opt_diff_set==1) THEN
-        ALLOCATE(vect_perp_acc_a(num_acc_a,:))
-        DO ii=1,num_acc_a
-           acc=acc_a(jj)+1
-           acc_H1=ind_perp_acc_a(ii,1)+1
-           acc_H2=ind_perp_acc_a(ii,2)+1
-           pos_acc=coors1(acc,:)
-           aux_vect_1=coors2(acc_H1,:)-pos_acc(:)
-           aux_vect_2=coors2(acc_H2,:)-pos_acc(:)
-           CALL PERPENDICULAR_NORMED_VECT (aux_vect1,aux_vect2,aux_vect_3)
-           vect_perp_acc_a(ii,:)=aux_vect_3
-        END DO
-     END IF
-  END IF
-  !!
-
-
-
-  ! Hbonds computation
-
-  IF (diff_syst==0) THEN
-
-     DO ii=1,num_don_A
-        don_o=don_A(ii,1)+1
-        pos_don_o=coors1(don_o,:)
-
-
-        DO hh=H_s_A(ii)+1,H_s_A(ii+1)
-           don_h=H_A(hh)+1
-
-           vect_don_oh=pos_don_o-coors1(don_h,:)
-
-           gg=0
-        
-           DO jj=1,num_acc_B
-              acc=acc_B(jj)+1
-              vect_don_o_acc=coors2(acc,:)-pos_don_o
-              IF (pbc_opt) CALL PBC(vect_don_o_acc,box1,ortho1)
-              CALL CHECK_HBOND (vect_don_o_acc,vect_don_oh,vect_perp_DHH,val_out,bound)
-              IF (bound) THEN
-                 gg=gg+1
-                 IF (gg>lim_hbs) THEN
-                    ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))
-                    aux2_box_ind=aux_box_ind
-                    aux2_box_val=aux_box_val
-                    DEALLOCATE(aux_box_ind,aux_box_val)
-                    ALLOCATE(aux_box_ind(gg),aux_box_val(gg))
-                    aux_box_ind(1:lim_hbs)=aux2_box_ind
-                    aux_box_val(1:lim_hbs)=aux2_box_val
-                    DEALLOCATE(aux2_box_ind,aux2_box_val)
-                    lim_hbs=gg
-                 END IF
-                 aux_box_ind(gg)=acc_B(jj)
-                 aux_box_val(gg)=val_out
-              END IF
-           END DO
-        
-           IF (gg>0) THEN
-              ALLOCATE(hbs_a_ind(hh)%i1(gg),hbs_a_val(hh)%d1(gg))
-              ALLOCATE(filtro(gg))
-              filtro=.TRUE.
-              DO jj=1,gg
-                 ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)
-                 filtro(ll)=.FALSE.
-                 hbs_a_ind(hh)%i1(jj)=aux_box_ind(ll)
-                 hbs_a_val(hh)%d1(jj)=aux_box_val(ll)
-              END DO
-              DEALLOCATE(filtro)
-           END IF
-        
-           num_hbs_a(hh)=gg
-        
-        END DO
-     END DO
-
-     IF (diff_set) THEN
-        DO ii=1,num_don_B
-           don_o=don_B(ii)+1
-           pos_don_o=coors2(don_o,:)
-           DO hh=H_s_B(ii)+1,H_s_B(ii+1)
-              don_h=H_A(hh)+1
-
-              vect_don_oh=pos_don_o-coors2(don_h,:)
-              dist_don_oh=sqrt(dot_product(vect_doh,vect_doh))
-              vect_don_oh=vect_don_oh/dist_don_oh
-           
-              gg=0
-           
-              DO jj=1,num_acc_A
-                 acc=acc_A(jj)+1
-                 vect_don_o_acc=coors1(acc,:)-pos_don_o
-                 IF (pbc_opt) CALL PBC(vect_don_o_acc,box1,ortho1)
-                 CALL CHECK_HBOND (vect_don_o_acc,vect_don_oh,dist_don_oh,val_out,bound)
-                 IF (bound) THEN
-                    gg=gg+1
-                    IF (gg>lim_hbs) THEN
-                       ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))
-                       aux2_box_ind=aux_box_ind
-                       aux2_box_val=aux_box_val
-                       DEALLOCATE(aux_box_ind,aux_box_val)
-                       ALLOCATE(aux_box_ind(gg),aux_box_val(gg))
-                       aux_box_ind(1:lim_hbs)=aux2_box_ind
-                       aux_box_val(1:lim_hbs)=aux2_box_val
-                       DEALLOCATE(aux2_box_ind,aux2_box_val)
-                       lim_hbs=gg
-                    END IF
-                    aux_box_ind(gg)=acc_A(jj)
-                    aux_box_val(gg)=val_out
-                 END IF
-              END DO
-           
-              IF (gg>0) THEN
-                 ALLOCATE(hbs_b_ind(hh)%i1(gg),hbs_b_val(hh)%d1(gg))
-                 ALLOCATE(filtro(gg))
-                 filtro=.TRUE.
-                 DO jj=1,gg
-                    ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)
-                    filtro(ll)=.FALSE.
-                    hbs_b_ind(hh)%i1(jj)=aux_box_ind(ll)
-                    hbs_b_val(hh)%d1(jj)=aux_box_val(ll)
-                 END DO
-                 DEALLOCATE(filtro)
-              END IF
-           
-              num_hbs_b(h)=gg
-           
-           END DO
-        END DO
-     END IF
-  ELSE
-     PRINT*,'NOT IMPLEMENTED YET'
-  END IF
-
-END SUBROUTINE GET_HBONDS
-
-
-
-SUBROUTINE CHECK_HBOND (vect_don_o_acc,vect_don_oh,dist_don_oh,vect_perp_DHH,val_out,bound)
-
-  IMPLICIT NONE
-  DOUBLE PRECISION,DIMENSION(3),INTENT(IN)::vect_don_o_acc,vect_don_oh,vect_perp_DHH
-  DOUBLE PRECISION,INTENT(IN)::dist_don_oh
-  DOUBLE PRECISION,INTENT(OUT)::val_out
-  LOGICAL,INTENT(OUT)::bound
-
-  SELECT CASE (definition)
-  CASE (1) ! Skinner
-     dist_don_oh=sqrt(dot_product(vect_doh,vect_doh))
-     aux_cos=dot_product(vect_perp_DHH(:),vect_don_oh(i,j,jj,:))/dist_don_oh
-     
-  CASE (2) ! R(o,h)
-
-  CASE (3) ! R(o,o)-Ang(o,o,h)
-     
-  CASE (4) ! Donor-Acceptor-Number
-     
-  CASE (5) ! Topological
-     
-  CASE (6) ! Donor-Number-Ang(o,o,h)
-     
-  CASE (7) ! Nearest-Neighbour
-     
-  CASE DEFAULT
-     PRINT*, 'Error: Hbond definition unknown'
-     
-  END SELECT
-
-END SUBROUTINE CHECK_HBOND
-
-SUBROUTINE PERPENDICULAR_WATER ()
-
-
-END SUBROUTINE PERPENDICULAR_WATER
-
-SUBROUTINE PERPENDICULAR_NORMED_VECT (vect1,vect2,vect_out)
-
-  DOUBLE PRECISION,DIMENSION(3),INTENT(IN)::vect1,vect2
-  DOUBLE PRECISION,DIMENSION(3),INTENT(OUT)::vect_out
-
-  CALL PRODUCT_VECT(vect1,vect2,vect_out)
-  CALL NORMALIZE_VECT(vect_out)
-
-END SUBROUTINE PERPENDICULAR_NORMED_VECT
-
-
-SUBROUTINE PRODUCT_VECT(a,b,normal)
-
-  DOUBLE PRECISION,DIMENSION(3),INTENT(IN)::a,b
-  DOUBLE PRECISION,DIMENSION(3),INTENT(OUT)::normal
-  
-  normal(1)=a(2)*b(3)-a(3)*b(2)
-  normal(2)=-a(1)*b(3)+a(3)*b(1)
-  normal(3)=a(1)*b(2)-a(2)*b(1)
-
-END SUBROUTINE PRODUCT_VECT
-
-SUBROUTINE NORMALIZE_VECT (a)
-
-  DOUBLE PRECISION,DIMENSION(3),INTENT(INOUT)::a
-  DOUBLE PRECISION::norm
-
-  norm=sqrt(dot_product(a,a))
-  a=a/norm
-
-END SUBROUTINE NORMALIZE_VECT
-
+!!$SUBROUTINE FREE_MEMORY ()
+!!$
+!!$  IF (ALLOCATED(hbonds_out)) DEALLOCATE(hbonds_out)
+!!$
+!!$END SUBROUTINE FREE_MEMORY
+!!$
+!!$
+!!$SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,H_A,H_s_A,allwatA,coors1,box1,ortho1,acc_B,don_B,H_B,H_s_B,allwatB,coors2,num_acc_A,num_don_A,num_H_A,num_s_H_A,num_acc_B,num_don_B,num_H_B,num_s_H_B,natomA,natomB)
+!!$
+!!$  TYPE iarray_pointer
+!!$     INTEGER,DIMENSION(:),POINTER::i1
+!!$  END TYPE iarray_pointer
+!!$  TYPE darray_pointer
+!!$     DOUBLE PRECISION,DIMENSION(:),POINTER::d1
+!!$  END TYPE darray_pointer
+!!$
+!!$  INTEGER,INTENT(IN)::effic,diff_syst,diff_set,pbc_opt
+!!$  INTEGER,INTENT(IN)::num_acc_A,num_don_A,num_H_A,num_s_H_A,natomA,allwatA
+!!$  INTEGER,INTENT(IN)::num_acc_B,num_don_B,num_H_B,num_s_H_B,natomB,allwatB
+!!$  INTEGER,DIMENSION(num_acc_A),INTENT(IN)::acc_A
+!!$  INTEGER,DIMENSION(num_acc_B),INTENT(IN)::acc_B
+!!$  INTEGER,DIMENSION(num_don_A),INTENT(IN)::don_A
+!!$  INTEGER,DIMENSION(num_don_B),INTENT(IN)::don_B
+!!$  INTEGER,DIMENSION(num_H_A),INTENT(IN)::H_A
+!!$  INTEGER,DIMENSION(num_H_A),INTENT(IN)::H_B
+!!$  INTEGER,DIMENSION(num_s_H_A),INTENT(IN)::H_s_A
+!!$  INTEGER,DIMENSION(num_s_H_B),INTENT(IN)::H_s_B
+!!$  double precision,dimension(natomA,3),intent(in)::coors1
+!!$  double precision,DIMENSION(3,3),INTENT(IN)::box1
+!!$  double precision,dimension(natomB,3),intent(in)::coors2
+!!$
+!!$
+!!$  TYPE(iarray_pointer),DIMENSION(:),POINTER::hbs_a_ind,hbs_b_ind 
+!!$  TYPE(darray_pointer),DIMENSION(:),POINTER::hbs_a_val,hbs_b_val 
+!!$
+!!$  !INTEGER,DIMENSION(:),ALLOCATABLE::aux_box_ind,num_hbs_a,num_hbs_a
+!!$  !DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::aux_vox_vel
+!!$
+!!$  LOGICAL::bound
+!!$  INTEGER::ii,jj,gg
+!!$  INTEGER::don_o,don_h,acc
+!!$  INTEGER::lim_hbs
+!!$
+!!$  DOUBLE PRECISION::dist_don_oh,val_out
+!!$  DOUBLE PRECISION,DIMENSION(3)::vect_don_o_acc
+!!$  DOUBLE PRECISION,DIMENSION(3)::vect_don_oh,pos_don_o,pos_acc
+!!$  DOUBLE PRECISION,DIMENSION(3)::aux_vect_1,aux_vect_2,aux_vect_3
+!!$
+!!$  lim_hbs=8
+!!$
+!!$  ALLOCATE(aux_box_ind(lim_hbs),aux_box_vel(lim_hbs))
+!!$
+!!$  ALLOCATE(hbs_a_ind(num_H_A),hbs_a_val(num_H_A))
+!!$  ALLOCATE(hbs_b_ind(num_H_B),hbs_b_val(num_H_B))
+!!$  ALLOCATE(num_hbs_a(num_H_A),num_hbs_b(num_H_B))
+!!$
+!!$  num_hbs_a=0
+!!$  num_hbs_b=0
+!!$
+!!$  ! PREV: Data needed for hbonds calculation
+!!$  IF (definition==1) THEN ! Skinner needs the perpendicular vector to X-H1 and X-H2
+!!$     ALLOCATE(vect_perp_acc_b(num_acc_b,:))
+!!$     DO ii=1,num_acc_b
+!!$        acc=acc_b(jj)+1
+!!$        acc_H1=ind_perp_acc_b(ii,1)+1
+!!$        acc_H2=ind_perp_acc_b(ii,2)+1
+!!$        pos_acc=coors2(acc,:)
+!!$        aux_vect_1=coors2(acc_H1,:)-pos_acc(:)
+!!$        aux_vect_2=coors2(acc_H2,:)-pos_acc(:)
+!!$        CALL PERPENDICULAR_NORMED_VECT (aux_vect1,aux_vect2,aux_vect_3)
+!!$        vect_perp_acc_b(ii,:)=aux_vect_3
+!!$     END DO
+!!$     IF (opt_diff_set==1) THEN
+!!$        ALLOCATE(vect_perp_acc_a(num_acc_a,:))
+!!$        DO ii=1,num_acc_a
+!!$           acc=acc_a(jj)+1
+!!$           acc_H1=ind_perp_acc_a(ii,1)+1
+!!$           acc_H2=ind_perp_acc_a(ii,2)+1
+!!$           pos_acc=coors1(acc,:)
+!!$           aux_vect_1=coors2(acc_H1,:)-pos_acc(:)
+!!$           aux_vect_2=coors2(acc_H2,:)-pos_acc(:)
+!!$           CALL PERPENDICULAR_NORMED_VECT (aux_vect1,aux_vect2,aux_vect_3)
+!!$           vect_perp_acc_a(ii,:)=aux_vect_3
+!!$        END DO
+!!$     END IF
+!!$  END IF
+!!$  !!
+!!$
+!!$
+!!$
+!!$  ! Hbonds computation
+!!$
+!!$  IF (diff_syst==0) THEN
+!!$
+!!$     DO ii=1,num_don_A
+!!$        don_o=don_A(ii,1)+1
+!!$        pos_don_o=coors1(don_o,:)
+!!$
+!!$
+!!$        DO hh=H_s_A(ii)+1,H_s_A(ii+1)
+!!$           don_h=H_A(hh)+1
+!!$
+!!$           vect_don_oh=pos_don_o-coors1(don_h,:)
+!!$
+!!$           gg=0
+!!$        
+!!$           DO jj=1,num_acc_B
+!!$              acc=acc_B(jj)+1
+!!$              vect_don_o_acc=coors2(acc,:)-pos_don_o
+!!$              IF (pbc_opt) CALL PBC(vect_don_o_acc,box1,ortho1)
+!!$              CALL CHECK_HBOND (vect_don_o_acc,vect_don_oh,vect_perp_DHH,val_out,bound)
+!!$              IF (bound) THEN
+!!$                 gg=gg+1
+!!$                 IF (gg>lim_hbs) THEN
+!!$                    ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))
+!!$                    aux2_box_ind=aux_box_ind
+!!$                    aux2_box_val=aux_box_val
+!!$                    DEALLOCATE(aux_box_ind,aux_box_val)
+!!$                    ALLOCATE(aux_box_ind(gg),aux_box_val(gg))
+!!$                    aux_box_ind(1:lim_hbs)=aux2_box_ind
+!!$                    aux_box_val(1:lim_hbs)=aux2_box_val
+!!$                    DEALLOCATE(aux2_box_ind,aux2_box_val)
+!!$                    lim_hbs=gg
+!!$                 END IF
+!!$                 aux_box_ind(gg)=acc_B(jj)
+!!$                 aux_box_val(gg)=val_out
+!!$              END IF
+!!$           END DO
+!!$        
+!!$           IF (gg>0) THEN
+!!$              ALLOCATE(hbs_a_ind(hh)%i1(gg),hbs_a_val(hh)%d1(gg))
+!!$              ALLOCATE(filtro(gg))
+!!$              filtro=.TRUE.
+!!$              DO jj=1,gg
+!!$                 ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)
+!!$                 filtro(ll)=.FALSE.
+!!$                 hbs_a_ind(hh)%i1(jj)=aux_box_ind(ll)
+!!$                 hbs_a_val(hh)%d1(jj)=aux_box_val(ll)
+!!$              END DO
+!!$              DEALLOCATE(filtro)
+!!$           END IF
+!!$        
+!!$           num_hbs_a(hh)=gg
+!!$        
+!!$        END DO
+!!$     END DO
+!!$
+!!$     IF (diff_set) THEN
+!!$        DO ii=1,num_don_B
+!!$           don_o=don_B(ii)+1
+!!$           pos_don_o=coors2(don_o,:)
+!!$           DO hh=H_s_B(ii)+1,H_s_B(ii+1)
+!!$              don_h=H_A(hh)+1
+!!$
+!!$              vect_don_oh=pos_don_o-coors2(don_h,:)
+!!$              dist_don_oh=sqrt(dot_product(vect_doh,vect_doh))
+!!$              vect_don_oh=vect_don_oh/dist_don_oh
+!!$           
+!!$              gg=0
+!!$           
+!!$              DO jj=1,num_acc_A
+!!$                 acc=acc_A(jj)+1
+!!$                 vect_don_o_acc=coors1(acc,:)-pos_don_o
+!!$                 IF (pbc_opt) CALL PBC(vect_don_o_acc,box1,ortho1)
+!!$                 CALL CHECK_HBOND (vect_don_o_acc,vect_don_oh,dist_don_oh,val_out,bound)
+!!$                 IF (bound) THEN
+!!$                    gg=gg+1
+!!$                    IF (gg>lim_hbs) THEN
+!!$                       ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))
+!!$                       aux2_box_ind=aux_box_ind
+!!$                       aux2_box_val=aux_box_val
+!!$                       DEALLOCATE(aux_box_ind,aux_box_val)
+!!$                       ALLOCATE(aux_box_ind(gg),aux_box_val(gg))
+!!$                       aux_box_ind(1:lim_hbs)=aux2_box_ind
+!!$                       aux_box_val(1:lim_hbs)=aux2_box_val
+!!$                       DEALLOCATE(aux2_box_ind,aux2_box_val)
+!!$                       lim_hbs=gg
+!!$                    END IF
+!!$                    aux_box_ind(gg)=acc_A(jj)
+!!$                    aux_box_val(gg)=val_out
+!!$                 END IF
+!!$              END DO
+!!$           
+!!$              IF (gg>0) THEN
+!!$                 ALLOCATE(hbs_b_ind(hh)%i1(gg),hbs_b_val(hh)%d1(gg))
+!!$                 ALLOCATE(filtro(gg))
+!!$                 filtro=.TRUE.
+!!$                 DO jj=1,gg
+!!$                    ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)
+!!$                    filtro(ll)=.FALSE.
+!!$                    hbs_b_ind(hh)%i1(jj)=aux_box_ind(ll)
+!!$                    hbs_b_val(hh)%d1(jj)=aux_box_val(ll)
+!!$                 END DO
+!!$                 DEALLOCATE(filtro)
+!!$              END IF
+!!$           
+!!$              num_hbs_b(h)=gg
+!!$           
+!!$           END DO
+!!$        END DO
+!!$     END IF
+!!$  ELSE
+!!$     PRINT*,'NOT IMPLEMENTED YET'
+!!$  END IF
+!!$
+!!$END SUBROUTINE GET_HBONDS
+!!$
+!!$
+!!$
+!!$SUBROUTINE CHECK_HBOND (vect_don_o_acc,vect_don_oh,dist_don_oh,vect_perp_DHH,val_out,bound)
+!!$
+!!$  IMPLICIT NONE
+!!$  DOUBLE PRECISION,DIMENSION(3),INTENT(IN)::vect_don_o_acc,vect_don_oh,vect_perp_DHH
+!!$  DOUBLE PRECISION,INTENT(IN)::dist_don_oh
+!!$  DOUBLE PRECISION,INTENT(OUT)::val_out
+!!$  LOGICAL,INTENT(OUT)::bound
+!!$
+!!$  SELECT CASE (definition)
+!!$  CASE (1) ! Skinner
+!!$     dist_don_oh=sqrt(dot_product(vect_doh,vect_doh))
+!!$     aux_cos=dot_product(vect_perp_DHH(:),vect_don_oh(i,j,jj,:))/dist_don_oh
+!!$     
+!!$  CASE (2) ! R(o,h)
+!!$
+!!$  CASE (3) ! R(o,o)-Ang(o,o,h)
+!!$     
+!!$  CASE (4) ! Donor-Acceptor-Number
+!!$     
+!!$  CASE (5) ! Topological
+!!$     
+!!$  CASE (6) ! Donor-Number-Ang(o,o,h)
+!!$     
+!!$  CASE (7) ! Nearest-Neighbour
+!!$     
+!!$  CASE DEFAULT
+!!$     PRINT*, 'Error: Hbond definition unknown'
+!!$     
+!!$  END SELECT
+!!$
+!!$END SUBROUTINE CHECK_HBOND
+!!$
+!!$SUBROUTINE PERPENDICULAR_WATER ()
+!!$
+!!$
+!!$END SUBROUTINE PERPENDICULAR_WATER
+!!$
+!!$SUBROUTINE PERPENDICULAR_NORMED_VECT (vect1,vect2,vect_out)
+!!$
+!!$  DOUBLE PRECISION,DIMENSION(3),INTENT(IN)::vect1,vect2
+!!$  DOUBLE PRECISION,DIMENSION(3),INTENT(OUT)::vect_out
+!!$
+!!$  CALL PRODUCT_VECT(vect1,vect2,vect_out)
+!!$  CALL NORMALIZE_VECT(vect_out)
+!!$
+!!$END SUBROUTINE PERPENDICULAR_NORMED_VECT
+!!$
+!!$
+!!$SUBROUTINE PRODUCT_VECT(a,b,normal)
+!!$
+!!$  DOUBLE PRECISION,DIMENSION(3),INTENT(IN)::a,b
+!!$  DOUBLE PRECISION,DIMENSION(3),INTENT(OUT)::normal
+!!$  
+!!$  normal(1)=a(2)*b(3)-a(3)*b(2)
+!!$  normal(2)=-a(1)*b(3)+a(3)*b(1)
+!!$  normal(3)=a(1)*b(2)-a(2)*b(1)
+!!$
+!!$END SUBROUTINE PRODUCT_VECT
+!!$
+!!$SUBROUTINE NORMALIZE_VECT (a)
+!!$
+!!$  DOUBLE PRECISION,DIMENSION(3),INTENT(INOUT)::a
+!!$  DOUBLE PRECISION::norm
+!!$
+!!$  norm=sqrt(dot_product(a,a))
+!!$  a=a/norm
+!!$
+!!$END SUBROUTINE NORMALIZE_VECT
+!!$
 
 END MODULE HBONDS

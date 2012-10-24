@@ -694,40 +694,40 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         list_condition=selection(self,condition,traj,frame,pbc)
         return list_condition
 
-    def selection_hbonds(self,setA='ALL',verbose=False):
-     
-        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system,diff_set=__read_sets_opt__(self,setA,None,None)
-
-        don_X=[]
-        don_H=[]
-        don_start_H=[0]
-        acc=[]
-        all_acc_wat=1
-
-        gg=0
-        for ii in setA:
-            if self.atom[ii].donor:
-                don_X.append(ii)
-                for jj in self.atom[ii].covalent_bonds:
-                    if self.atom[jj].type=='H':
-                        don_H.append(jj)
-                        gg+=1
-                don_start_H.append(gg)
-            if self.atom[ii].acceptor:
-                if self.atom[ii].resid.type!='Water': all_acc_wat=0
-                acc.append(ii)
-
-        if verbose:
-            print '# [ Donor, Hydrogen ]'
-            for ii in range(len(don_X)):
-                for jj in range(don_start_H[ii],don_start_H[ii+1]):
-                    print don_X[ii], don_H[jj]
-            print ' '
-            print '# [ Acceptor ]'
-            for ii in acc:
-                print ii
-
-        return [array(acc,order='F'),array(don_X,order='F'),array(don_H,order='F'),array(don_start_H,order='F'),all_acc_wat]
+   # def selection_hbonds(self,setA='ALL',verbose=False):
+   #  
+   #     setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_system,diff_set=__read_sets_opt__(self,setA,None,None)
+   # 
+   #     don_X=[]
+   #     don_H=[]
+   #     don_start_H=[0]
+   #     acc=[]
+   #     all_acc_wat=1
+   # 
+   #     gg=0
+   #     for ii in setA:
+   #         if self.atom[ii].donor:
+   #             don_X.append(ii)
+   #             for jj in self.atom[ii].covalent_bonds:
+   #                 if self.atom[jj].type=='H':
+   #                     don_H.append(jj)
+   #                     gg+=1
+   #             don_start_H.append(gg)
+   #         if self.atom[ii].acceptor:
+   #             if self.atom[ii].resid.type!='Water': all_acc_wat=0
+   #             acc.append(ii)
+   # 
+   #     if verbose:
+   #         print '# [ Donor, Hydrogen ]'
+   #         for ii in range(len(don_X)):
+   #             for jj in range(don_start_H[ii],don_start_H[ii+1]):
+   #                 print don_X[ii], don_H[jj]
+   #         print ' '
+   #         print '# [ Acceptor ]'
+   #         for ii in acc:
+   #             print ii
+   # 
+   #     return [array(acc,order='F'),array(don_X,order='F'),array(don_H,order='F'),array(don_start_H,order='F'),all_acc_wat]
 
 ###############################################################
 ###############################################################
@@ -901,86 +901,86 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             else:
                 return neighbs
 
-    def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,pbc=True,verbose=False):
-
-        print definition, acc_don_A, acc_don_B
-
-        opt_effic=0
-        opt_diff_syst=0
-        opt_diff_set=1
-        opt_pbc=0
-        if pbc:
-            opt_pbc=1
-
-        faux.hbonds.definition=hbonds_type(definition,verbose=False)
-        if faux.hbonds.definition == 0 : return
-        if faux.hbonds.definition == 1 : faux.hbonds.sk_param=sk_param
-        if faux.hbonds.definition == 2 : faux.hbonds.roh_param= roh_param
-        if faux.hbonds.definition == 3 : faux.hbonds.roo_param, faux.hbonds.cos_angooh_param= roo_param, cos(radians(angooh_param))
-        if faux.hbonds.definition == 4 : pass
-        if faux.hbonds.definition == 5 : pass
-        if faux.hbonds.definition == 6 : faux.hbonds.cos_angooh_param= cos(radians(angooh_param))
-        if faux.hbonds.definition == 7 : pass
-
-        if acc_don_A==None and acc_don_B==None:
-            if set_A==None:
-                print 'set_A and/or set_B needed'
-                return
-            else:
-                acc_don_A=self.selection_hbonds(setA=set_A,verbose=False)
-                if set_B==None:
-                    acc_don_B=acc_don_A
-                    opt_diff_set=0
-                else:
-                    acc_don_B=self.selection_hbonds(setA=set_B,verbose=False)
-        else:
-            if acc_don_B==None:
-                acc_con_B=acc_don_A
-                opt_diff_set=0
-
-        num_acc_A     = acc_don_A[0].shape[0]
-        num_don_A     = acc_don_A[1].shape[0]
-        num_H_A       = acc_don_A[2].shape[0]
-        num_s_H_A     = acc_don_A[3].shape[0]
-        allaccwat_A   = acc_don_A[4]
-        num_acc_B     = acc_don_B[0].shape[0]
-        num_don_B     = acc_don_B[1].shape[0]
-        num_H_B       = acc_don_B[2].shape[0]
-        num_s_H_B     = acc_don_B[3].shape[0]
-        allaccwat_B   = acc_don_B[4]
-
-        if (faux.hbonds.definition == 1):
-            if not (allaccwat_A.and.allaccwat_B):
-                print '# the Skinner definition needs acceptors with 2 hydrogens (water)'
-            else:
-                faux.hbonds.ind_perp_acc_b=empty(shape=(num_acc_B,2),dtype=int,order='Fortran')
-                for ii in range(num_acc_B):
-                    jj=self.atom[acc_don_B[0][ii]]
-                    faux.hbonds.ind_perp_acc_b[ii,0]=jj.covalent_bonds[0]
-                    faux.hbonds.ind_perp_acc_b[ii,1]=jj.covalent_bonds[1]
-                if opt_diff_set:
-                    faux.hbonds.ind_perp_acc_a=empty(shape=(num_acc_A,2),dtype=int,order='Fortran')
-                    for ii in range(num_acc_A):
-                        jj=self.atom[acc_don_A[0][ii]]
-                        faux.hbonds.ind_perp_acc_a[ii,0]=jj.covalent_bonds[0]
-                        faux.hbonds.ind_perp_acc_a[ii,1]=jj.covalent_bonds[1]
-                            
-
-        natomA=self.num_atoms
-        natomB=self.num_atoms
-
-        num_frames=__length_frame_opt__(self,traj,frame)
-        for iframe in __read_frame_opt__(self,traj,frame):
-            
-            faux.hbonds.get_hbonds(opt_effic, opt_diff_syst, opt_diff_set, opt_pbc,\
-                                       acc_don_A[0],acc_don_A[1],acc_don_A[2],acc_don_A[3],allaccwat_A,\
-                                       iframe.coors,iframe.box,iframe.orthogonal,\
-                                       acc_don_B[0],acc_don_B[1],acc_don_B[2],acc_don_B[3],allaccwat_B,\
-                                       iframe.coors,num_acc_A,num_don_A,num_H_A,num_s_H_A,\
-                                       num_acc_B,num_don_B,num_H_B,num_s_H_B,\
-                                       natomA,natomB)
-
-            pass
+    #def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,pbc=True,verbose=False):
+    # 
+    #    print definition, acc_don_A, acc_don_B
+    # 
+    #    opt_effic=0
+    #    opt_diff_syst=0
+    #    opt_diff_set=1
+    #    opt_pbc=0
+    #    if pbc:
+    #        opt_pbc=1
+    # 
+    #    faux.hbonds.definition=hbonds_type(definition,verbose=False)
+    #    if faux.hbonds.definition == 0 : return
+    #    if faux.hbonds.definition == 1 : faux.hbonds.sk_param=sk_param
+    #    if faux.hbonds.definition == 2 : faux.hbonds.roh_param= roh_param
+    #    if faux.hbonds.definition == 3 : faux.hbonds.roo_param, faux.hbonds.cos_angooh_param= roo_param, cos(radians(angooh_param))
+    #    if faux.hbonds.definition == 4 : pass
+    #    if faux.hbonds.definition == 5 : pass
+    #    if faux.hbonds.definition == 6 : faux.hbonds.cos_angooh_param= cos(radians(angooh_param))
+    #    if faux.hbonds.definition == 7 : pass
+    # 
+    #    if acc_don_A==None and acc_don_B==None:
+    #        if set_A==None:
+    #            print 'set_A and/or set_B needed'
+    #            return
+    #        else:
+    #            acc_don_A=self.selection_hbonds(setA=set_A,verbose=False)
+    #            if set_B==None:
+    #                acc_don_B=acc_don_A
+    #                opt_diff_set=0
+    #            else:
+    #                acc_don_B=self.selection_hbonds(setA=set_B,verbose=False)
+    #    else:
+    #        if acc_don_B==None:
+    #            acc_con_B=acc_don_A
+    #            opt_diff_set=0
+    # 
+    #    num_acc_A     = acc_don_A[0].shape[0]
+    #    num_don_A     = acc_don_A[1].shape[0]
+    #    num_H_A       = acc_don_A[2].shape[0]
+    #    num_s_H_A     = acc_don_A[3].shape[0]
+    #    allaccwat_A   = acc_don_A[4]
+    #    num_acc_B     = acc_don_B[0].shape[0]
+    #    num_don_B     = acc_don_B[1].shape[0]
+    #    num_H_B       = acc_don_B[2].shape[0]
+    #    num_s_H_B     = acc_don_B[3].shape[0]
+    #    allaccwat_B   = acc_don_B[4]
+    # 
+    #    if (faux.hbonds.definition == 1):
+    #        if not (allaccwat_A.and.allaccwat_B):
+    #            print '# the Skinner definition needs acceptors with 2 hydrogens (water)'
+    #        else:
+    #            faux.hbonds.ind_perp_acc_b=empty(shape=(num_acc_B,2),dtype=int,order='Fortran')
+    #            for ii in range(num_acc_B):
+    #                jj=self.atom[acc_don_B[0][ii]]
+    #                faux.hbonds.ind_perp_acc_b[ii,0]=jj.covalent_bonds[0]
+    #                faux.hbonds.ind_perp_acc_b[ii,1]=jj.covalent_bonds[1]
+    #            if opt_diff_set:
+    #                faux.hbonds.ind_perp_acc_a=empty(shape=(num_acc_A,2),dtype=int,order='Fortran')
+    #                for ii in range(num_acc_A):
+    #                    jj=self.atom[acc_don_A[0][ii]]
+    #                    faux.hbonds.ind_perp_acc_a[ii,0]=jj.covalent_bonds[0]
+    #                    faux.hbonds.ind_perp_acc_a[ii,1]=jj.covalent_bonds[1]
+    #                        
+    # 
+    #    natomA=self.num_atoms
+    #    natomB=self.num_atoms
+    # 
+    #    num_frames=__length_frame_opt__(self,traj,frame)
+    #    for iframe in __read_frame_opt__(self,traj,frame):
+    #        
+    #        faux.hbonds.get_hbonds(opt_effic, opt_diff_syst, opt_diff_set, opt_pbc,\
+    #                                   acc_don_A[0],acc_don_A[1],acc_don_A[2],acc_don_A[3],allaccwat_A,\
+    #                                   iframe.coors,iframe.box,iframe.orthogonal,\
+    #                                   acc_don_B[0],acc_don_B[1],acc_don_B[2],acc_don_B[3],allaccwat_B,\
+    #                                   iframe.coors,num_acc_A,num_don_A,num_H_A,num_s_H_A,\
+    #                                   num_acc_B,num_don_B,num_H_B,num_s_H_B,\
+    #                                   natomA,natomB)
+    # 
+    #        pass
 
 
     #def contact_map (self,setA=None,setB=None,dist=None,traj=0,frame=0,pbc=True):
