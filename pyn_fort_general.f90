@@ -1273,6 +1273,9 @@ INTEGER::definition
 DOUBLE PRECISION::sk_param,roh_param,roo_param
 DOUBLE PRECISION::cos_angooh_param  ! the cosine
 
+INTEGER,DIMENSION(:,:)::ind_perp_acc_a,ind_perp_acc_b
+DOUBLE PRECISION,DIMENSION(:,:)::vect_perp_acc_a,vect_perp_acc_b
+
 
 !!Output
 INTEGER,DIMENSION(:,:),ALLOCATABLE::hbonds_out
@@ -1317,14 +1320,15 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,H_A,H_s_A,al
   !INTEGER,DIMENSION(:),ALLOCATABLE::aux_box_ind,num_hbs_a,num_hbs_a
   !DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::aux_vox_vel
 
-  !LOGICAL::bound
-  !INTEGER::ii,jj,gg
-  !INTEGER::don_o,don_h,acc
-  !INTEGER::lim_hbs
+  LOGICAL::bound
+  INTEGER::ii,jj,gg
+  INTEGER::don_o,don_h,acc
+  INTEGER::lim_hbs
 
   DOUBLE PRECISION::dist_don_oh,val_out
   DOUBLE PRECISION,DIMENSION(3)::vect_don_o_acc
-  DOUBLE PRECISION,DIMENSION(3)::vect_don_oh,pos_don_o
+  DOUBLE PRECISION,DIMENSION(3)::vect_don_oh,pos_don_o,pos_acc
+  DOUBLE PRECISION,DIMENSION(3)::aux_vect_1,aux_vect_2,aux_vect_3
 
   lim_hbs=8
 
@@ -1338,6 +1342,34 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,H_A,H_s_A,al
   num_hbs_b=0
 
   ! PREV: Data needed for hbonds calculation
+  IF (definition==1) THEN ! Skinner needs the perpendicular vector to X-H1 and X-H2
+     ALLOCATE(vect_perp_acc_b(num_acc_b,:))
+     DO ii=1,num_acc_b
+        acc=acc_b(jj)+1
+        acc_H1=ind_perp_acc_b(ii,1)+1
+        acc_H2=ind_perp_acc_b(ii,2)+1
+        pos_acc=coors2(acc,:)
+        aux_vect_1=coors2(acc_H1,:)-pos_acc(:)
+        aux_vect_2=coors2(acc_H2,:)-pos_acc(:)
+        CALL PERPENDICULAR_NORMED_VECT (aux_vect1,aux_vect2,aux_vect_3)
+        vect_perp_acc_b(ii,:)=aux_vect_3
+     END DO
+     IF (opt_diff_set==1) THEN
+        ALLOCATE(vect_perp_acc_a(num_acc_a,:))
+        DO ii=1,num_acc_a
+           acc=acc_a(jj)+1
+           acc_H1=ind_perp_acc_a(ii,1)+1
+           acc_H2=ind_perp_acc_a(ii,2)+1
+           pos_acc=coors1(acc,:)
+           aux_vect_1=coors2(acc_H1,:)-pos_acc(:)
+           aux_vect_2=coors2(acc_H2,:)-pos_acc(:)
+           CALL PERPENDICULAR_NORMED_VECT (aux_vect1,aux_vect2,aux_vect_3)
+           vect_perp_acc_a(ii,:)=aux_vect_3
+        END DO
+     END IF
+  END IF
+  !!
+
 
 
   ! Hbonds computation
@@ -1348,20 +1380,19 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,don_A,H_A,H_s_A,al
         don_o=don_A(ii,1)+1
         pos_don_o=coors1(don_o,:)
 
+
         DO hh=H_s_A(ii)+1,H_s_A(ii+1)
            don_h=H_A(hh)+1
 
            vect_don_oh=pos_don_o-coors1(don_h,:)
-           dist_don_oh=sqrt(dot_product(vect_doh,vect_doh))
-           vect_don_oh=vect_don_oh/dist_don_oh
-        
+
            gg=0
         
            DO jj=1,num_acc_B
               acc=acc_B(jj)+1
               vect_don_o_acc=coors2(acc,:)-pos_don_o
               IF (pbc_opt) CALL PBC(vect_don_o_acc,box1,ortho1)
-              CALL CHECK_HBOND (vect_don_o_acc,vect_don_oh,dist_don_oh,val_out,bound)
+              CALL CHECK_HBOND (vect_don_o_acc,vect_don_oh,vect_perp_DHH,val_out,bound)
               IF (bound) THEN
                  gg=gg+1
                  IF (gg>lim_hbs) THEN
@@ -1460,15 +1491,35 @@ END SUBROUTINE GET_HBONDS
 
 
 
-SUBROUTINE CHECK_HBOND (vect_don_o_acc,vect_don_oh,dist_don_oh,val_out,bound)
+SUBROUTINE CHECK_HBOND (vect_don_o_acc,vect_don_oh,dist_don_oh,vect_perp_DHH,val_out,bound)
 
   IMPLICIT NONE
-  DOUBLE PRECISION,DIMENSION(3),INTENT(IN)::vect_don_o_acc,vect_don_oh
+  DOUBLE PRECISION,DIMENSION(3),INTENT(IN)::vect_don_o_acc,vect_don_oh,vect_perp_DHH
   DOUBLE PRECISION,INTENT(IN)::dist_don_oh
   DOUBLE PRECISION,INTENT(OUT)::val_out
   LOGICAL,INTENT(OUT)::bound
 
-  
+  SELECT CASE (definition)
+  CASE (1) ! Skinner
+     dist_don_oh=sqrt(dot_product(vect_doh,vect_doh))
+     aux_cos=dot_product(vect_perp_DHH(:),vect_don_oh(i,j,jj,:))/dist_don_oh
+     
+  CASE (2) ! R(o,h)
+
+  CASE (3) ! R(o,o)-Ang(o,o,h)
+     
+  CASE (4) ! Donor-Acceptor-Number
+     
+  CASE (5) ! Topological
+     
+  CASE (6) ! Donor-Number-Ang(o,o,h)
+     
+  CASE (7) ! Nearest-Neighbour
+     
+  CASE DEFAULT
+     PRINT*, 'Error: Hbond definition unknown'
+     
+  END SELECT
 
 END SUBROUTINE CHECK_HBOND
 
@@ -1477,11 +1528,21 @@ SUBROUTINE PERPENDICULAR_WATER ()
 
 END SUBROUTINE PERPENDICULAR_WATER
 
+SUBROUTINE PERPENDICULAR_NORMED_VECT (vect1,vect2,vect_out)
+
+  DOUBLE PRECISION,DIMENSION(3),INTENT(IN)::vect1,vect2
+  DOUBLE PRECISION,DIMENSION(3),INTENT(OUT)::vect_out
+
+  CALL PRODUCT_VECT(vect1,vect2,vect_out)
+  CALL NORMALIZE_VECT(vect_out)
+
+END SUBROUTINE PERPENDICULAR_NORMED_VECT
+
+
 SUBROUTINE PRODUCT_VECT(a,b,normal)
 
   DOUBLE PRECISION,DIMENSION(3),INTENT(IN)::a,b
   DOUBLE PRECISION,DIMENSION(3),INTENT(OUT)::normal
-  DOUBLE PRECISION::norm
   
   normal(1)=a(2)*b(3)-a(3)*b(2)
   normal(2)=-a(1)*b(3)+a(3)*b(1)

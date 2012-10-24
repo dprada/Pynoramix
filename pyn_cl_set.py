@@ -702,19 +702,19 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         don_H=[]
         don_start_H=[0]
         acc=[]
-        all_wat=1
+        all_acc_wat=1
 
         gg=0
         for ii in setA:
             if self.atom[ii].donor:
                 don_X.append(ii)
-                if self.atom[ii].resid.type!='Water': all_wat=0
                 for jj in self.atom[ii].covalent_bonds:
                     if self.atom[jj].type=='H':
                         don_H.append(jj)
                         gg+=1
                 don_start_H.append(gg)
             if self.atom[ii].acceptor:
+                if self.atom[ii].resid.type!='Water': all_acc_wat=0
                 acc.append(ii)
 
         if verbose:
@@ -727,7 +727,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             for ii in acc:
                 print ii
 
-        return [array(acc,order='F'),array(don_X,order='F'),array(don_H,order='F'),array(don_start_H,order='F'),all_wat]
+        return [array(acc,order='F'),array(don_X,order='F'),array(don_H,order='F'),array(don_start_H,order='F'),all_acc_wat]
 
 ###############################################################
 ###############################################################
@@ -930,19 +930,41 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 acc_don_A=self.selection_hbonds(setA=set_A,verbose=False)
                 if set_B==None:
                     acc_don_B=acc_don_A
+                    opt_diff_set=0
                 else:
                     acc_don_B=self.selection_hbonds(setA=set_B,verbose=False)
+        else:
+            if acc_don_B==None:
+                acc_con_B=acc_don_A
+                opt_diff_set=0
 
-        num_acc_A  = acc_don_A[0].shape[0]
-        num_don_A  = acc_don_A[1].shape[0]
-        num_H_A    = acc_don_A[2].shape[0]
-        num_s_H_A  = acc_don_A[3].shape[0]
-        allwat_A   = acc_don_A[4]
-        num_acc_B  = acc_don_B[0].shape[0]
-        num_don_B  = acc_don_B[1].shape[0]
-        num_H_B    = acc_don_B[2].shape[0]
-        num_s_H_B  = acc_don_B[3].shape[0]
-        allwat_B   = acc_don_B[4]
+        num_acc_A     = acc_don_A[0].shape[0]
+        num_don_A     = acc_don_A[1].shape[0]
+        num_H_A       = acc_don_A[2].shape[0]
+        num_s_H_A     = acc_don_A[3].shape[0]
+        allaccwat_A   = acc_don_A[4]
+        num_acc_B     = acc_don_B[0].shape[0]
+        num_don_B     = acc_don_B[1].shape[0]
+        num_H_B       = acc_don_B[2].shape[0]
+        num_s_H_B     = acc_don_B[3].shape[0]
+        allaccwat_B   = acc_don_B[4]
+
+        if (faux.hbonds.definition == 1):
+            if not (allaccwat_A.and.allaccwat_B):
+                print '# the Skinner definition needs acceptors with 2 hydrogens (water)'
+            else:
+                faux.hbonds.ind_perp_acc_b=empty(shape=(num_acc_B,2),dtype=int,order='Fortran')
+                for ii in range(num_acc_B):
+                    jj=self.atom[acc_don_B[0][ii]]
+                    faux.hbonds.ind_perp_acc_b[ii,0]=jj.covalent_bonds[0]
+                    faux.hbonds.ind_perp_acc_b[ii,1]=jj.covalent_bonds[1]
+                if opt_diff_set:
+                    faux.hbonds.ind_perp_acc_a=empty(shape=(num_acc_A,2),dtype=int,order='Fortran')
+                    for ii in range(num_acc_A):
+                        jj=self.atom[acc_don_A[0][ii]]
+                        faux.hbonds.ind_perp_acc_a[ii,0]=jj.covalent_bonds[0]
+                        faux.hbonds.ind_perp_acc_a[ii,1]=jj.covalent_bonds[1]
+                            
 
         natomA=self.num_atoms
         natomB=self.num_atoms
@@ -951,9 +973,9 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         for iframe in __read_frame_opt__(self,traj,frame):
             
             faux.hbonds.get_hbonds(opt_effic, opt_diff_syst, opt_diff_set, opt_pbc,\
-                                       acc_don_A[0],acc_don_A[1],acc_don_A[2],acc_don_A[3],allwat_A,\
+                                       acc_don_A[0],acc_don_A[1],acc_don_A[2],acc_don_A[3],allaccwat_A,\
                                        iframe.coors,iframe.box,iframe.orthogonal,\
-                                       acc_don_B[0],acc_don_B[1],acc_don_B[2],acc_don_B[3],allwat_B,\
+                                       acc_don_B[0],acc_don_B[1],acc_don_B[2],acc_don_B[3],allaccwat_B,\
                                        iframe.coors,num_acc_A,num_don_A,num_H_A,num_s_H_A,\
                                        num_acc_B,num_don_B,num_H_B,num_s_H_B,\
                                        natomA,natomB)
