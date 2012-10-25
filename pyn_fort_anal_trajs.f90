@@ -86,7 +86,7 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
 
      WRITE(f1,'(I6)') cajon
      WRITE(f2,'(I6)') len_str
-     f3="(I,"//TRIM(ADJUSTL(f1))//"I"//TRIM(ADJUSTL(f2))//")"
+     f3="(I0,"//TRIM(ADJUSTL(f1))//"I"//TRIM(ADJUSTL(f2))//")"
 
      OPEN(21,FILE="trad_aux.aux",status="REPLACE",ACTION="WRITE")
      IF (cajon==1) THEN
