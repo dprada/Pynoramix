@@ -87,7 +87,7 @@ And plotted with pylab as:
 
    In [8]: import pylab as pylab
 
-   In [9]: pylab.plot(hxx,hyy,'b-')
+   In [9]: pylab.plot(hx,hy,'b-')
 
    In [11]: pylab.show()
 
