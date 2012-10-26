@@ -1609,13 +1609,16 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
 
      CASE (3) ! R(o,o)-Ang(o,o,h)                                                                        !ROO_ANG 
         !!!! Source: A. Luzar, D. Chandler. Phys. Rev. Lett. 76, 928-931 (1996)                          !ROO_ANG 
+        print*,'ENTRA'
         DO ii=1,nA_don                                                                                   !ROO_ANG 
+           print*,ii
            don=don_A(ii)+1                                                                               !ROO_ANG 
            pos_don=coors1(don,:)                                                                         !ROO_ANG 
            DO hh=don_sH_A(ii)+1,don_sH_A(ii+1)                                                           !ROO_ANG 
               don_h=don_H_A(hh)+1                                                                        !ROO_ANG 
               pos_h=coors1(don_h,:)                                                                      !ROO_ANG 
               vect_don_h=coors1(don_h,:)-pos_don                                                         !ROO_ANG
+              dist_don_h=sqrt(dot_product(vect_don_h,vect_don_h))                                        !ROO_ANG
               gg=0                                                                                       !ROO_ANG 
               DO jj=1,nB_acc                                                                             !ROO_ANG 
                  acc=acc_B(jj)+1                                                                         !ROO_ANG 
@@ -1623,8 +1626,7 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                  IF (pbc_opt) CALL PBC(vect_don_acc,box1,ortho1)                                         !ROO_ANG 
                  dist_don_acc=sqrt(dot_product(vect_don_acc,vect_don_acc))                               !ROO_ANG
                  IF (dist_don_acc<roo_param) THEN                                                        !ROO_ANG 
-                    dist_don_h=sqrt(dot_product(vect_don_h,vect_don_h))                                  !ROO_ANG
-                    aux_cos=dot_product(vect_don_h,vect_don_acc)/(dist_don_acc*dist_h_acc)               !ROO_ANG
+                    aux_cos=dot_product(vect_don_h,vect_don_acc)/(dist_don_acc*dist_don_h)               !ROO_ANG
                     IF (aux_cos>cos_angooh_param) THEN                                                   !ROO_ANG
                        gg=gg+1                                                                           !ROO_ANG 
                        IF (gg>lim_hbs) THEN                                                              !ROO_ANG 

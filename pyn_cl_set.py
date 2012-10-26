@@ -924,8 +924,6 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
     def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,pbc=True,verbose=False):
 
-        print definition, acc_don_A, acc_don_B
-
         opt_effic=0
         opt_diff_syst=0
         opt_diff_set=1
@@ -956,7 +954,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                     acc_don_B=self.selection_hbonds(setA=set_B,verbose=False)
         else:
             if acc_don_B==None:
-                acc_con_B=acc_don_A
+                acc_don_B=acc_don_A
                 opt_diff_set=0
 
 

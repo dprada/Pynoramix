@@ -9,7 +9,7 @@ FTYPE=
 # lapack libraries
 LAPACK_LIBS=
 # options fortran compiler (-checkall, -fast, ..)
-FOPTS=-checkall
+FOPTS=-check 
 # additional fortran flags
 FFLAGS=
 
