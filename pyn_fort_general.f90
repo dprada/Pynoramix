@@ -1275,13 +1275,19 @@ DOUBLE PRECISION::cos_angooh_param  ! the cosine
 
 
 !!Output
-INTEGER,DIMENSION(:,:),ALLOCATABLE::hbonds_out
+INTEGER,DIMENSION(:),ALLOCATABLE::hbs_s_A,hbs_inds_A,hbs_s_B,hbs_inds_B
+DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::hbs_vals_A,hbs_vals_B
 
 CONTAINS
 
 SUBROUTINE FREE_MEMORY ()
 
-  IF (ALLOCATED(hbonds_out)) DEALLOCATE(hbonds_out)
+  IF (ALLOCATED(hbs_s_A)) DEALLOCATE(hbs_s_A)
+  IF (ALLOCATED(hbs_s_B)) DEALLOCATE(hbs_s_B)
+  IF (ALLOCATED(hbs_inds_A)) DEALLOCATE(hbs_inds_A)
+  IF (ALLOCATED(hbs_inds_B)) DEALLOCATE(hbs_inds_B)
+  IF (ALLOCATED(hbs_vals_A)) DEALLOCATE(hbs_vals_A)
+  IF (ALLOCATED(hbs_vals_B)) DEALLOCATE(hbs_vals_B)
 
 END SUBROUTINE FREE_MEMORY
 
@@ -1318,6 +1324,7 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
 
   TYPE(iarray_pointer),DIMENSION(:),POINTER::hbs_a_ind,hbs_b_ind 
   TYPE(darray_pointer),DIMENSION(:),POINTER::hbs_a_val,hbs_b_val 
+  INTEGER,DIMENSION(:),ALLOCATABLE::num_hbs_a,num_hbs_b
 
   INTEGER::ii,jj,gg
   INTEGER::don,don_h,acc
@@ -1331,15 +1338,16 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
   INTEGER::acc_H1,acc_H2
   DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::vect_perp
 
-  INTEGER,DIMENSION(:),ALLOCATABLE::aux_box_ind,aux2_box_ind,num_hbs_a,num_hbs_b
+  INTEGER,DIMENSION(:),ALLOCATABLE::aux_box_ind,aux2_box_ind
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::aux_box_val,aux2_box_val
 
   LOGICAL,DIMENSION(:),ALLOCATABLE::filtro
 
 
-  lim_hbs=8
+  lim_hbs=3
 
-  ALLOCATE(aux_box_ind(lim_hbs),aux_box_val(lim_hbs))
+  ALLOCATE(aux_box_ind(lim_hbs),aux_box_val(lim_hbs),filtro(lim_hbs))
+  filtro=.FALSE.
 
   ALLOCATE(hbs_a_ind(nA_don_H),hbs_a_val(nA_don_H))
   ALLOCATE(hbs_b_ind(nB_don_H),hbs_b_val(nB_don_H))
@@ -1347,7 +1355,6 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
 
   num_hbs_a=0
   num_hbs_b=0
-
 
 
   IF (diff_syst==0) THEN
@@ -1399,10 +1406,11 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                        ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))                             !SK 
                        aux2_box_ind=aux_box_ind                                                          !SK 
                        aux2_box_val=aux_box_val                                                          !SK 
-                       DEALLOCATE(aux_box_ind,aux_box_val)                                               !SK 
-                       ALLOCATE(aux_box_ind(gg),aux_box_val(gg))                                         !SK 
+                       DEALLOCATE(aux_box_ind,aux_box_val,filtro)                                        !SK 
+                       ALLOCATE(aux_box_ind(gg),aux_box_val(gg),filtro(gg))                              !SK 
                        aux_box_ind(1:lim_hbs)=aux2_box_ind                                               !SK 
                        aux_box_val(1:lim_hbs)=aux2_box_val                                               !SK 
+                       filtro=.FALSE.
                        DEALLOCATE(aux2_box_ind,aux2_box_val)                                             !SK 
                        lim_hbs=gg                                                                        !SK 
                     END IF                                                                               !SK 
@@ -1413,15 +1421,13 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                                                                                                          !SK 
               IF (gg>0) THEN                                                                             !SK 
                  ALLOCATE(hbs_a_ind(hh)%i1(gg),hbs_a_val(hh)%d1(gg))                                     !SK 
-                 ALLOCATE(filtro(gg))                                                                    !SK 
-                 filtro=.TRUE.                                                                           !SK 
+                 filtro(1:gg)=.TRUE.                                                                     !SK 
                  DO jj=1,gg                                                                              !SK 
                     ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)                                          !SK 
                     filtro(ll)=.FALSE.                                                                   !SK 
                     hbs_a_ind(hh)%i1(jj)=aux_box_ind(ll)                                                 !SK 
                     hbs_a_val(hh)%d1(jj)=aux_box_val(ll)                                                 !SK 
                  END DO                                                                                  !SK 
-                 DEALLOCATE(filtro)                                                                      !SK 
               END IF                                                                                     !SK 
                                                                                                          !SK 
               num_hbs_a(hh)=gg                                                                           !SK 
@@ -1474,10 +1480,11 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                           ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))                          !SK 
                           aux2_box_ind=aux_box_ind                                                       !SK 
                           aux2_box_val=aux_box_val                                                       !SK 
-                          DEALLOCATE(aux_box_ind,aux_box_val)                                            !SK 
-                          ALLOCATE(aux_box_ind(gg),aux_box_val(gg))                                      !SK 
+                          DEALLOCATE(aux_box_ind,aux_box_val,filtro)                                     !SK 
+                          ALLOCATE(aux_box_ind(gg),aux_box_val(gg),filtro(gg))                           !SK 
                           aux_box_ind(1:lim_hbs)=aux2_box_ind                                            !SK 
                           aux_box_val(1:lim_hbs)=aux2_box_val                                            !SK 
+                          filtro=.FALSE.
                           DEALLOCATE(aux2_box_ind,aux2_box_val)                                          !SK 
                           lim_hbs=gg                                                                     !SK 
                        END IF                                                                            !SK 
@@ -1488,15 +1495,13 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                                                                                                          !SK 
                  IF (gg>0) THEN                                                                          !SK 
                     ALLOCATE(hbs_b_ind(hh)%i1(gg),hbs_b_val(hh)%d1(gg))                                  !SK 
-                    ALLOCATE(filtro(gg))                                                                 !SK 
-                    filtro=.TRUE.                                                                        !SK 
+                    filtro(1:gg)=.TRUE.                                                                  !SK 
                     DO jj=1,gg                                                                           !SK 
                        ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)                                       !SK 
                        filtro(ll)=.FALSE.                                                                !SK 
                        hbs_b_ind(hh)%i1(jj)=aux_box_ind(ll)                                              !SK 
                        hbs_b_val(hh)%d1(jj)=aux_box_val(ll)                                              !SK 
                     END DO                                                                               !SK 
-                    DEALLOCATE(filtro)                                                                   !SK 
                  END IF                                                                                  !SK 
                                                                                                          !SK 
                  num_hbs_b(hh)=gg                                                                        !SK 
@@ -1525,10 +1530,11 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                        ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))             !ROH 
                        aux2_box_ind=aux_box_ind                                          !ROH 
                        aux2_box_val=aux_box_val                                          !ROH 
-                       DEALLOCATE(aux_box_ind,aux_box_val)                               !ROH 
-                       ALLOCATE(aux_box_ind(gg),aux_box_val(gg))                         !ROH 
+                       DEALLOCATE(aux_box_ind,aux_box_val,filtro)                        !ROH 
+                       ALLOCATE(aux_box_ind(gg),aux_box_val(gg),filtro(gg))              !ROH 
                        aux_box_ind(1:lim_hbs)=aux2_box_ind                               !ROH 
                        aux_box_val(1:lim_hbs)=aux2_box_val                               !ROH 
+                       filtro=.FALSE.
                        DEALLOCATE(aux2_box_ind,aux2_box_val)                             !ROH 
                        lim_hbs=gg                                                        !ROH 
                     END IF                                                               !ROH 
@@ -1539,15 +1545,13 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                                                                                          !ROH 
               IF (gg>0) THEN                                                             !ROH 
                  ALLOCATE(hbs_a_ind(hh)%i1(gg),hbs_a_val(hh)%d1(gg))                     !ROH 
-                 ALLOCATE(filtro(gg))                                                    !ROH 
-                 filtro=.TRUE.                                                           !ROH 
+                 filtro(1:gg)=.TRUE.                                                     !ROH 
                  DO jj=1,gg                                                              !ROH 
                     ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)                          !ROH 
                     filtro(ll)=.FALSE.                                                   !ROH 
                     hbs_a_ind(hh)%i1(jj)=aux_box_ind(ll)                                 !ROH 
                     hbs_a_val(hh)%d1(jj)=aux_box_val(ll)                                 !ROH 
                  END DO                                                                  !ROH 
-                 DEALLOCATE(filtro)                                                      !ROH 
               END IF                                                                     !ROH 
                                                                                          !ROH 
               num_hbs_a(hh)=gg                                                           !ROH 
@@ -1574,10 +1578,11 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                           ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))          !ROH 
                           aux2_box_ind=aux_box_ind                                       !ROH 
                           aux2_box_val=aux_box_val                                       !ROH 
-                          DEALLOCATE(aux_box_ind,aux_box_val)                            !ROH 
-                          ALLOCATE(aux_box_ind(gg),aux_box_val(gg))                      !ROH 
+                          DEALLOCATE(aux_box_ind,aux_box_val,filtro)                     !ROH 
+                          ALLOCATE(aux_box_ind(gg),aux_box_val(gg),filtro(gg))           !ROH 
                           aux_box_ind(1:lim_hbs)=aux2_box_ind                            !ROH 
                           aux_box_val(1:lim_hbs)=aux2_box_val                            !ROH 
+                          filtro=.FALSE.
                           DEALLOCATE(aux2_box_ind,aux2_box_val)                          !ROH 
                           lim_hbs=gg                                                     !ROH 
                        END IF                                                            !ROH 
@@ -1588,15 +1593,13 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                                                                                          !ROH 
                  IF (gg>0) THEN                                                          !ROH 
                     ALLOCATE(hbs_b_ind(hh)%i1(gg),hbs_b_val(hh)%d1(gg))                  !ROH 
-                    ALLOCATE(filtro(gg))                                                 !ROH 
-                    filtro=.TRUE.                                                        !ROH 
+                    filtro(1:gg)=.TRUE.                                                  !ROH 
                     DO jj=1,gg                                                           !ROH 
                        ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)                       !ROH 
                        filtro(ll)=.FALSE.                                                !ROH 
                        hbs_b_ind(hh)%i1(jj)=aux_box_ind(ll)                              !ROH 
                        hbs_b_val(hh)%d1(jj)=aux_box_val(ll)                              !ROH 
                     END DO                                                               !ROH 
-                    DEALLOCATE(filtro)                                                   !ROH 
                  END IF                                                                  !ROH 
                                                                                          !ROH 
                  num_hbs_b(hh)=gg                                                        !ROH 
@@ -1609,9 +1612,7 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
 
      CASE (3) ! R(o,o)-Ang(o,o,h)                                                                        !ROO_ANG 
         !!!! Source: A. Luzar, D. Chandler. Phys. Rev. Lett. 76, 928-931 (1996)                          !ROO_ANG 
-        print*,'ENTRA'
         DO ii=1,nA_don                                                                                   !ROO_ANG 
-           print*,ii
            don=don_A(ii)+1                                                                               !ROO_ANG 
            pos_don=coors1(don,:)                                                                         !ROO_ANG 
            DO hh=don_sH_A(ii)+1,don_sH_A(ii+1)                                                           !ROO_ANG 
@@ -1633,10 +1634,11 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                           ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))                          !ROO_ANG 
                           aux2_box_ind=aux_box_ind                                                       !ROO_ANG 
                           aux2_box_val=aux_box_val                                                       !ROO_ANG 
-                          DEALLOCATE(aux_box_ind,aux_box_val)                                            !ROO_ANG 
-                          ALLOCATE(aux_box_ind(gg),aux_box_val(gg))                                      !ROO_ANG 
+                          DEALLOCATE(aux_box_ind,aux_box_val,filtro)                                     !ROO_ANG 
+                          ALLOCATE(aux_box_ind(gg),aux_box_val(gg),filtro(gg))                           !ROO_ANG 
                           aux_box_ind(1:lim_hbs)=aux2_box_ind                                            !ROO_ANG 
                           aux_box_val(1:lim_hbs)=aux2_box_val                                            !ROO_ANG 
+                          filtro=.FALSE.                                                                 !ROO_ANG
                           DEALLOCATE(aux2_box_ind,aux2_box_val)                                          !ROO_ANG 
                           lim_hbs=gg                                                                     !ROO_ANG 
                        END IF                                                                            !ROO_ANG 
@@ -1648,15 +1650,13 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                                                                                                          !ROO_ANG 
               IF (gg>0) THEN                                                                             !ROO_ANG 
                  ALLOCATE(hbs_a_ind(hh)%i1(gg),hbs_a_val(hh)%d1(gg))                                     !ROO_ANG 
-                 ALLOCATE(filtro(gg))                                                                    !ROO_ANG 
-                 filtro=.TRUE.                                                                           !ROO_ANG 
+                 filtro(1:gg)=.TRUE.                                                                     !ROO_ANG 
                  DO jj=1,gg                                                                              !ROO_ANG 
                     ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)                                          !ROO_ANG 
                     filtro(ll)=.FALSE.                                                                   !ROO_ANG 
                     hbs_a_ind(hh)%i1(jj)=aux_box_ind(ll)                                                 !ROO_ANG 
                     hbs_a_val(hh)%d1(jj)=aux_box_val(ll)                                                 !ROO_ANG 
                  END DO                                                                                  !ROO_ANG 
-                 DEALLOCATE(filtro)                                                                      !ROO_ANG 
               END IF                                                                                     !ROO_ANG 
                                                                                                          !ROO_ANG 
               num_hbs_a(hh)=gg                                                                           !ROO_ANG 
@@ -1681,18 +1681,18 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                     IF (pbc_opt) CALL PBC(vect_don_acc,box1,ortho1)                                      !ROO_ANG 
                     dist_don_acc=sqrt(dot_product(vect_don_acc,vect_don_acc))                            !ROO_ANG
                     IF (dist_don_acc<roo_param) THEN                                                     !ROO_ANG 
-                       dist_h_acc=sqrt(dot_product(vect_h_acc,vect_h_acc))                               !ROO_ANG
-                       aux_cos=dot_product(vect_h_acc,vect_don_acc)/(dist_don_acc*dist_h_acc)            !ROO_ANG
+                       aux_cos=dot_product(vect_don_h,vect_don_acc)/(dist_don_acc*dist_don_h)            !ROO_ANG
                        IF (aux_cos>cos_angooh_param) THEN                                                !ROO_ANG
                           gg=gg+1                                                                        !ROO_ANG 
                           IF (gg>lim_hbs) THEN                                                           !ROO_ANG 
                              ALLOCATE(aux2_box_ind(lim_hbs),aux2_box_val(lim_hbs))                       !ROO_ANG 
                              aux2_box_ind=aux_box_ind                                                    !ROO_ANG 
                              aux2_box_val=aux_box_val                                                    !ROO_ANG 
-                             DEALLOCATE(aux_box_ind,aux_box_val)                                         !ROO_ANG 
-                             ALLOCATE(aux_box_ind(gg),aux_box_val(gg))                                   !ROO_ANG 
+                             DEALLOCATE(aux_box_ind,aux_box_val,filtro)                                  !ROO_ANG 
+                             ALLOCATE(aux_box_ind(gg),aux_box_val(gg),filtro(gg))                        !ROO_ANG 
                              aux_box_ind(1:lim_hbs)=aux2_box_ind                                         !ROO_ANG 
                              aux_box_val(1:lim_hbs)=aux2_box_val                                         !ROO_ANG 
+                             filtro=.FALSE.                                                              !ROO_ANG
                              DEALLOCATE(aux2_box_ind,aux2_box_val)                                       !ROO_ANG 
                              lim_hbs=gg                                                                  !ROO_ANG 
                           END IF                                                                         !ROO_ANG 
@@ -1704,15 +1704,13 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                                                                                                          !ROO_ANG 
                  IF (gg>0) THEN                                                                          !ROO_ANG 
                     ALLOCATE(hbs_b_ind(hh)%i1(gg),hbs_b_val(hh)%d1(gg))                                  !ROO_ANG 
-                    ALLOCATE(filtro(gg))                                                                 !ROO_ANG 
-                    filtro=.TRUE.                                                                        !ROO_ANG 
+                    filtro(1:gg)=.TRUE.                                                                  !ROO_ANG 
                     DO jj=1,gg                                                                           !ROO_ANG 
                        ll=MAXLOC(aux_box_val(:),DIM=1,MASK=filtro)                                       !ROO_ANG 
                        filtro(ll)=.FALSE.                                                                !ROO_ANG 
                        hbs_b_ind(hh)%i1(jj)=aux_box_ind(ll)                                              !ROO_ANG 
                        hbs_b_val(hh)%d1(jj)=aux_box_val(ll)                                              !ROO_ANG 
                     END DO                                                                               !ROO_ANG 
-                    DEALLOCATE(filtro)                                                                   !ROO_ANG 
                  END IF                                                                                  !ROO_ANG 
                                                                                                          !ROO_ANG 
                  num_hbs_b(hh)=gg                                                                        !ROO_ANG 
@@ -1855,10 +1853,21 @@ SUBROUTINE GET_HBONDS (effic,diff_syst,diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
      
      END SELECT
 
+     print*,SUM(num_hbs_a(:),DIM=1),SUM(num_hbs_b(:),DIM=1)
+
+
 
   ELSE
      PRINT*,'NOT IMPLEMENTED YET'
   END IF
+
+
+  DEALLOCATE(aux_box_ind,aux_box_val)
+  DEALLOCATE(hbs_a_ind,hbs_a_val)
+  DEALLOCATE(hbs_b_ind,hbs_b_val)
+  DEALLOCATE(num_hbs_a,num_hbs_b)
+  DEALLOCATE(filtro)
+
 
 END SUBROUTINE GET_HBONDS
 

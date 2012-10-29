@@ -991,8 +991,10 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                                        iframe.coors,nA_acc,nA_acc_sH,nA_acc_H,nA_don,nA_don_sH,nA_don_H, \
                                        nB_acc,nB_acc_sH,nB_acc_H,nB_don,nB_don_sH,nB_don_H, \
                                        natomA,natomB)
-
-            pass
+            
+            #if verbose:
+            #    print 'Listo'
+        pass
 
 
     #def contact_map (self,setA=None,setB=None,dist=None,traj=0,frame=0,pbc=True):
