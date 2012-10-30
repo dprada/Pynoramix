@@ -922,6 +922,34 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             else:
                 return neighbs
 
+    def contact_list (self,cutoff=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,update=False,sqrt_dist=False,verbose=False):
+
+        pbc_opt=0
+        if pbc:
+            pbc_opt=1
+
+        sqrt_opt=0
+        if sqrt_dist:
+            sqrt_opt=1
+
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
+        
+        if type(frame) not in [int32,int]:
+            print 'This function only analyses a frame: type(frame)=int.'
+            pass
+
+        if update:
+            for iframe in __read_frame_opt__(self,traj,frame):
+                faux.glob.update_contact_list(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
+                                                  iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+        else:
+            for iframe in __read_frame_opt__(self,traj,frame):
+                faux.glob.make_contact_list(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
+                                                iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+
+            
+
+
     def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,pbc=True,verbose=False):
 
         opt_effic=0
@@ -934,8 +962,8 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         faux.hbonds.definition=hbonds_type(definition,verbose=False)
         if faux.hbonds.definition == 0 : return
         if faux.hbonds.definition == 1 : faux.hbonds.sk_param=sk_param
-        if faux.hbonds.definition == 2 : faux.hbonds.roh_param= roh_param
-        if faux.hbonds.definition == 3 : faux.hbonds.roo_param, faux.hbonds.cos_angooh_param= roo_param, cos(radians(angooh_param))
+        if faux.hbonds.definition == 2 : faux.hbonds.roh2_param= roh_param**2
+        if faux.hbonds.definition == 3 : faux.hbonds.roo2_param, faux.hbonds.cos_angooh_param= roo_param**2, cos(radians(angooh_param))
         if faux.hbonds.definition == 4 : pass
         if faux.hbonds.definition == 5 : pass
         if faux.hbonds.definition == 6 : faux.hbonds.cos_angooh_param= cos(radians(angooh_param))
