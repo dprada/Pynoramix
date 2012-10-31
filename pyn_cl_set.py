@@ -948,6 +948,32 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                                                 iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
 
             
+    def contact_list2 (self,cutoff=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,update=False,sqrt_dist=False,verbose=False):
+
+        pbc_opt=0
+        if pbc:
+            pbc_opt=1
+
+        sqrt_opt=0
+        if sqrt_dist:
+            sqrt_opt=1
+
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
+        
+        if type(frame) not in [int32,int]:
+            print 'This function only analyses a frame: type(frame)=int.'
+            pass
+
+        if update:
+            for iframe in __read_frame_opt__(self,traj,frame):
+                faux.glob.update_contact_list2(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
+                                                  iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+        else:
+            for iframe in __read_frame_opt__(self,traj,frame):
+                faux.glob.make_contact_list2(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
+                                                iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+
+            
 
 
     def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,pbc=True,verbose=False):
