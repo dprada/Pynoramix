@@ -556,6 +556,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 temp_atom.resid.name=line[5:10].replace(" ", "")
                 temp_atom.resid.pdb_index=int(line[0:5]) 
                 temp_atom.index=i           
+                temp_atom.chain.name='A'
                 self.atom.append(temp_atom)
 
             ff.close()
@@ -924,31 +925,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
     def contact_list (self,cutoff=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,update=False,sqrt_dist=False,verbose=False):
 
-        pbc_opt=0
-        if pbc:
-            pbc_opt=1
-
-        sqrt_opt=0
-        if sqrt_dist:
-            sqrt_opt=1
-
-        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
-        
-        if type(frame) not in [int32,int]:
-            print 'This function only analyses a frame: type(frame)=int.'
-            pass
-
-        if update:
-            for iframe in __read_frame_opt__(self,traj,frame):
-                faux.glob.update_contact_list(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
-                                                  iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
-        else:
-            for iframe in __read_frame_opt__(self,traj,frame):
-                faux.glob.make_contact_list(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
-                                                iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
-
-            
-    def contact_list2 (self,cutoff=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,update=False,sqrt_dist=False,verbose=False):
+        # Probar a hacer un contact list sin Hidrogenos
 
         pbc_opt=0
         if pbc:
@@ -973,8 +950,42 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 faux.glob.make_contact_list2(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
                                                 iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
 
-            
+    def contact_list_checking (self,cutoff=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,verbose=False):
 
+        sqrt_opt=0
+        pbc_opt=0
+        if pbc:
+            pbc_opt=1
+
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
+        
+        if type(frame) in [int32,int]:
+            print 'This function validates the cutoff of a contact list when a trajectory is analysed.'
+            print 'type(frame)=list,tuple or "ALL"'
+            pass
+
+        gg=0
+        for iframe in __read_frame_opt__(self,traj,frame):
+            if gg==0:
+                faux.glob.make_contact_list2(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
+                                                 iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+                gg+=1
+            else:
+                faux.glob.update_contact_list2(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
+                                                  iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+                copy_start=copy(faux.glob.cl_start)
+                copy_ind=copy(faux.glob.cl_ind)
+                copy_val=copy(faux.glob.cl_val)
+                LL=copy_ind.shape[0]/2.0
+                faux.glob.make_contact_list2(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
+                                                 iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+                LL_o=faux.glob.cl_ind.shape[0]/2.0
+                faux.glob.cl_start=copy(copy_start)
+                faux.glob.cl_ind=copy(copy_ind)
+                faux.glob.cl_val=copy(copy_val)
+                gg+=1
+                print (LL/LL_o)*100.0,'% in',gg,'steps'
+            
 
     def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,pbc=True,verbose=False):
 

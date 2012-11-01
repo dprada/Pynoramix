@@ -256,11 +256,6 @@ SUBROUTINE MAKE_CONTACT_LIST (cut_off,sqrt_opt,diff_syst,diff_set,pbc_opt,list1,
   gg=SUM(pcl_num(:),DIM=1)
   ALLOCATE(cl_val(gg),cl_ind(gg),cl_start(natom1+1))
 
-  print*, '-------------------'
-  print*, '>', gg 
-  print*, (gg*1.0)/(natom1*1.0d0)
-  print*, '-------------------'
-
   gg=0
   DO ii=1,natom1
      cl_start(ii)=gg
@@ -1030,11 +1025,6 @@ SUBROUTINE UPDATE_CONTACT_LIST (cut_off,sqrt_opt,diff_syst,diff_set,pbc_opt,list
   DEALLOCATE(filtro,caja)
   DEALLOCATE(cl_ind,cl_start)
   ALLOCATE(cl_val(gg),cl_ind(gg),cl_start(natom1+1))
-
-  print*, '-------------------'
-  print*, gg 
-  print*, (gg*1.0)/(natom1*1.0d0)
-  print*, '-------------------'
 
   gg=0
   DO ii=1,natom1
