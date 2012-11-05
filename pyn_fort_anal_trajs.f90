@@ -452,6 +452,8 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
               cumul_list(num_rep,:)=cumul
               traj_out(ii,nn,1)=num_rep
            END IF
+        ELSE
+           filter=.true.
         END IF
      END DO
   END DO
