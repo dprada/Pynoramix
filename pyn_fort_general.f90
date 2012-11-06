@@ -4,6 +4,14 @@ MODULE GLOB
   INTEGER,DIMENSION(:),ALLOCATABLE::cl_ind,cl_start  !! indices fortran
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::cl_val
 
+  DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::pos_ant
+  DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::delta_pos
+  INTEGER,DIMENSION(:),ALLOCATABLE::ver1_ind  !! indices fortran
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::ver1_val
+  INTEGER,DIMENSION(:),ALLOCATABLE::ver2_ind  !! indices fortran
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::ver2_val
+
+
 CONTAINS
 
 
@@ -38,6 +46,153 @@ SUBROUTINE PBC(vector,box,ortho)
   END IF
   
 END SUBROUTINE PBC
+
+SUBROUTINE MAKE_VERLET_LIST (r1,r2,diff_syst,diff_set,pbc_opt,list1,coors1,box1,vol1,ortho1,list2,coors2,n1,n2,natom1,natom2)
+
+  IMPLICIT NONE
+
+  TYPE iarray_pointer
+     INTEGER,DIMENSION(:),POINTER::i1
+  END TYPE iarray_pointer
+  TYPE darray_pointer
+     DOUBLE PRECISION,DIMENSION(:),POINTER::d1
+  END TYPE darray_pointer
+
+  DOUBLE PRECISION,INTENT(IN)::r1,r2
+  INTEGER,INTENT(IN)::diff_syst,diff_set,pbc_opt,ortho1
+  INTEGER,INTENT(IN)::n1,n2,natom1,natom2
+  INTEGER,DIMENSION(n1),INTENT(IN)::list1
+  INTEGER,DIMENSION(n2),INTENT(IN)::list2
+  double precision,intent(in)::vol1
+  double precision,dimension(natom1,3),intent(in)::coors1
+  double precision,DIMENSION(3,3),INTENT(IN)::box1
+  double precision,dimension(natom2,3),intent(in)::coors2
+
+  INTEGER,DIMENSION(:),ALLOCATABLE::ilist1,ilist2
+  DOUBLE PRECISION::r1_2,r2_2,dist2
+  DOUBLE PRECISION,DIMENSION(3)::vect,vect_aux
+  DOUBLE PRECISION::val_aux,pi,fact
+  !!! Hasta aqui 7.2 seg 1000 frames (3 min 25000)
+
+  INTEGER::ii,jj,gg,ll,kk
+  INTEGER::ai,aj,lim,gg1,gg2,sni1,sni2
+  INTEGER::dim1,dim2
+
+
+  r1_2=r1*r1
+  r2_2=r2*r2
+
+  pi=acos(-1.0d0)
+  fact=(natom1/vol1)*(4.0d0*pi/3.0d0)
+  dim1=CEILING(fact*(r1_2*r1)*n1) 
+  dim2=CEILING(fact*(r2_2*r2)*n1) 
+
+  IF (ALLOCATED(ver1_ind))   DEALLOCATE(ver1_ind)
+  IF (ALLOCATED(ver1_val))   DEALLOCATE(ver1_val)
+
+  IF (ALLOCATED(ver2_ind))   DEALLOCATE(ver2_ind)
+  IF (ALLOCATED(ver2_val))   DEALLOCATE(ver2_val)
+
+  IF (ALLOCATED(delta_pos))  DEALLOCATE(delta_pos)
+  IF (ALLOCATED(pos_ant))    DEALLOCATE(pos_ant)
+
+  ALLOCATE(delta_pos(n1,3),pos_ant(natom1,3))
+  delta_pos=0.0d0
+  pos_ant=coors1
+
+  ALLOCATE(ver1_ind(dim1),ver2_ind(dim2))
+  ALLOCATE(ver1_val(dim1),ver2_val(dim2))
+
+  print*,dim1,dim2
+
+  ALLOCATE(ilist1(n1),ilist2(n2))
+  ilist1(:)=list1(:)+1
+  ilist2(:)=list2(:)+1
+
+
+  sni2=1
+  sni1=1
+
+  DO ii=1,n1
+     ai=ilist1(ii)
+     vect_aux=coors1(ai,:)
+     gg2=0
+     gg1=0
+     DO jj=1,n2
+        IF (ii==jj) CYCLE
+        aj=ilist2(jj)
+        vect=(coors2(aj,:)-vect_aux)
+        CALL PBC (vect,box1,ortho1)
+        val_aux=dot_product(vect,vect)
+        IF (val_aux<=r2_2) THEN
+           gg2=gg2+1
+           ver2_ind(sni2+gg2)=aj
+           IF (val_aux<=r1_2) THEN
+              gg1=gg1+1
+              ver1_ind(sni1+gg1)=aj
+           END IF
+        END IF
+     END DO
+     ver2_ind(sni2)=gg2
+     ver1_ind(sni1)=gg1
+     sni2=sni2+gg2+1
+     sni1=sni1+gg1+1
+  END DO
+
+  print*,sni1,sni2
+
+
+
+END SUBROUTINE MAKE_VERLET_LIST
+
+
+!!$SUBROUTINE UPDATE_VERLET_LIST (r1,r2,diff_syst,diff_set,pbc_opt,list1,coors1,box1,vol1,ortho1,list2,coors2,n1,n2,natom1,natom2)
+!!$
+!!$  IMPLICIT NONE
+!!$
+!!$  TYPE iarray_pointer
+!!$     INTEGER,DIMENSION(:),POINTER::i1
+!!$  END TYPE iarray_pointer
+!!$  TYPE darray_pointer
+!!$     DOUBLE PRECISION,DIMENSION(:),POINTER::d1
+!!$  END TYPE darray_pointer
+!!$
+!!$  DOUBLE PRECISION,INTENT(IN)::r1,r2
+!!$  INTEGER,INTENT(IN)::diff_syst,diff_set,pbc_opt,ortho1
+!!$  INTEGER,INTENT(IN)::n1,n2,natom1,natom2
+!!$  INTEGER,DIMENSION(n1),INTENT(IN)::list1
+!!$  INTEGER,DIMENSION(n2),INTENT(IN)::list2
+!!$  double precision,intent(in)::vol1
+!!$  double precision,dimension(natom1,3),intent(in)::coors1
+!!$  double precision,DIMENSION(3,3),INTENT(IN)::box1
+!!$  double precision,dimension(natom2,3),intent(in)::coors2
+!!$
+!!$  INTEGER,DIMENSION(:),ALLOCATABLE::ilist1,ilist2
+!!$  DOUBLE PRECISION::r1_2,r2_2,dist2
+!!$  DOUBLE PRECISION,DIMENSION(3)::vect,vect_aux
+!!$  DOUBLE PRECISION::val_aux,pi,fact
+!!$  !!! Hasta aqui 7.2 seg 1000 frames (3 min 25000)
+!!$
+!!$  INTEGER::ii,jj,gg,ll,kk
+!!$  INTEGER::ai,aj,lim,gg1,gg2,sni1,sni2
+!!$  INTEGER::dim1,dim2
+!!$
+!!$  r1_2=r1*r1
+!!$  r2_2=r2*r2
+!!$
+!!$  pi=acos(-1.0d0)
+!!$  fact=(n1/vol1)*(4.0d0*pi/3.0d0)
+!!$  dim1=CEILING(fact*(r1_2*r1)*n1) 
+!!$  dim2=CEILING(fact*(r2_2*r2)*n1) 
+!!$
+!!$  drneimax=0.0 
+!!$  drneimax2=0.0
+!!$  
+!!$  DO ii=1,natom1
+!!$     delta_pos(ii)=delta_pos(ii)+dot_product(pos_ant(ii,:)-coors1(ii,:))
+!!$     IF (drneimax>)
+!!$
+!!$END SUBROUTINE UPDATE_VERLET_LIST
 
 
 SUBROUTINE MAKE_CONTACT_LIST (cut_off,sqrt_opt,diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2)
@@ -276,7 +431,6 @@ SUBROUTINE MAKE_CONTACT_LIST (cut_off,sqrt_opt,diff_syst,diff_set,pbc_opt,list1,
   IF (sqrt_opt) THEN
      cl_val=sqrt(cl_val)
   END IF
-
 
 END SUBROUTINE MAKE_CONTACT_LIST
 

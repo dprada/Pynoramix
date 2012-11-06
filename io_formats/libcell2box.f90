@@ -77,4 +77,35 @@ SUBROUTINE BOX2CELL (box,cell,volume,ortho)
 
 END SUBROUTINE BOX2CELL
 
+SUBROUTINE WRAP (coors1,box1,ortho1,natom1,coors_out)
+
+  INTEGER,INTENT(IN)::ortho1,natom1
+  double precision,DIMENSION(3,3),INTENT(IN)::box1
+  double precision,dimension(natom1,3),intent(in)::coors1
+
+  double precision,DIMENSION(natom1,3),INTENT(OUT)::coors_out
+  double precision,DIMENSION(3)::LL,LL2
+  DOUBLE PRECISION::aux
+
+  INTEGER::ii,jj,nn
+
+  DO jj=1,3
+     LL(jj)=box1(jj,jj)
+     LL2(jj)=LL(jj)/2.0d0
+  END DO
+
+  DO ii=1,natom1
+     DO jj=1,3
+        aux=coors1(ii,jj)
+        IF (abs(aux)>LL2(jj)) THEN
+           nn=CEILING((abs(aux)-LL2(jj))/LL(jj))
+           coors_out(ii,jj)=aux-nn*SIGN(LL(jj),aux)
+        ELSE
+           coors_out(ii,jj)=aux
+        END IF
+     END DO
+  END DO
+
+END SUBROUTINE WRAP
+
 
