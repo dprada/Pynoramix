@@ -21,3 +21,6 @@ class cl_frame():
     def box2cell(self):
         self.cell,self.volume,self.orthogonal=libcell.box2cell(self.box)
 
+    def wrap(self):
+        self.coors=libcell.wrap(self.coors,self.box,self.orthogonal,self.coors.shape[0])
+
