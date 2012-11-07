@@ -923,22 +923,50 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             else:
                 return neighbs
 
-    def verlet_list (self,r1=3.5,r2=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,update=False,sqrt_dist=False,verbose=False):
+    def verlet_list (self,r1=3.5,r2=6.0,traj=0,frame=0,pbc=True,update=False,verbose=False):
 
         pbc_opt=0
         if pbc:
             pbc_opt=1
 
-        sqrt_opt=0
-        if sqrt_dist:
-            sqrt_opt=1
+        if update:
+            for iframe in __read_frame_opt__(self,traj,frame):
+                faux.glob.update_verlet_list(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume, \
+                                               iframe.orthogonal,self.num_atoms)
+        else:
+            for iframe in __read_frame_opt__(self,traj,frame):
+                faux.glob.make_verlet_list(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume, \
+                                               iframe.orthogonal,self.num_atoms)
 
-        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB) # 2.1 segs 1000 times without the function (1 min 25000)
-        for iframe in __read_frame_opt__(self,traj,frame):
-            faux.glob.make_verlet_list(r1,r2,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box,iframe.volume, \
-                                             iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+    #def grid_ns_list (self,r=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,verbose=False):
+    #    
+    #    pbc_opt=0
+    #    if pbc:
+    #        pbc_opt=1
+    # 
+    #    setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB) # 2.1 segs 1000 times without the function (1 min 25000)
+    #    for iframe in __read_frame_opt__(self,traj,frame):
+    #            faux.glob.grid_ns_list(r,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box,iframe.volume, \
+    #                                           iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
 
+    def verlet_list_grid_ns(self,r1=3.5,r2=7.0,traj=0,frame=0,pbc=True,update=False,verbose=False):
 
+        pbc_opt=0
+        if pbc:
+            pbc_opt=1
+
+        if update:
+            pass
+
+        else:
+            for iframe in __read_frame_opt__(self,traj,frame):
+                faux.glob.make_cell_ns(r2,iframe.box,self.num_atoms)
+                print '1'
+                faux.glob.grid_ns_list(iframe.coors,iframe.box,self.num_atoms)
+                print '2'
+                faux.glob.make_verlet_list_grid_ns(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume,iframe.orthogonal,self.num_atoms)
+        
+        
     def contact_list (self,cutoff=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,update=False,sqrt_dist=False,verbose=False):
 
         # Probar a hacer un contact list sin Hidrogenos

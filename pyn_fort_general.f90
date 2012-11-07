@@ -5,12 +5,12 @@ MODULE GLOB
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::cl_val
 
   DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::pos_ant
-  DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::delta_pos
-  INTEGER,DIMENSION(:),ALLOCATABLE::ver1_ind  !! indices fortran
-  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::ver1_val
-  INTEGER,DIMENSION(:),ALLOCATABLE::ver2_ind  !! indices fortran
-  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::ver2_val
+  INTEGER,DIMENSION(:),ALLOCATABLE::ver_ic_ind  !! indices fortran
+  INTEGER,DIMENSION(:),ALLOCATABLE::ver_oc_ind  !! indices fortran
 
+  INTEGER,DIMENSION(:,:),ALLOCATABLE::cell_ns
+  INTEGER,DIMENSION(:),ALLOCATABLE::gns_head,gns_list,gns_at_cell
+  INTEGER::mtot_c,mx_c,my_c,mz_c
 
 CONTAINS
 
@@ -47,152 +47,292 @@ SUBROUTINE PBC(vector,box,ortho)
   
 END SUBROUTINE PBC
 
-SUBROUTINE MAKE_VERLET_LIST (r1,r2,diff_syst,diff_set,pbc_opt,list1,coors1,box1,vol1,ortho1,list2,coors2,n1,n2,natom1,natom2)
+SUBROUTINE MAKE_VERLET_LIST (r_ic,r_oc,pbc_opt,coors1,box1,vol1,ortho1,natom1)
 
   IMPLICIT NONE
+  DOUBLE PRECISION,INTENT(IN)::r_ic,r_oc
+  INTEGER,INTENT(IN)::pbc_opt,ortho1
+  INTEGER,INTENT(IN)::natom1
+  DOUBLE PRECISION,INTENT(IN)::vol1
+  DOUBLE PRECISION,DIMENSION(natom1,3),intent(in)::coors1
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::box1
 
-  TYPE iarray_pointer
-     INTEGER,DIMENSION(:),POINTER::i1
-  END TYPE iarray_pointer
-  TYPE darray_pointer
-     DOUBLE PRECISION,DIMENSION(:),POINTER::d1
-  END TYPE darray_pointer
-
-  DOUBLE PRECISION,INTENT(IN)::r1,r2
-  INTEGER,INTENT(IN)::diff_syst,diff_set,pbc_opt,ortho1
-  INTEGER,INTENT(IN)::n1,n2,natom1,natom2
-  INTEGER,DIMENSION(n1),INTENT(IN)::list1
-  INTEGER,DIMENSION(n2),INTENT(IN)::list2
-  double precision,intent(in)::vol1
-  double precision,dimension(natom1,3),intent(in)::coors1
-  double precision,DIMENSION(3,3),INTENT(IN)::box1
-  double precision,dimension(natom2,3),intent(in)::coors2
-
-  INTEGER,DIMENSION(:),ALLOCATABLE::ilist1,ilist2
-  DOUBLE PRECISION::r1_2,r2_2,dist2
+  DOUBLE PRECISION::r_ic2,r_oc2
   DOUBLE PRECISION,DIMENSION(3)::vect,vect_aux
   DOUBLE PRECISION::val_aux,pi,fact
   !!! Hasta aqui 7.2 seg 1000 frames (3 min 25000)
 
   INTEGER::ii,jj,gg,ll,kk
-  INTEGER::ai,aj,lim,gg1,gg2,sni1,sni2
-  INTEGER::dim1,dim2
+  INTEGER::dim_ic,sni_ic,gg_ic
+  INTEGER::dim_oc,sni_oc,gg_oc
 
-
-  r1_2=r1*r1
-  r2_2=r2*r2
+  r_ic2=r_ic*r_ic
+  r_oc2=r_oc*r_oc
 
   pi=acos(-1.0d0)
   fact=(natom1/vol1)*(4.0d0*pi/3.0d0)
-  dim1=CEILING(fact*(r1_2*r1)*n1) 
-  dim2=CEILING(fact*(r2_2*r2)*n1) 
+  dim_ic=CEILING(fact*(r_ic2*r_ic)*natom1) 
+  dim_oc=CEILING(fact*(r_oc2*r_oc)*natom1) 
 
-  IF (ALLOCATED(ver1_ind))   DEALLOCATE(ver1_ind)
-  IF (ALLOCATED(ver1_val))   DEALLOCATE(ver1_val)
+  IF (ALLOCATED(ver_ic_ind))   DEALLOCATE(ver_ic_ind)
+  IF (ALLOCATED(ver_oc_ind))   DEALLOCATE(ver_oc_ind)
+  IF (ALLOCATED(pos_ant))      DEALLOCATE(pos_ant)
 
-  IF (ALLOCATED(ver2_ind))   DEALLOCATE(ver2_ind)
-  IF (ALLOCATED(ver2_val))   DEALLOCATE(ver2_val)
-
-  IF (ALLOCATED(delta_pos))  DEALLOCATE(delta_pos)
-  IF (ALLOCATED(pos_ant))    DEALLOCATE(pos_ant)
-
-  ALLOCATE(delta_pos(n1,3),pos_ant(natom1,3))
-  delta_pos=0.0d0
+  ALLOCATE(pos_ant(natom1,3))
   pos_ant=coors1
 
-  ALLOCATE(ver1_ind(dim1),ver2_ind(dim2))
-  ALLOCATE(ver1_val(dim1),ver2_val(dim2))
+  ALLOCATE(ver_ic_ind(dim_ic),ver_oc_ind(dim_oc))
 
-  print*,dim1,dim2
+  print*,dim_ic,dim_oc
 
-  ALLOCATE(ilist1(n1),ilist2(n2))
-  ilist1(:)=list1(:)+1
-  ilist2(:)=list2(:)+1
+  sni_ic=1
+  sni_oc=1
 
-
-  sni2=1
-  sni1=1
-
-  DO ii=1,n1
-     ai=ilist1(ii)
-     vect_aux=coors1(ai,:)
-     gg2=0
-     gg1=0
-     DO jj=1,n2
+  DO ii=1,natom1
+     vect_aux=coors1(ii,:)
+     gg_ic=0
+     gg_oc=0
+     DO jj=1,natom1
         IF (ii==jj) CYCLE
-        aj=ilist2(jj)
-        vect=(coors2(aj,:)-vect_aux)
+        vect=(coors1(jj,:)-vect_aux)
         CALL PBC (vect,box1,ortho1)
         val_aux=dot_product(vect,vect)
-        IF (val_aux<=r2_2) THEN
-           gg2=gg2+1
-           ver2_ind(sni2+gg2)=aj
-           IF (val_aux<=r1_2) THEN
-              gg1=gg1+1
-              ver1_ind(sni1+gg1)=aj
+        IF (val_aux<=r_oc) THEN
+           gg_oc=gg_oc+1
+           ver_oc_ind(sni_oc+gg_oc)=jj
+           IF (val_aux<=r_ic) THEN
+              gg_ic=gg_ic+1
+              ver_ic_ind(sni_ic+gg_ic)=jj
            END IF
         END IF
      END DO
-     ver2_ind(sni2)=gg2
-     ver1_ind(sni1)=gg1
-     sni2=sni2+gg2+1
-     sni1=sni1+gg1+1
+     ver_oc_ind(sni_oc)=gg_oc
+     ver_ic_ind(sni_ic)=gg_ic
+     sni_oc=sni_oc+gg_oc+1
+     sni_ic=sni_ic+gg_ic+1
   END DO
 
-  print*,sni1,sni2
-
-
+  print*,sni_ic,sni_oc
 
 END SUBROUTINE MAKE_VERLET_LIST
 
 
-!!$SUBROUTINE UPDATE_VERLET_LIST (r1,r2,diff_syst,diff_set,pbc_opt,list1,coors1,box1,vol1,ortho1,list2,coors2,n1,n2,natom1,natom2)
-!!$
-!!$  IMPLICIT NONE
-!!$
-!!$  TYPE iarray_pointer
-!!$     INTEGER,DIMENSION(:),POINTER::i1
-!!$  END TYPE iarray_pointer
-!!$  TYPE darray_pointer
-!!$     DOUBLE PRECISION,DIMENSION(:),POINTER::d1
-!!$  END TYPE darray_pointer
-!!$
-!!$  DOUBLE PRECISION,INTENT(IN)::r1,r2
-!!$  INTEGER,INTENT(IN)::diff_syst,diff_set,pbc_opt,ortho1
-!!$  INTEGER,INTENT(IN)::n1,n2,natom1,natom2
-!!$  INTEGER,DIMENSION(n1),INTENT(IN)::list1
-!!$  INTEGER,DIMENSION(n2),INTENT(IN)::list2
-!!$  double precision,intent(in)::vol1
-!!$  double precision,dimension(natom1,3),intent(in)::coors1
-!!$  double precision,DIMENSION(3,3),INTENT(IN)::box1
-!!$  double precision,dimension(natom2,3),intent(in)::coors2
-!!$
-!!$  INTEGER,DIMENSION(:),ALLOCATABLE::ilist1,ilist2
-!!$  DOUBLE PRECISION::r1_2,r2_2,dist2
-!!$  DOUBLE PRECISION,DIMENSION(3)::vect,vect_aux
-!!$  DOUBLE PRECISION::val_aux,pi,fact
-!!$  !!! Hasta aqui 7.2 seg 1000 frames (3 min 25000)
-!!$
-!!$  INTEGER::ii,jj,gg,ll,kk
-!!$  INTEGER::ai,aj,lim,gg1,gg2,sni1,sni2
-!!$  INTEGER::dim1,dim2
-!!$
-!!$  r1_2=r1*r1
-!!$  r2_2=r2*r2
-!!$
-!!$  pi=acos(-1.0d0)
-!!$  fact=(n1/vol1)*(4.0d0*pi/3.0d0)
-!!$  dim1=CEILING(fact*(r1_2*r1)*n1) 
-!!$  dim2=CEILING(fact*(r2_2*r2)*n1) 
-!!$
-!!$  drneimax=0.0 
-!!$  drneimax2=0.0
-!!$  
-!!$  DO ii=1,natom1
-!!$     delta_pos(ii)=delta_pos(ii)+dot_product(pos_ant(ii,:)-coors1(ii,:))
-!!$     IF (drneimax>)
-!!$
-!!$END SUBROUTINE UPDATE_VERLET_LIST
+SUBROUTINE UPDATE_VERLET_LIST (r_ic,r_oc,pbc_opt,coors,box,vol,ortho,natom)
+
+  IMPLICIT NONE
+  DOUBLE PRECISION,INTENT(IN)::r_ic,r_oc
+  INTEGER,INTENT(IN)::pbc_opt,ortho
+  INTEGER,INTENT(IN)::natom
+  DOUBLE PRECISION,INTENT(IN)::vol
+  DOUBLE PRECISION,DIMENSION(natom,3),intent(in)::coors
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::box
+
+  DOUBLE PRECISION,DIMENSION(3)::vect
+  INTEGER::ii
+  DOUBLE PRECISION::drneimax,drneimax2
+  DOUBLE PRECISION::val_aux,r_diff
+
+  drneimax=0.0 
+  drneimax2=0.0
+
+  r_diff=r_oc-r_ic
+  
+  DO ii=1,natom
+     vect=pos_ant(ii,:)-coors(ii,:)
+     CALL PBC (vect,box,ortho)
+     val_aux=dot_product(vect,vect)
+     IF (val_aux > drneimax) THEN
+        drneimax2=drneimax
+        drneimax=val_aux
+     ELSE
+        IF (val_aux > drneimax2) THEN
+           drneimax2=val_aux
+        END IF
+     END IF
+  END DO
+
+  IF ((sqrt(drneimax2)+sqrt(drneimax))>r_diff) THEN
+     PRINT*,'aqui',(sqrt(drneimax2)+sqrt(drneimax)),r_diff
+     PRINT*,sqrt(drneimax2),sqrt(drneimax)
+  END IF
+
+END SUBROUTINE UPDATE_VERLET_LIST
+
+
+INTEGER FUNCTION CELL_INDEX(ix,iy,iz)
+
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN)::ix,iy,iz
+  cell_index=1+MOD(ix-1+mx_c,mx_c)+MOD(iy-1+my_c,my_c)*mx_c+MOD(iz-1+mz_c,mz_c)*mx_c*my_c
+
+END FUNCTION CELL_INDEX
+
+
+SUBROUTINE MAKE_CELL_NS (r,box,natom)
+
+  INTEGER,INTENT(IN)::natom
+  DOUBLE PRECISION,INTENT(IN)::r
+  double precision,DIMENSION(3,3),INTENT(IN)::box
+
+  INTEGER::ii,jj,kk,gg,ix,iy,iz
+
+  INTEGER::icell
+
+  mx_c=FLOOR(box(1,1)/r)
+  my_c=FLOOR(box(2,2)/r)
+  mz_c=FLOOR(box(3,3)/r)
+  mtot_c=mx_c*my_c*mz_c
+
+  print*,mx_c,my_c,mz_c
+  print*,box(1,1)/mx_c,box(2,2)/my_c,box(3,3)/mz_c
+
+  print*,((natom*1.0d0)/(mtot_c*1.0d0))
+
+
+  IF (ALLOCATED(cell_ns)) DEALLOCATE(cell_ns)
+  ALLOCATE(cell_ns(mtot_c,27))
+
+  DO ix=1,mx_c
+     DO iy=1,my_c
+        DO iz=1,mz_c
+           icell=cell_index(ix,iy,iz)
+           gg=0
+           DO ii=-1,1
+              DO jj=-1,1
+                 DO kk=-1,1
+                    gg=gg+1
+                    cell_ns(icell,gg)=cell_index(ix+ii,iy+jj,iz+kk)
+                 END DO
+              END DO
+           END DO
+        END DO
+     END DO
+  END DO
+  
+  IF (ALLOCATED(gns_head))    DEALLOCATE(gns_head)
+  IF (ALLOCATED(gns_list))    DEALLOCATE(gns_list)
+  IF (ALLOCATED(gns_at_cell)) DEALLOCATE(gns_at_cell)
+  ALLOCATE(gns_head(mtot_c))
+  ALLOCATE(gns_list(natom))
+  ALLOCATE(gns_at_cell(natom))
+
+END SUBROUTINE MAKE_CELL_NS
+
+
+SUBROUTINE GRID_NS_LIST (coors,box,natom)
+
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN)::natom
+  DOUBLE PRECISION,DIMENSION(natom,3),INTENT(in)::coors
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::box
+
+
+  DOUBLE PRECISION::Lx,Ly,Lz,Lx2,Ly2,Lz2,mx_c_L,my_c_L,mz_c_L
+  INTEGER::ii,icell
+
+  Lx=box(1,1)
+  Ly=box(2,2)
+  Lz=box(3,3)
+  Lx2=Lx/2.0d0 
+  Ly2=Ly/2.0d0 
+  Lz2=Lz/2.0d0 
+  mx_c_L=(mx_c*1.0d0)/Lx
+  my_c_L=(my_c*1.0d0)/Ly
+  mz_c_L=(mz_c*1.0d0)/Lz
+
+  gns_head=0
+
+  DO ii=1,natom
+
+     icell=1+int((coors(ii,1)+Lx2)*mx_c_L)+int((coors(ii,2)+Ly2)*my_c_L)*mx_c+int((coors(ii,3)+Lz2)*mz_c_L)*mx_c*my_c
+     gns_at_cell(ii)=icell
+     gns_list(ii)=gns_head(icell)
+     gns_head(icell)=ii
+
+  END DO
+
+END SUBROUTINE GRID_NS_LIST
+
+SUBROUTINE MAKE_VERLET_LIST_GRID_NS (r_ic,r_oc,pbc_opt,coors,box,vol,ortho,natom)
+
+  IMPLICIT NONE
+  DOUBLE PRECISION,INTENT(IN)::r_ic,r_oc
+  INTEGER,INTENT(IN)::pbc_opt,ortho
+  INTEGER,INTENT(IN)::natom
+  DOUBLE PRECISION,INTENT(IN)::vol
+  DOUBLE PRECISION,DIMENSION(natom,3),intent(in)::coors
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::box
+
+  DOUBLE PRECISION::r_ic2,r_oc2
+  DOUBLE PRECISION,DIMENSION(3)::vect,vect_aux
+  DOUBLE PRECISION::val_aux,pi,fact
+  !!! Hasta aqui 7.2 seg 1000 frames (3 min 25000)
+
+  INTEGER::ii,jj,gg,ll,kk,icell,ncell
+  INTEGER::dim_ic,sni_ic,gg_ic
+  INTEGER::dim_oc,sni_oc,gg_oc
+
+  r_ic2=r_ic*r_ic
+  r_oc2=r_oc*r_oc
+
+  pi=acos(-1.0d0)
+  fact=(natom/vol)*(4.0d0*pi/3.0d0)
+  dim_ic=CEILING(fact*(r_ic2*r_ic)*natom) 
+  dim_oc=CEILING(fact*(r_oc2*r_oc)*natom) 
+
+  IF (ALLOCATED(ver_ic_ind))   DEALLOCATE(ver_ic_ind)
+  IF (ALLOCATED(ver_oc_ind))   DEALLOCATE(ver_oc_ind)
+  IF (ALLOCATED(pos_ant))      DEALLOCATE(pos_ant)
+
+  ALLOCATE(pos_ant(natom,3))
+  pos_ant=coors
+
+  ALLOCATE(ver_ic_ind(dim_ic),ver_oc_ind(dim_oc))
+
+  print*,dim_ic,dim_oc
+
+  sni_ic=1
+  sni_oc=1
+
+  DO ii=1,natom
+     vect_aux=coors(ii,:)
+     gg_ic=0
+     gg_oc=0
+     icell=gns_at_cell(ii)
+     DO jj=1,27
+        ncell=cell_ns(icell,jj)
+        kk=gns_head(ncell)
+        DO
+           IF (kk==0) EXIT
+           IF (kk/=ii) THEN
+              vect=(coors(kk,:)-vect_aux)
+              CALL PBC (vect,box,ortho)
+              IF (val_aux<=r_oc) THEN
+                 gg_oc=gg_oc+1
+                 ver_oc_ind(sni_oc+gg_oc)=kk
+                 IF (val_aux<=r_ic) THEN
+                    gg_ic=gg_ic+1
+                    ver_ic_ind(sni_ic+gg_ic)=kk
+                 END IF
+              END IF
+           END IF
+           kk=gns_list(kk)
+        END DO
+     END DO
+     ver_oc_ind(sni_oc)=gg_oc
+     ver_ic_ind(sni_ic)=gg_ic
+     sni_oc=sni_oc+gg_oc+1
+     sni_ic=sni_ic+gg_ic+1
+  END DO
+
+  print*,sni_ic,sni_oc
+
+END SUBROUTINE MAKE_VERLET_LIST_GRID_NS
+
+
+
 
 
 SUBROUTINE MAKE_CONTACT_LIST (cut_off,sqrt_opt,diff_syst,diff_set,pbc_opt,list1,coors1,box1,ortho1,list2,coors2,n1,n2,natom1,natom2)
