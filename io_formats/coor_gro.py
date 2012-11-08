@@ -84,7 +84,7 @@ def read_aux(file_unit,io_vars=None,io_pos=None):
             temp_frame.box[2,0]=10.0*float(line[7])
             temp_frame.box[2,1]=10.0*float(line[8])
         temp_frame.box2cell()
-
+        temp_frame.wrap()
         io_pos=file_unit.tell()
 
     return temp_frame,io_pos,io_err,io_end   # io_file,io_err,io_end

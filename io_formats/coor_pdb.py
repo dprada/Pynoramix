@@ -97,6 +97,7 @@ def read_all(file_unit,io_vars=None,io_pos=None):
                 frame.cell[1,2] = cell_pdb[2]
                 frame.coors=array(frame.coors,order='Fortran')
                 frame.cell2box()
+                frame.wrap()
                 temp.append(frame)
                 read_new=False
                 frame=cl_frame()
@@ -110,6 +111,7 @@ def read_all(file_unit,io_vars=None,io_pos=None):
                 frame.cell[1,2] = cell_pdb[2]
                 frame.coors=array(frame.coors,order='Fortran')
                 frame.cell2box()
+                frame.wrap()
                 temp.append(frame)
             else:
                 del(frame)

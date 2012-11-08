@@ -77,34 +77,56 @@ SUBROUTINE BOX2CELL (box,cell,volume,ortho)
 
 END SUBROUTINE BOX2CELL
 
-SUBROUTINE WRAP (coors1,box1,ortho1,natom1,coors_out)
+SUBROUTINE WRAP (coors,box,ortho,natom,coors_out,offset)
 
-  INTEGER,INTENT(IN)::ortho1,natom1
-  double precision,DIMENSION(3,3),INTENT(IN)::box1
-  double precision,dimension(natom1,3),intent(in)::coors1
+  INTEGER,INTENT(IN)::ortho,natom
+  double precision,DIMENSION(3,3),INTENT(IN)::box
+  double precision,dimension(natom,3),intent(in)::coors
 
-  double precision,DIMENSION(natom1,3),INTENT(OUT)::coors_out
-  double precision,DIMENSION(3)::LL,LL2
-  DOUBLE PRECISION::aux
+  DOUBLE PRECISION,DIMENSION(natom,3),INTENT(OUT)::coors_out
+  DOUBLE PRECISION::Lx,Ly,Lz,x,y,z
 
   INTEGER::ii,jj,nn
 
-  DO jj=1,3
-     LL(jj)=box1(jj,jj)
-     LL2(jj)=LL(jj)/2.0d0
-  END DO
+  Lx=box(1,1)
+  Ly=box(2,2)
+  Lz=box(3,3)
 
-  DO ii=1,natom1
-     DO jj=1,3
-        aux=coors1(ii,jj)
-        IF (abs(aux)>LL2(jj)) THEN
-           nn=CEILING((abs(aux)-LL2(jj))/LL(jj))
-           coors_out(ii,jj)=aux-nn*SIGN(LL(jj),aux)
-        ELSE
-           coors_out(ii,jj)=aux
+  IF (ortho==1) THEN
+
+     DO ii=1,natom
+        x=coors(ii,1)
+        y=coors(ii,2)
+        z=coors(ii,3)
+        IF (x<0.0d0) THEN
+           nn=INT(abs(x)/Lx)+1
+           x=x+nn*Lx
+        ELSE IF (x>=Lx) THEN
+           nn=INT(x/Lx)
+           x=x-nn*Lx
         END IF
+        IF (y<0.0d0) THEN
+           nn=INT(abs(y)/Ly)+1
+           y=y+nn*Ly
+        ELSE IF (y>=Ly) THEN
+           nn=INT(y/Ly)
+           y=y-nn*Ly
+        END IF
+        IF (z<0.0d0) THEN
+           nn=INT(abs(z)/Lz)+1
+           z=z+nn*Lz
+        ELSE IF (z>=Lz) THEN
+           nn=INT(z/Lz)
+           z=z-nn*Lz
+        END IF
+        coors_out(ii,:)=(/x,y,z/)
      END DO
-  END DO
+     
+  ELSE
+
+     print*,'WRAP function not implemented for not orthorhombic unit cells.'
+
+  END IF
 
 END SUBROUTINE WRAP
 
