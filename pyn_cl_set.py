@@ -561,68 +561,68 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
             ff.close()
 
-    #def write_pdb (self,filename=None):
-    #    
-    #    if filename==None:
-    #        print 'Enter filename: '
-    #        print '      foo.write_pdb("foo.pdb")'
-    #    else:
-    #        if not filename.endswith('.pdb'): filename+='.pdb'
-    #        if path.exists(filename): 
-    #            print '# The file '+filename+' already exists.'
-    #            return
-    # 
-    #        file=open(filename,'w')
-    # 
-    #        a='HEADER    '+'> CREATED BY PYNORAMIX '+datetime.datetime.now().strftime("%Y-%m-%d %H:%M")+' <\n'
-    #        file.write(str(a))
-    # 
-    #        for ii in self.pdb_header: file.write(str(ii))
-    #        
-    #        for ii in self.pdb_ss:     file.write(str(ii))
-    # 
-    #        dct_aux={'ATOM': 'ATOM  ', 'HETATM': 'HETATM'}
-    #        
-    #        new_index=0
-    #        for ii in range(self.num_atoms):
-    #            new_index+=1
-    #            a=dct_aux[self.atom[ii].type_pdb]              # 1-6
-    #            a+="%5d" % (new_index)                         # 7-11
-    #            #a+="%5d" % self.atom[ii].pdb_index            # 7-11
-    #            a+=' '                                         # 12
-    #            a+=' '+"%-3s" % self.atom[ii].name             # 13-16
-    #            a+=' '                                         # 17
-    #            a+="%3s" % self.atom[ii].resid.name            # 18-20
-    #            a+=' '                                         # 21
-    #            a+="%1s" % self.atom[ii].chain.name            # 22
-    #            a+="%4d" % self.atom[ii].resid.pdb_index       # 23-26
-    #            a+=' '                                         # 27
-    #            a+='   '                                       # 28-30
-    #            a+="%8.3f" % float(self.frame[0].coors[ii][0])   # 31-38
-    #            a+="%8.3f" % float(self.frame[0].coors[ii][1])   # 39-46
-    #            a+="%8.3f" % float(self.frame[0].coors[ii][2])   # 47-54
-    #            a+="%6.2f" % self.atom[ii].occup               # 55-60
-    #            a+="%6.2f" % self.atom[ii].bfactor             # 61-66
-    #            a+='          '                                # 67-76
-    #            a+="%2s" % self.atom[ii].elem_symb             # 77-78
-    #            a+="%2s" % self.atom[ii].charge                # 79-80
-    #            a+='\n' 
-    #            file.write(str(a))         
-    #            if ii<(self.num_atoms-1):
-    #                if self.atom[ii].type_pdb!=self.atom[ii+1].type_pdb or self.atom[ii].chain.name!=self.atom[ii+1].chain.name :
-    #                    new_index+=1
-    #                    a="TER   "
-    #                    a+="%5d" % (new_index)
-    #                    a+=' '
-    #                    a+='  '
-    #                    a+=' '                                         
-    #                    a+="%3s" % self.atom[ii].resid.name            
-    #                    a+='\n' 
-    #                    file.write(str(a))
-    #        a='END   '+'\n'
-    #        file.write(str(a))
-    #        file.close()
-    #    return None
+    def write_pdb (self,filename=None):
+        
+        if filename==None:
+            print 'Enter filename: '
+            print '      foo.write_pdb("foo.pdb")'
+        else:
+            if not filename.endswith('.pdb'): filename+='.pdb'
+            if path.exists(filename): 
+                print '# The file '+filename+' already exists.'
+                return
+     
+            file=open(filename,'w')
+     
+            a='HEADER    '+'> CREATED BY PYNORAMIX '+datetime.datetime.now().strftime("%Y-%m-%d %H:%M")+' <\n'
+            file.write(str(a))
+     
+            for ii in self.pdb_header: file.write(str(ii))
+            
+            for ii in self.pdb_ss:     file.write(str(ii))
+     
+            dct_aux={'ATOM': 'ATOM  ', 'HETATM': 'HETATM'}
+            
+            new_index=0
+            for ii in range(self.num_atoms):
+                new_index+=1
+                a=dct_aux[self.atom[ii].type_pdb]              # 1-6
+                a+="%5d" % (new_index)                         # 7-11
+                #a+="%5d" % self.atom[ii].pdb_index            # 7-11
+                a+=' '                                         # 12
+                a+=' '+"%-3s" % self.atom[ii].name             # 13-16
+                a+=' '                                         # 17
+                a+="%3s" % self.atom[ii].resid.name            # 18-20
+                a+=' '                                         # 21
+                a+="%1s" % self.atom[ii].chain.name            # 22
+                a+="%4d" % self.atom[ii].resid.pdb_index       # 23-26
+                a+=' '                                         # 27
+                a+='   '                                       # 28-30
+                a+="%8.3f" % float(self.frame[0].coors[ii][0])   # 31-38
+                a+="%8.3f" % float(self.frame[0].coors[ii][1])   # 39-46
+                a+="%8.3f" % float(self.frame[0].coors[ii][2])   # 47-54
+                a+="%6.2f" % self.atom[ii].occup               # 55-60
+                a+="%6.2f" % self.atom[ii].bfactor             # 61-66
+                a+='          '                                # 67-76
+                a+="%2s" % self.atom[ii].elem_symb             # 77-78
+                a+="%2s" % self.atom[ii].charge                # 79-80
+                a+='\n' 
+                file.write(str(a))         
+                if ii<(self.num_atoms-1):
+                    if self.atom[ii].type_pdb!=self.atom[ii+1].type_pdb or self.atom[ii].chain.name!=self.atom[ii+1].chain.name :
+                        new_index+=1
+                        a="TER   "
+                        a+="%5d" % (new_index)
+                        a+=' '
+                        a+='  '
+                        a+=' '                                         
+                        a+="%3s" % self.atom[ii].resid.name            
+                        a+='\n' 
+                        file.write(str(a))
+            a='END   '+'\n'
+            file.write(str(a))
+            file.close()
+        return None
 
     def write_set_to_file(self,name_of_file):
         file=open(name_of_file,'w')
