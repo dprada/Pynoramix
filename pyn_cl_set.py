@@ -953,7 +953,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         for iframe in __read_frame_opt__(self,traj,frame):
             faux.glob.make_cell_ns(rcell,rcut,iframe.box,self.num_atoms)
 
-    def verlet_list_grid_ns(self,r1=3.5,r2=7.0,traj=0,frame=0,pbc=True,update=False,verbose=False):
+    def verlet_list_grid_ns(self,r1=3.5,r2=7.0,rcell=7.0,traj=0,frame=0,pbc=True,update=False,verbose=False):
 
         pbc_opt=0
         if pbc:
@@ -965,10 +965,11 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         else:
             for iframe in __read_frame_opt__(self,traj,frame):
-                faux.glob.make_cell_ns(r2,iframe.box,self.num_atoms)
+                faux.glob.make_cell_ns(rcell,r2,iframe.box,self.num_atoms)
                 faux.glob.make_verlet_list_grid_ns(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume,iframe.orthogonal,self.num_atoms)
         
         
+
     def contact_list (self,cutoff=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,update=False,sqrt_dist=False,verbose=False):
 
         # Probar a hacer un contact list sin Hidrogenos
