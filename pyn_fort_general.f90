@@ -4,11 +4,17 @@ MODULE GLOB
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::cl_val
 
 
-  INTEGER,DIMENSION(:,:),ALLOCATABLE::cell_ns
-  INTEGER,DIMENSION(:),ALLOCATABLE::gns_head,gns_list,gns_at_cell
-  LOGICAL,DIMENSION(:),ALLOCATABLE::cell_upd,cell_pbc
-  LOGICAL,DIMENSION(:,:),ALLOCATABLE::cell_ns_pbc
-  INTEGER::mtot_c,mx_c,my_c,mz_c,mx_my_c,nsxcell
+  INTEGER::mx_c,my_c,mz_c            !num_cells in x,y,z
+  DOUBLE PRECISION::lx_c,ly_c,lz_c   !length cells in x,y,z
+  INTEGER::mtot_c,mx_my_c            !num total cells, var aux
+  INTEGER::nscxcell                  !number neighbor cells per cell
+
+  LOGICAL,DIMENSION(:),ALLOCATABLE::cell_upd          !cell needs update
+  INTEGER,DIMENSION(:,:),ALLOCATABLE::nsc_cell        !cell neighbors of a cell
+  LOGICAL,DIMENSION(:),ALLOCATABLE::cell_pbc          !cell with none or any pbc requirement
+  LOGICAL,DIMENSION(:,:),ALLOCATABLE::nsc_cell_pbc    !neighbor cell requires pbc
+
+  INTEGER,DIMENSION(:),ALLOCATABLE::gns_head,gns_list,gns_at_cell   ! grid neighbors -atoms-
 
   !### Verlet neighbours lists should be this way, but f2py does not support derived types yet. 
   !TYPE I_NO_RECT_MAT
@@ -100,14 +106,52 @@ LOGICAL FUNCTION CELLS_PBC(icell,ncell)
 
 END FUNCTION CELLS_PBC
 
-LOGICAL FUNCTION CHECK_CELL(rcell,rcut,ix,iy,iz)
+LOGICAL FUNCTION CHECK_CELL(rcut,ix,iy,iz)
 
   IMPLICIT NONE
 
-  DOUBLE PRECISION,INTENT(IN)::rcell,rcut
+  DOUBLE PRECISION,INTENT(IN)::rcut
   INTEGER,INTENT(IN)::ix,iy,iz
+  INTEGER::aix,aiy,aiz
+  INTEGER::ii,jj,kk,pp,qq,rr
+  DOUBLE PRECISION,DIMENSION(3)::o1,o2,vect
+  DOUBLE PRECISION::val_aux,rcut2
+  LOGICAL::filter
 
-  
+  check_cell=.FALSE.
+  rcut2=rcut*rcut
+  aix=abs(ix)
+  aiy=abs(iy)
+  aiz=abs(iz)
+
+  filter=.FALSE.
+  DO ii=0,1
+     DO jj=0,1
+        DO kk=0,1
+           o1(:)=(/ii*lx_c,jj*ly_c,kk*lz_c/)
+           DO pp=0,1
+              DO qq=0,1
+                 DO rr=0,1
+                    o2(:)=(/pp*lx_c,qq*ly_c,rr*lz_c/)
+                    vect=o2-o1
+                    val_aux=dot_product(vect,vect)
+                    IF (val_aux<rcut2) THEN
+                       filter=.TRUE.
+                       EXIT
+                    END IF
+                 END DO
+                 IF (filter==.TRUE.) EXIT
+              END DO
+              IF (filter==.TRUE.) EXIT
+           END DO
+           IF (filter==.TRUE.) EXIT
+        END DO
+        IF (filter==.TRUE.) EXIT
+     END DO
+     IF (filter==.TRUE.) EXIT
+  END DO
+
+  check_cell=filter
 
 END FUNCTION CHECK_CELL
 
@@ -117,13 +161,17 @@ SUBROUTINE MAKE_CELL_NS (rcell,rcut,box,natom)
   DOUBLE PRECISION,INTENT(IN)::rcell,rcut
   double precision,DIMENSION(3,3),INTENT(IN)::box
 
-  INTEGER::ii,jj,kk,gg,ix,iy,iz,deltl
+  INTEGER::ii,jj,kk,gg,ix,iy,iz,deltx,delty,deltz
   INTEGER::icell,ncell
   LOGICAL::filter,filter2
+  LOGICAL,DIMENSION(:,:,:),ALLOCATABLE::aux_mask
 
   mx_c=FLOOR(box(1,1)/rcell)
+  lx_c=box(1,1)/mx_c
   my_c=FLOOR(box(2,2)/rcell)
+  ly_c=box(2,2)/my_c
   mz_c=FLOOR(box(3,3)/rcell)
+  lz_c=box(3,3)/mz_c
   mx_my_c=mx_c*my_c
   mtot_c=mx_my_c*mz_c
 
@@ -132,28 +180,43 @@ SUBROUTINE MAKE_CELL_NS (rcell,rcut,box,natom)
   ! 
   !print*,((natom*1.0d0)/(mtot_c*1.0d0))
 
-  deltl=CEILING(rcut/rcell)
-  print*,deltl
+  deltx=CEILING(rcut/lx_c)
+  delty=CEILING(rcut/ly_c)
+  deltz=CEILING(rcut/lz_c)
+
+  print*,mtot_c
+  print*,mx_c,my_c,mz_c
+  print*,lx_c,ly_c,lz_c
+  print*,'================='
+  print*,'( -',deltx,',',deltx,' )' 
+  print*,'( -',delty,',',delty,' )' 
+  print*,'( -',deltz,',',deltz,' )' 
   
+  ALLOCATE(aux_mask(-deltx:deltx,-delty:delty,-deltz:deltz))
+  aux_mask=.FALSE.
+
   gg=0
-  DO ii=-deltl,deltl
-     DO jj=-deltl,deltl
-        DO kk=-deltl,deltl
-           IF (check_cell(ii,jj,kk)) THEN
+  DO ii=-deltx,deltx
+     DO jj=-delty,delty
+        DO kk=-deltz,deltz
+           IF (check_cell(rcut,ii,jj,kk)) THEN
+              aux_mask(ii,jj,kk)=.TRUE.
               gg=gg+1
            END IF
         END DO
      END DO
   END DO
 
-  nsxcell=gg
+  nscxcell=gg
 
-  IF (ALLOCATED(cell_ns)) DEALLOCATE(cell_ns)
+  print*,nscxcell,'out of',(2*deltx+1)*(2*delty+1)*(2*deltz+1)
+
+  IF (ALLOCATED(nsc_cell)) DEALLOCATE(nsc_cell)
   IF (ALLOCATED(cell_upd)) DEALLOCATE(cell_upd)
   IF (ALLOCATED(cell_pbc)) DEALLOCATE(cell_pbc)
-  IF (ALLOCATED(cell_ns_pbc)) DEALLOCATE(cell_ns_pbc)
+  IF (ALLOCATED(nsc_cell_pbc)) DEALLOCATE(nsc_cell_pbc)
 
-  ALLOCATE(cell_ns(mtot_c,nsxcell),cell_ns_pbc(mtot_c,nsxcell))
+  ALLOCATE(nsc_cell(mtot_c,nscxcell),nsc_cell_pbc(mtot_c,nscxcell))
   ALLOCATE(cell_upd(mtot_c),cell_pbc(mtot_c))
   cell_pbc=.FALSE.
 
@@ -163,16 +226,16 @@ SUBROUTINE MAKE_CELL_NS (rcell,rcut,box,natom)
            icell=cell_index(ix,iy,iz)
            filter=.false.
            gg=0
-           DO ii=-deltl,deltl
-              DO jj=-deltl,deltl
-                 DO kk=-deltl,deltl
-                    IF (check_cell(ii,jj,kk)) THEN
+           DO ii=-deltx,deltx
+              DO jj=-delty,delty
+                 DO kk=-deltz,deltz
+                    IF (aux_mask(ii,jj,kk)==.TRUE.) THEN
                        gg=gg+1
                        ncell=cell_index(ix+ii,iy+jj,iz+kk)
-                       cell_ns(icell,gg)=ncell
+                       nsc_cell(icell,gg)=ncell
                        filter2=cells_pbc(icell,ncell)
-                       IF (filter2) filter=.true.
-                       cell_ns_pbc(icell,gg)=filter2
+                       IF (filter2==.TRUE.) filter=.TRUE.
+                       nsc_cell_pbc(icell,gg)=filter2
                     END IF
                  END DO
               END DO
@@ -182,6 +245,9 @@ SUBROUTINE MAKE_CELL_NS (rcell,rcut,box,natom)
      END DO
   END DO
   
+  PRINT*,COUNT(cell_pbc),'cells with pbc'
+
+  DEALLOCATE(aux_mask)
   IF (ALLOCATED(gns_head))    DEALLOCATE(gns_head)
   IF (ALLOCATED(gns_list))    DEALLOCATE(gns_list)
   IF (ALLOCATED(gns_at_cell)) DEALLOCATE(gns_at_cell)
@@ -219,207 +285,207 @@ SUBROUTINE GRID_NS_LIST (coors,box,natom)
 
 END SUBROUTINE GRID_NS_LIST
 
-SUBROUTINE MAKE_VERLET_LIST_GRID_NS (r_ic,r_oc,pbc_opt,coors,box,vol,ortho,natom)
-
-  IMPLICIT NONE
-  DOUBLE PRECISION,INTENT(IN)::r_ic,r_oc
-  INTEGER,INTENT(IN)::pbc_opt,ortho
-  INTEGER,INTENT(IN)::natom
-  DOUBLE PRECISION,INTENT(IN)::vol
-  DOUBLE PRECISION,DIMENSION(natom,3),intent(in)::coors
-  DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::box
-
-  DOUBLE PRECISION::r_ic2,r_oc2
-  DOUBLE PRECISION,DIMENSION(3)::vect,vect_aux
-  DOUBLE PRECISION::val_aux,pi,fact
-
-  !!! Hasta aqui 7.2 seg 1000 frames (3 min 25000)
-  INTEGER::ii,jj,gg,ll,kk,icell,ncell
-  INTEGER::gg_ic,gg_oc
-  INTEGER::gg2_ic,gg2_oc
-
-
-  CALL GRID_NS_LIST(coors,box,natom)
-
-  r_ic2=r_ic*r_ic
-  r_oc2=r_oc*r_oc
-
-  pi=acos(-1.0d0)
-  fact=(natom/vol)*(4.0d0*pi/3.0d0)*1.50d0   !! factor 1.50 to be safe, since f2py does not support derived types
-  dim_ic=INT(fact*(r_ic2*r_ic))+1
-  dim_oc=INT(fact*(r_oc2*r_oc))+1
-
-  IF (ALLOCATED(ver_ic_ind))   DEALLOCATE(ver_ic_ind)
-  IF (ALLOCATED(ver_ic_dim))   DEALLOCATE(ver_ic_dim)
-  IF (ALLOCATED(ver_oc_ind))   DEALLOCATE(ver_oc_ind)
-  IF (ALLOCATED(ver_oc_dim))   DEALLOCATE(ver_oc_dim)
-  IF (ALLOCATED(pos_ant))      DEALLOCATE(pos_ant)
-
-  ALLOCATE(ver_ic_ind(natom,dim_ic),ver_oc_ind(natom,dim_oc))
-  ALLOCATE(ver_ic_dim(natom),ver_oc_dim(natom))
-  ALLOCATE(pos_ant(natom,3))
-  pos_ant=coors
-  ver_ic_dim=0
-  ver_oc_dim=0
-
-  DO ii=1,natom
-     vect_aux=coors(ii,:)
-     icell=gns_at_cell(ii)
-     gg_oc=ver_oc_dim(ii)
-     gg_ic=ver_ic_dim(ii)
-     DO jj=1,27
-        ncell=cell_ns(icell,jj)
-        kk=gns_head(ncell)
-        DO
-           IF (kk==0) EXIT
-           IF (kk>ii) THEN
-              vect=(coors(kk,:)-vect_aux)
-              CALL PBC (vect,box,ortho)
-              val_aux=dot_product(vect,vect)
-              IF (val_aux<=r_oc2) THEN
-                 gg_oc=gg_oc+1
-                 ver_oc_ind(ii,gg_oc)=kk
-                 gg2_oc=ver_oc_dim(kk)+1
-                 ver_oc_ind(kk,gg2_oc)=ii
-                 ver_oc_dim(kk)=gg2_oc
-                 IF (val_aux<=r_ic2) THEN
-                    gg_ic=gg_ic+1
-                    ver_ic_ind(ii,gg_ic)=kk
-                    gg2_ic=ver_ic_dim(kk)+1
-                    ver_ic_ind(kk,gg2_ic)=ii
-                    ver_ic_dim(kk)=gg2_ic
-                 END IF
-              END IF
-           END IF
-           kk=gns_list(kk)
-        END DO
-     END DO
-     
-     ver_oc_dim(ii)=gg_oc
-     ver_ic_dim(ii)=gg_ic
-
-  END DO
-
-
-END SUBROUTINE MAKE_VERLET_LIST_GRID_NS
-
-
-SUBROUTINE UPDATE_VERLET_LIST_GRID_NS (r_ic,r_oc,pbc_opt,coors,box,vol,ortho,natom)
-
-  IMPLICIT NONE
-  DOUBLE PRECISION,INTENT(IN)::r_ic,r_oc
-  INTEGER,INTENT(IN)::pbc_opt,ortho
-  INTEGER,INTENT(IN)::natom
-  DOUBLE PRECISION,INTENT(IN)::vol
-  DOUBLE PRECISION,DIMENSION(natom,3),intent(in)::coors
-  DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::box
-
-  LOGICAL::update
-  INTEGER::ii,jj,kk,icell,ncell
-  DOUBLE PRECISION::val_aux
-  DOUBLE PRECISION::r_diff,drneimax,drneimax2,r_ic2,r_oc2
-  DOUBLE PRECISION,DIMENSION(3)::vect,vect_aux
-  INTEGER::gg_ic,gg_oc
-  INTEGER::gg2_ic,gg2_oc
-
-  update=.FALSE.
-  drneimax=0.0 
-  drneimax2=0.0
-  r_oc2=r_oc*r_oc
-  r_ic2=r_ic*r_ic
-  r_diff=r_oc-r_ic
-
-
-  DO ii=1,natom
-     vect=pos_ant(ii,:)-coors(ii,:)
-     CALL PBC (vect,box,ortho)
-     val_aux=dot_product(vect,vect)
-     IF (val_aux > drneimax) THEN
-        drneimax2=drneimax
-        drneimax=val_aux
-     ELSE
-        IF (val_aux > drneimax2) THEN
-           drneimax2=val_aux
-        END IF
-     END IF
-  END DO
-
-  IF ((sqrt(drneimax)+sqrt(drneimax2))>r_diff) THEN
-     update=.TRUE.
-  END IF
-
-  IF (update) THEN
-
-!     PRINT*,'FUERA'
-     CALL GRID_NS_LIST(coors,box,natom)
-     pos_ant=coors
-     ver_ic_dim=0
-     ver_oc_dim=0
-     
-     DO ii=1,natom
-        vect_aux=coors(ii,:)
-        icell=gns_at_cell(ii)
-        gg_oc=ver_oc_dim(ii)
-        gg_ic=ver_ic_dim(ii)
-        DO jj=1,27
-           ncell=cell_ns(icell,jj)
-           kk=gns_head(ncell)
-           DO
-              IF (kk==0) EXIT
-              IF (kk>ii) THEN
-                 vect=(coors(kk,:)-vect_aux)
-                 CALL PBC (vect,box,ortho)
-                 val_aux=dot_product(vect,vect)
-                 IF (val_aux<=r_oc2) THEN
-                    gg_oc=gg_oc+1
-                    ver_oc_ind(ii,gg_oc)=kk
-                    gg2_oc=ver_oc_dim(kk)+1
-                    ver_oc_ind(kk,gg2_oc)=ii
-                    ver_oc_dim(kk)=gg2_oc
-                    IF (val_aux<=r_ic2) THEN
-                       gg_ic=gg_ic+1
-                       ver_ic_ind(ii,gg_ic)=kk
-                       gg2_ic=ver_ic_dim(kk)+1
-                       ver_ic_ind(kk,gg2_ic)=ii
-                       ver_ic_dim(kk)=gg2_ic
-                    END IF
-                 END IF
-              END IF
-              kk=gns_list(kk)
-           END DO
-        END DO
-        ver_oc_dim(ii)=gg_oc
-        ver_ic_dim(ii)=gg_ic
-     END DO
-  
-  ELSE
-
-!     PRINT*,'DENTRO'
-     ver_ic_dim=0
-     DO ii=1,natom
-        vect_aux=coors(ii,:)
-        gg_ic=ver_ic_dim(ii)
-        DO jj=1,ver_oc_dim(ii)
-           kk=ver_oc_ind(ii,jj)
-           IF (kk>ii) THEN
-              vect=(coors(kk,:)-vect_aux)
-              CALL PBC (vect,box,ortho)
-              val_aux=dot_product(vect,vect)
-              IF (val_aux<=r_ic2) THEN
-                 gg_ic=gg_ic+1
-                 ver_ic_ind(ii,gg_ic)=kk
-                 gg2_ic=ver_ic_dim(kk)+1
-                 ver_ic_ind(kk,gg2_ic)=ii
-                 ver_ic_dim(kk)=gg2_ic
-              END IF
-           END IF
-        END DO
-        ver_ic_dim(ii)=gg_ic
-     END DO
-
-  END IF
-
-END SUBROUTINE UPDATE_VERLET_LIST_GRID_NS
+!!$SUBROUTINE MAKE_VERLET_LIST_GRID_NS (r_ic,r_oc,pbc_opt,coors,box,vol,ortho,natom)
+!!$
+!!$  IMPLICIT NONE
+!!$  DOUBLE PRECISION,INTENT(IN)::r_ic,r_oc
+!!$  INTEGER,INTENT(IN)::pbc_opt,ortho
+!!$  INTEGER,INTENT(IN)::natom
+!!$  DOUBLE PRECISION,INTENT(IN)::vol
+!!$  DOUBLE PRECISION,DIMENSION(natom,3),intent(in)::coors
+!!$  DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::box
+!!$
+!!$  DOUBLE PRECISION::r_ic2,r_oc2
+!!$  DOUBLE PRECISION,DIMENSION(3)::vect,vect_aux
+!!$  DOUBLE PRECISION::val_aux,pi,fact
+!!$
+!!$  !!! Hasta aqui 7.2 seg 1000 frames (3 min 25000)
+!!$  INTEGER::ii,jj,gg,ll,kk,icell,ncell
+!!$  INTEGER::gg_ic,gg_oc
+!!$  INTEGER::gg2_ic,gg2_oc
+!!$
+!!$
+!!$  CALL GRID_NS_LIST(coors,box,natom)
+!!$
+!!$  r_ic2=r_ic*r_ic
+!!$  r_oc2=r_oc*r_oc
+!!$
+!!$  pi=acos(-1.0d0)
+!!$  fact=(natom/vol)*(4.0d0*pi/3.0d0)*1.50d0   !! factor 1.50 to be safe, since f2py does not support derived types
+!!$  dim_ic=INT(fact*(r_ic2*r_ic))+1
+!!$  dim_oc=INT(fact*(r_oc2*r_oc))+1
+!!$
+!!$  IF (ALLOCATED(ver_ic_ind))   DEALLOCATE(ver_ic_ind)
+!!$  IF (ALLOCATED(ver_ic_dim))   DEALLOCATE(ver_ic_dim)
+!!$  IF (ALLOCATED(ver_oc_ind))   DEALLOCATE(ver_oc_ind)
+!!$  IF (ALLOCATED(ver_oc_dim))   DEALLOCATE(ver_oc_dim)
+!!$  IF (ALLOCATED(pos_ant))      DEALLOCATE(pos_ant)
+!!$
+!!$  ALLOCATE(ver_ic_ind(natom,dim_ic),ver_oc_ind(natom,dim_oc))
+!!$  ALLOCATE(ver_ic_dim(natom),ver_oc_dim(natom))
+!!$  ALLOCATE(pos_ant(natom,3))
+!!$  pos_ant=coors
+!!$  ver_ic_dim=0
+!!$  ver_oc_dim=0
+!!$
+!!$  DO ii=1,natom
+!!$     vect_aux=coors(ii,:)
+!!$     icell=gns_at_cell(ii)
+!!$     gg_oc=ver_oc_dim(ii)
+!!$     gg_ic=ver_ic_dim(ii)
+!!$     DO jj=1,27
+!!$        ncell=cell_ns(icell,jj)
+!!$        kk=gns_head(ncell)
+!!$        DO
+!!$           IF (kk==0) EXIT
+!!$           IF (kk>ii) THEN
+!!$              vect=(coors(kk,:)-vect_aux)
+!!$              CALL PBC (vect,box,ortho)
+!!$              val_aux=dot_product(vect,vect)
+!!$              IF (val_aux<=r_oc2) THEN
+!!$                 gg_oc=gg_oc+1
+!!$                 ver_oc_ind(ii,gg_oc)=kk
+!!$                 gg2_oc=ver_oc_dim(kk)+1
+!!$                 ver_oc_ind(kk,gg2_oc)=ii
+!!$                 ver_oc_dim(kk)=gg2_oc
+!!$                 IF (val_aux<=r_ic2) THEN
+!!$                    gg_ic=gg_ic+1
+!!$                    ver_ic_ind(ii,gg_ic)=kk
+!!$                    gg2_ic=ver_ic_dim(kk)+1
+!!$                    ver_ic_ind(kk,gg2_ic)=ii
+!!$                    ver_ic_dim(kk)=gg2_ic
+!!$                 END IF
+!!$              END IF
+!!$           END IF
+!!$           kk=gns_list(kk)
+!!$        END DO
+!!$     END DO
+!!$     
+!!$     ver_oc_dim(ii)=gg_oc
+!!$     ver_ic_dim(ii)=gg_ic
+!!$
+!!$  END DO
+!!$
+!!$
+!!$END SUBROUTINE MAKE_VERLET_LIST_GRID_NS
+!!$
+!!$
+!!$SUBROUTINE UPDATE_VERLET_LIST_GRID_NS (r_ic,r_oc,pbc_opt,coors,box,vol,ortho,natom)
+!!$
+!!$  IMPLICIT NONE
+!!$  DOUBLE PRECISION,INTENT(IN)::r_ic,r_oc
+!!$  INTEGER,INTENT(IN)::pbc_opt,ortho
+!!$  INTEGER,INTENT(IN)::natom
+!!$  DOUBLE PRECISION,INTENT(IN)::vol
+!!$  DOUBLE PRECISION,DIMENSION(natom,3),intent(in)::coors
+!!$  DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::box
+!!$
+!!$  LOGICAL::update
+!!$  INTEGER::ii,jj,kk,icell,ncell
+!!$  DOUBLE PRECISION::val_aux
+!!$  DOUBLE PRECISION::r_diff,drneimax,drneimax2,r_ic2,r_oc2
+!!$  DOUBLE PRECISION,DIMENSION(3)::vect,vect_aux
+!!$  INTEGER::gg_ic,gg_oc
+!!$  INTEGER::gg2_ic,gg2_oc
+!!$
+!!$  update=.FALSE.
+!!$  drneimax=0.0 
+!!$  drneimax2=0.0
+!!$  r_oc2=r_oc*r_oc
+!!$  r_ic2=r_ic*r_ic
+!!$  r_diff=r_oc-r_ic
+!!$
+!!$
+!!$  DO ii=1,natom
+!!$     vect=pos_ant(ii,:)-coors(ii,:)
+!!$     CALL PBC (vect,box,ortho)
+!!$     val_aux=dot_product(vect,vect)
+!!$     IF (val_aux > drneimax) THEN
+!!$        drneimax2=drneimax
+!!$        drneimax=val_aux
+!!$     ELSE
+!!$        IF (val_aux > drneimax2) THEN
+!!$           drneimax2=val_aux
+!!$        END IF
+!!$     END IF
+!!$  END DO
+!!$
+!!$  IF ((sqrt(drneimax)+sqrt(drneimax2))>r_diff) THEN
+!!$     update=.TRUE.
+!!$  END IF
+!!$
+!!$  IF (update) THEN
+!!$
+!!$!     PRINT*,'FUERA'
+!!$     CALL GRID_NS_LIST(coors,box,natom)
+!!$     pos_ant=coors
+!!$     ver_ic_dim=0
+!!$     ver_oc_dim=0
+!!$     
+!!$     DO ii=1,natom
+!!$        vect_aux=coors(ii,:)
+!!$        icell=gns_at_cell(ii)
+!!$        gg_oc=ver_oc_dim(ii)
+!!$        gg_ic=ver_ic_dim(ii)
+!!$        DO jj=1,27
+!!$           ncell=cell_ns(icell,jj)
+!!$           kk=gns_head(ncell)
+!!$           DO
+!!$              IF (kk==0) EXIT
+!!$              IF (kk>ii) THEN
+!!$                 vect=(coors(kk,:)-vect_aux)
+!!$                 CALL PBC (vect,box,ortho)
+!!$                 val_aux=dot_product(vect,vect)
+!!$                 IF (val_aux<=r_oc2) THEN
+!!$                    gg_oc=gg_oc+1
+!!$                    ver_oc_ind(ii,gg_oc)=kk
+!!$                    gg2_oc=ver_oc_dim(kk)+1
+!!$                    ver_oc_ind(kk,gg2_oc)=ii
+!!$                    ver_oc_dim(kk)=gg2_oc
+!!$                    IF (val_aux<=r_ic2) THEN
+!!$                       gg_ic=gg_ic+1
+!!$                       ver_ic_ind(ii,gg_ic)=kk
+!!$                       gg2_ic=ver_ic_dim(kk)+1
+!!$                       ver_ic_ind(kk,gg2_ic)=ii
+!!$                       ver_ic_dim(kk)=gg2_ic
+!!$                    END IF
+!!$                 END IF
+!!$              END IF
+!!$              kk=gns_list(kk)
+!!$           END DO
+!!$        END DO
+!!$        ver_oc_dim(ii)=gg_oc
+!!$        ver_ic_dim(ii)=gg_ic
+!!$     END DO
+!!$  
+!!$  ELSE
+!!$
+!!$!     PRINT*,'DENTRO'
+!!$     ver_ic_dim=0
+!!$     DO ii=1,natom
+!!$        vect_aux=coors(ii,:)
+!!$        gg_ic=ver_ic_dim(ii)
+!!$        DO jj=1,ver_oc_dim(ii)
+!!$           kk=ver_oc_ind(ii,jj)
+!!$           IF (kk>ii) THEN
+!!$              vect=(coors(kk,:)-vect_aux)
+!!$              CALL PBC (vect,box,ortho)
+!!$              val_aux=dot_product(vect,vect)
+!!$              IF (val_aux<=r_ic2) THEN
+!!$                 gg_ic=gg_ic+1
+!!$                 ver_ic_ind(ii,gg_ic)=kk
+!!$                 gg2_ic=ver_ic_dim(kk)+1
+!!$                 ver_ic_ind(kk,gg2_ic)=ii
+!!$                 ver_ic_dim(kk)=gg2_ic
+!!$              END IF
+!!$           END IF
+!!$        END DO
+!!$        ver_ic_dim(ii)=gg_ic
+!!$     END DO
+!!$
+!!$  END IF
+!!$
+!!$END SUBROUTINE UPDATE_VERLET_LIST_GRID_NS
 
 !!$SUBROUTINE UPDATE_VERLET_LIST_GRID_NS_OPT (r_ic,r_oc,pbc_opt,coors,box,vol,ortho,natom)
 !!$

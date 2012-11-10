@@ -949,9 +949,9 @@ class molecule(labels_set):               # The suptra-estructure: System (water
     #            faux.glob.grid_ns_list(r,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box,iframe.volume, \
     #                                           iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
 
-    def make_cell_grid_ns(self,r=7.0,traj=0,frame=0):
+    def make_cell_grid_ns(self,rcell=7.0,rcut=3.5,traj=0,frame=0):
         for iframe in __read_frame_opt__(self,traj,frame):
-            faux.glob.make_cell_ns(r,iframe.box,self.num_atoms)
+            faux.glob.make_cell_ns(rcell,rcut,iframe.box,self.num_atoms)
 
     def verlet_list_grid_ns(self,r1=3.5,r2=7.0,traj=0,frame=0,pbc=True,update=False,verbose=False):
 
