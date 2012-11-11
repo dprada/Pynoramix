@@ -908,46 +908,29 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             if ranking:
                 sort_opt=1
             for iframe in __read_frame_opt__(self,traj,frame):
-                contact_map,num_neighbs,dist_matrix=faux.glob.neighbs_dist(diff_syst,diff_set,pbc,dist,setA,iframe.coors,iframe.orthogonal,iframe.box,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+                contact_map,num_neighbs,dist_matrix=faux.glob.neighbs_dist(diff_syst,diff_set,pbc,dist,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
                 aux_neighbs=[]
-                if ranking:
-                    for ii in range(nlist_A):
-                        if num_neighbs[ii]:
-                            neighbs_A=faux.glob.translate_list(sort_opt,setB,contact_map[ii,:],dist_matrix[ii,:],num_neighbs[ii],nlist_B)
-                            aux_neighbs.append(neighbs_A)
-                        else:
-                            aux_neighbs.append([])
+                for ii in range(nlist_A):
+                    if num_neighbs[ii]:
+                        neighbs_A=faux.glob.translate_list(sort_opt,setB,contact_map[ii,:],dist_matrix[ii,:],num_neighbs[ii],nlist_B)
+                        aux_neighbs.append(neighbs_A)
+                    else:
+                        aux_neighbs.append([])
                 neighbs.append(aux_neighbs)
             if num_frames==1:
                 return neighbs[0]
             else:
                 return neighbs
 
-    def verlet_list (self,r1=3.5,r2=6.0,traj=0,frame=0,pbc=True,update=False,verbose=False):
+    def verlet_list_ns (self,r1=3.5,r2=6.0,traj=0,frame=0,pbc=True,update=False,verbose=False):
 
-        pbc_opt=0
-        if pbc:
-            pbc_opt=1
+        print 'Not implemented as independent function yet'
+        pass
 
-        if update:
-            for iframe in __read_frame_opt__(self,traj,frame):
-                faux.glob.update_verlet_list(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume, \
-                                               iframe.orthogonal,self.num_atoms)
-        else:
-            for iframe in __read_frame_opt__(self,traj,frame):
-                faux.glob.make_verlet_list(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume, \
-                                               iframe.orthogonal,self.num_atoms)
-
-    #def grid_ns_list (self,r=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,verbose=False):
-    #    
-    #    pbc_opt=0
-    #    if pbc:
-    #        pbc_opt=1
-    # 
-    #    setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB) # 2.1 segs 1000 times without the function (1 min 25000)
-    #    for iframe in __read_frame_opt__(self,traj,frame):
-    #            faux.glob.grid_ns_list(r,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box,iframe.volume, \
-    #                                           iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+    def grid_ns_list (self,rcell=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,verbose=False):
+        
+        print 'Not implemented as independent function yet'
+        pass
 
     def make_cell_grid_ns(self,rcell=7.0,rcut=3.5,traj=0,frame=0):
         for iframe in __read_frame_opt__(self,traj,frame):
@@ -968,78 +951,33 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 faux.glob.make_cell_ns(rcell,r2,iframe.box,self.num_atoms)
                 faux.glob.make_verlet_list_grid_ns(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume,iframe.orthogonal,self.num_atoms)
         
-        
 
-    def contact_list2 (self,cutoff=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,update=False,sqrt_dist=False,verbose=False):
-
-        # Probar a hacer un contact list sin Hidrogenos
-
-        pbc_opt=0
-        if pbc:
-            pbc_opt=1
-
-        sqrt_opt=0
-        if sqrt_dist:
-            sqrt_opt=1
-
-        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
-        
-        if type(frame) not in [int32,int]:
-            print 'This function only analyses a frame: type(frame)=int.'
-            pass
-
-        if update:
-            for iframe in __read_frame_opt__(self,traj,frame):
-                faux.glob.update_contact_list2(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
-                                                  iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
-        else:
-            for iframe in __read_frame_opt__(self,traj,frame):
-                faux.glob.make_contact_list2(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
-                                                iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
-
-
-    def contact_list (self,cutoff=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,update=False,sqrt_dist=False,verbose=False):
-
-        # Probar a hacer un contact list sin Hidrogenos
-
-        pbc_opt=0
-        if pbc:
-            pbc_opt=1
-
-        sqrt_opt=0
-        if sqrt_dist:
-            sqrt_opt=1
-
-        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
-        
-        if type(frame) not in [int32,int]:
-            print 'This function only analyses a frame: type(frame)=int.'
-            pass
-
-        if update:
-            for iframe in __read_frame_opt__(self,traj,frame):
-                faux.glob.update_contact_list(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
-                                                  iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
-        else:
-            for iframe in __read_frame_opt__(self,traj,frame):
-                faux.glob.make_contact_list(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
-                                                iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
-
-
-
-    def contact_list_checking (self,cutoff=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,verbose=False):
+    def contact_list_checking (self,r1=3.5,r2=7.0,rcell=7.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,verbose=False):
 
         sqrt_opt=0
         pbc_opt=0
         if pbc:
             pbc_opt=1
 
-        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
-        
         if type(frame) in [int32,int]:
             print 'This function validates the cutoff of a contact list when a trajectory is analysed.'
             print 'type(frame)=list,tuple or "ALL"'
             pass
+
+        if setA=='ALL' and setB==None:
+            
+            gg=0
+            for iframe in __read_frame_opt__(self,traj,frame):
+                if gg==0:
+                    faux.glob.make_cell_ns(rcell,r2,iframe.box,self.num_atoms)
+                    faux.glob.make_verlet_list_grid_ns(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume,iframe.orthogonal,self.num_atoms)
+                    gg+=1
+                else:
+                    faux.glob.update_verlet_list_grid_ns(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume,iframe.orthogonal,self.num_atoms)
+                    gg+=1
+
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
+        
 
         gg=0
         for iframe in __read_frame_opt__(self,traj,frame):

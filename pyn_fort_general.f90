@@ -1098,12 +1098,11 @@ SUBROUTINE translate_list (sort,list,filter,distances,dim_out,n_list,trans_inds)
      DEALLOCATE(ifilter)
 
   ELSE
-
      gg=0
      DO ii=1,n_list
         IF (filter(ii)==1) THEN
            gg=gg+1
-           trans_inds(gg)=list(gg)
+           trans_inds(gg)=list(ii)
         END IF
      END DO
 
