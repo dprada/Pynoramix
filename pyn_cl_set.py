@@ -970,7 +970,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         
         
 
-    def contact_list (self,cutoff=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,update=False,sqrt_dist=False,verbose=False):
+    def contact_list2 (self,cutoff=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,update=False,sqrt_dist=False,verbose=False):
 
         # Probar a hacer un contact list sin Hidrogenos
 
@@ -996,6 +996,36 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             for iframe in __read_frame_opt__(self,traj,frame):
                 faux.glob.make_contact_list2(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
                                                 iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+
+
+    def contact_list (self,cutoff=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,update=False,sqrt_dist=False,verbose=False):
+
+        # Probar a hacer un contact list sin Hidrogenos
+
+        pbc_opt=0
+        if pbc:
+            pbc_opt=1
+
+        sqrt_opt=0
+        if sqrt_dist:
+            sqrt_opt=1
+
+        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
+        
+        if type(frame) not in [int32,int]:
+            print 'This function only analyses a frame: type(frame)=int.'
+            pass
+
+        if update:
+            for iframe in __read_frame_opt__(self,traj,frame):
+                faux.glob.update_contact_list(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
+                                                  iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+        else:
+            for iframe in __read_frame_opt__(self,traj,frame):
+                faux.glob.make_contact_list(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
+                                                iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+
+
 
     def contact_list_checking (self,cutoff=6.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,verbose=False):
 
