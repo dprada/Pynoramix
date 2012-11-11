@@ -25,3 +25,4 @@ Making selections is computationally expensive. It is not the distance.. or the 
 
 - The MCL function has now the option pruning. In this case the external program mcl is called. Implementing this pruning in my function it is necessary.
 
+- Test the different possibilities of verlet lists and grid search. Implement and test the update verlet lists per cells.
