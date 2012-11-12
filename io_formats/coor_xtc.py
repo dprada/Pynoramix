@@ -99,6 +99,7 @@ def read_next (file_unit,io_vars=None,io_pos=None):
         
 def read_frame(file_unit,frame,io_vars=None,io_pos=None):
 
+    print 'Not implemented yet.'
     io_err=1
     io_end=0
     return None,io_pos,io_err,io_end

@@ -885,7 +885,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         return xxx,rdf_tot
 
 
-    def neighbs(self,setA=None,setB=None,ranking=1,dist=None,traj=0,frame=0,pbc=True):
+    def neighbs_old(self,setA=None,setB=None,ranking=1,dist=None,traj=0,frame=0,pbc=True):
      
         setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
         num_frames=__length_frame_opt__(self,traj,frame)
@@ -922,6 +922,8 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             else:
                 return neighbs
 
+
+
     def verlet_list_ns (self,r1=3.5,r2=6.0,traj=0,frame=0,pbc=True,update=False,verbose=False):
 
         print 'Not implemented as independent function yet'
@@ -936,71 +938,28 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         for iframe in __read_frame_opt__(self,traj,frame):
             faux.glob.make_cell_ns(rcell,rcut,iframe.box,self.num_atoms)
 
-    def verlet_list_grid_ns(self,r1=3.5,r2=7.0,rcell=7.0,traj=0,frame=0,pbc=True,update=False,verbose=False):
+    def verlet_list_grid_ns(self,r1=3.5,r2=7.0,rcell=7.0,traj=0,frame=0,iframe=None,pbc=True,update=False,verbose=False):
 
         pbc_opt=0
         if pbc:
             pbc_opt=1
 
-        if update:
-            for iframe in __read_frame_opt__(self,traj,frame):
+        if iframe!=None:
+            if update:
                 faux.glob.update_verlet_list_grid_ns(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume,iframe.orthogonal,self.num_atoms)
-
-        else:
-            for iframe in __read_frame_opt__(self,traj,frame):
+            else:
                 faux.glob.make_cell_ns(rcell,r2,iframe.box,self.num_atoms)
                 faux.glob.make_verlet_list_grid_ns(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume,iframe.orthogonal,self.num_atoms)
-        
-
-    def contact_list_checking (self,r1=3.5,r2=7.0,rcell=7.0,setA='ALL',setB=None,traj=0,frame=0,pbc=True,verbose=False):
-
-        sqrt_opt=0
-        pbc_opt=0
-        if pbc:
-            pbc_opt=1
-
-        if type(frame) in [int32,int]:
-            print 'This function validates the cutoff of a contact list when a trajectory is analysed.'
-            print 'type(frame)=list,tuple or "ALL"'
-            pass
-
-        if setA=='ALL' and setB==None:
-            
-            gg=0
-            for iframe in __read_frame_opt__(self,traj,frame):
-                if gg==0:
+        else:
+            if update:
+                for iframe in __read_frame_opt__(self,traj,frame):
+                    faux.glob.update_verlet_list_grid_ns(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume,iframe.orthogonal,self.num_atoms)
+            else:
+                for iframe in __read_frame_opt__(self,traj,frame):
                     faux.glob.make_cell_ns(rcell,r2,iframe.box,self.num_atoms)
                     faux.glob.make_verlet_list_grid_ns(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume,iframe.orthogonal,self.num_atoms)
-                    gg+=1
-                else:
-                    faux.glob.update_verlet_list_grid_ns(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume,iframe.orthogonal,self.num_atoms)
-                    gg+=1
-
-        setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
         
 
-        gg=0
-        for iframe in __read_frame_opt__(self,traj,frame):
-            if gg==0:
-                faux.glob.make_contact_list2(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
-                                                 iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
-                gg+=1
-            else:
-                faux.glob.update_contact_list2(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
-                                                  iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
-                copy_start=copy(faux.glob.cl_start)
-                copy_ind=copy(faux.glob.cl_ind)
-                copy_val=copy(faux.glob.cl_val)
-                LL=copy_ind.shape[0]/2.0
-                faux.glob.make_contact_list2(cutoff,sqrt_opt,diff_syst,diff_set,pbc_opt,setA,iframe.coors,iframe.box, \
-                                                 iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
-                LL_o=faux.glob.cl_ind.shape[0]/2.0
-                faux.glob.cl_start=copy(copy_start)
-                faux.glob.cl_ind=copy(copy_ind)
-                faux.glob.cl_val=copy(copy_val)
-                gg+=1
-                print (LL/LL_o)*100.0,'% in',gg,'steps'
-            
 
     def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,pbc=True,verbose=False):
 
@@ -1011,15 +970,6 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         if pbc:
             opt_pbc=1
 
-        faux.hbonds.definition=hbonds_type(definition,verbose=False)
-        if faux.hbonds.definition == 0 : return
-        if faux.hbonds.definition == 1 : faux.hbonds.sk_param=sk_param
-        if faux.hbonds.definition == 2 : faux.hbonds.roh2_param= roh_param**2
-        if faux.hbonds.definition == 3 : faux.hbonds.roo2_param, faux.hbonds.cos_angooh_param= roo_param**2, cos(radians(angooh_param))
-        if faux.hbonds.definition == 4 : pass
-        if faux.hbonds.definition == 5 : pass
-        if faux.hbonds.definition == 6 : faux.hbonds.cos_angooh_param= cos(radians(angooh_param))
-        if faux.hbonds.definition == 7 : pass
 
         if acc_don_A==None and acc_don_B==None:
             if set_A==None:
@@ -1053,27 +1003,138 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         nB_don_H     = acc_don_B[5].shape[0]
         allwat_B     = acc_don_B[6]
 
-        if faux.hbonds.definition in [1,4,5,6,7]:
+
+        num_frames=__length_frame_opt__(self,traj,frame)
+
+        faux.hbonds.definition=hbonds_type(definition,verbose=False)
+        if faux.hbonds.definition == 0 : 
+            return
+        
+        elif faux.hbonds.definition == 1 : 
+            faux.hbonds.sk_param=sk_param
             if not (allwat_A and allwat_B):
                 print '# This type of hbond only works for water molecules.'
+            print 'Not implemented yet'
+            pass
+
+        elif faux.hbonds.definition == 2 : 
+            faux.hbonds.roh2_param= roh_param**2
+            print 'Not implemented yet'
+            pass
+
+        elif faux.hbonds.definition == 3 : # ROO_ANG
+            faux.hbonds.roo2_param, faux.hbonds.cos_angooh_param= roo_param**2, cos(radians(angooh_param))
+
+            gg=0
+            for iframe in __read_frame_opt__(self,traj,frame):
+                if (gg==0): 
+                    self.verlet_list_grid_ns(r1=3.5,r2=3.5,rcell=3.5,iframe=iframe)
+                else:
+                    self.verlet_list_grid_ns(r1=3.5,r2=3.5,rcell=3.5,iframe=iframe,update=True)
+                faux.hbonds.get_hbonds_roo_ang_ns_list( opt_diff_set, opt_pbc, \
+                                           acc_don_A[0],acc_don_A[1],acc_don_A[2],acc_don_A[3],acc_don_A[4],acc_don_A[5], \
+                                           iframe.coors,iframe.box,iframe.orthogonal, \
+                                           acc_don_B[0],acc_don_B[1],acc_don_B[2],acc_don_B[3],acc_don_B[4],acc_don_B[5], \
+                                           nA_acc,nA_acc_sH,nA_acc_H,nA_don,nA_don_sH,nA_don_H, \
+                                           nB_acc,nB_acc_sH,nB_acc_H,nB_don,nB_don_sH,nB_don_H, \
+                                           self.num_atoms)
+                gg+=1
+
+        elif faux.hbonds.definition == 4 : 
+            if not (allwat_A and allwat_B):
+                print '# This type of hbond only works for water molecules.'
+            print 'Not implemented yet'
+            pass
+
+        elif faux.hbonds.definition == 5 : 
+            if not (allwat_A and allwat_B):
+                print '# This type of hbond only works for water molecules.'
+            print 'Not implemented yet'
+            pass
+
+        elif faux.hbonds.definition == 6 : 
+            faux.hbonds.cos_angooh_param= cos(radians(angooh_param))
+            if not (allwat_A and allwat_B):
+                print '# This type of hbond only works for water molecules.'
+            print 'Not implemented yet'
+            pass
+
+        elif faux.hbonds.definition == 7 : 
+            if not (allwat_A and allwat_B):
+                print '# This type of hbond only works for water molecules.'
+            print 'Not implemented yet'
+            pass
+
+            #if verbose:
+            #    print 'Listo'
+        pass
+
+    def hbonds2 (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,pbc=True,verbose=False):
+
+        opt_effic=0
+        opt_diff_syst=0
+        opt_diff_set=1
+        opt_pbc=0
+        if pbc:
+            opt_pbc=1
+
+        if acc_don_A==None and acc_don_B==None:
+            if set_A==None:
+                print 'set_A and/or set_B needed'
                 return
+            else:
+                acc_don_A=self.selection_hbonds(setA=set_A,verbose=False)
+                if set_B==None:
+                    acc_don_B=acc_don_A
+                    opt_diff_set=0
+                else:
+                    acc_don_B=self.selection_hbonds(setA=set_B,verbose=False)
+        else:
+            if acc_don_B==None:
+                acc_don_B=acc_don_A
+                opt_diff_set=0
+
+
+        nA_acc       = acc_don_A[0].shape[0]
+        nA_acc_sH    = acc_don_A[1].shape[0] # Just for water and skinner, topological, etc...
+        nA_acc_H     = acc_don_A[2].shape[0] # Just for water and skinner, topological, etc...
+        nA_don       = acc_don_A[3].shape[0]
+        nA_don_sH    = acc_don_A[4].shape[0]
+        nA_don_H     = acc_don_A[5].shape[0]
+        allwat_A     = acc_don_A[6]
+        nB_acc       = acc_don_B[0].shape[0]
+        nB_acc_sH    = acc_don_B[1].shape[0] # Just for water and skinner, topological, etc...
+        nB_acc_H     = acc_don_B[2].shape[0] # Just for water and skinner, topological, etc...
+        nB_don       = acc_don_B[3].shape[0]
+        nB_don_sH    = acc_don_B[4].shape[0]
+        nB_don_H     = acc_don_B[5].shape[0]
+        allwat_B     = acc_don_B[6]
 
         natomA=self.num_atoms
         natomB=self.num_atoms
-
         num_frames=__length_frame_opt__(self,traj,frame)
-        for iframe in __read_frame_opt__(self,traj,frame):
+
+        faux.hbonds.definition=hbonds_type(definition,verbose=False)
+
+        if faux.hbonds.definition == 3 : # ROO_ANG
+            faux.hbonds.roo2_param, faux.hbonds.cos_angooh_param= roo_param**2, cos(radians(angooh_param))
             
-            faux.hbonds.get_hbonds(opt_effic, opt_diff_syst, opt_diff_set, opt_pbc, \
-                                       acc_don_A[0],acc_don_A[1],acc_don_A[2],acc_don_A[3],acc_don_A[4],acc_don_A[5], \
-                                       iframe.coors,iframe.box,iframe.orthogonal, \
-                                       acc_don_B[0],acc_don_B[1],acc_don_B[2],acc_don_B[3],acc_don_B[4],acc_don_B[5], \
-                                       iframe.coors,nA_acc,nA_acc_sH,nA_acc_H,nA_don,nA_don_sH,nA_don_H, \
-                                       nB_acc,nB_acc_sH,nB_acc_H,nB_don,nB_don_sH,nB_don_H, \
-                                       natomA,natomB)
-            
-            #if verbose:
-            #    print 'Listo'
+            gg=0
+            for iframe in __read_frame_opt__(self,traj,frame):
+                if (gg==0): 
+                    self.verlet_list_grid_ns(r1=3.5,r2=3.5,rcell=3.5,iframe=iframe)
+                else:
+                    self.verlet_list_grid_ns(r1=3.5,r2=3.5,rcell=3.5,iframe=iframe,update=True)
+                    faux.hbonds.get_hbonds_roo_ang_ns_list(opt_effic, opt_diff_syst, opt_diff_set, opt_pbc, \
+                                                       acc_don_A[0],acc_don_A[1],acc_don_A[2],acc_don_A[3],acc_don_A[4],acc_don_A[5], \
+                                                       iframe.coors,iframe.box,iframe.orthogonal, \
+                                                       acc_don_B[0],acc_don_B[1],acc_don_B[2],acc_don_B[3],acc_don_B[4],acc_don_B[5], \
+                                                       iframe.coors,nA_acc,nA_acc_sH,nA_acc_H,nA_don,nA_don_sH,nA_don_H, \
+                                                       nB_acc,nB_acc_sH,nB_acc_H,nB_don,nB_don_sH,nB_don_H, \
+                                                       natomA,natomB)
+                gg+=1
+
+
         pass
 
 
