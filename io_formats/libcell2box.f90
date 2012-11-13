@@ -77,13 +77,12 @@ SUBROUTINE BOX2CELL (box,cell,volume,ortho)
 
 END SUBROUTINE BOX2CELL
 
-SUBROUTINE WRAP (coors,box,ortho,natom,coors_out,offset)
+SUBROUTINE WRAP (coors,box,ortho,natom)
 
   INTEGER,INTENT(IN)::ortho,natom
   double precision,DIMENSION(3,3),INTENT(IN)::box
-  double precision,dimension(natom,3),intent(in)::coors
+  double precision,dimension(natom,3),intent(INOUT)::coors
 
-  DOUBLE PRECISION,DIMENSION(natom,3),INTENT(OUT)::coors_out
   DOUBLE PRECISION::Lx,Ly,Lz,x,y,z
 
   INTEGER::ii,jj,nn
@@ -119,7 +118,7 @@ SUBROUTINE WRAP (coors,box,ortho,natom,coors_out,offset)
            nn=INT(z/Lz)
            z=z-nn*Lz
         END IF
-        coors_out(ii,:)=(/x,y,z/)
+        coors(ii,:)=(/x,y,z/)
      END DO
      
   ELSE

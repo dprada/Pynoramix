@@ -88,6 +88,43 @@ SUBROUTINE PBC(vector,box,ortho)
 END SUBROUTINE PBC
 
 
+SUBROUTINE CENTER (pbc_opt,list_com,list_mov,coors,box,ortho,numat_com,numat_mov,numat_glob)
+
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN)::pbc_opt,numat_com,numat_mov,numat_glob,ortho
+  DOUBLE PRECISION,DIMENSION(numat_glob,3),INTENT(INOUT)::coors
+  DOUBLE PRECISION,DIMENSION(3,3),INTENT(IN)::box
+  INTEGER,DIMENSION(numat_com),INTENT(IN)::list_com
+  INTEGER,DIMENSION(numat_mov),INTENT(IN)::list_mov
+
+  INTEGER::ii,jj
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::com
+
+  ALLOCATE(com(3))
+  com=0.0d0
+
+  DO ii=1,numat_com
+     jj=list_com(ii)+1
+     com(:)=com(:)+coors(jj,:)
+  END DO
+  com(:)=com(:)/(numat_com*1.0d0)
+
+  com(1)=box(1,1)/2.0d0-com(1)
+  com(2)=box(2,2)/2.0d0-com(2)
+  com(3)=box(3,3)/2.0d0-com(3)
+
+
+  DO ii=1,numat_glob
+     jj=list_mov(ii)+1
+     coors(jj,:)=coors(jj,:)+com(:)
+  END DO
+
+  DEALLOCATE(com)
+
+END SUBROUTINE CENTER
+
+
 INTEGER FUNCTION CELL_INDEX(ix,iy,iz)
 
   IMPLICIT NONE

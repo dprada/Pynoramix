@@ -103,7 +103,11 @@ class cl_traj():
                 self.io_opened=0
                 self.io_file=None
                 return
-            self.frame[old]=temp_frame
+            try:
+                self.frame[old]=temp_frame
+            except:
+                self.frame.append(temp_frame)
+                self.num_frames+=1
             del(temp_frame)
         else:
             print '# Not supported yet.'

@@ -87,10 +87,8 @@ def read_next (file_unit,io_vars=None,io_pos=None):
         temp_frame.precision=prec.value
         temp_frame.time=time.value
         temp_frame.step=step.value
-        temp_frame.coors=array(temp_frame.coors,order='Fortran')
-        temp_frame.coors=10.0*temp_frame.coors
-        temp_frame.box=array(temp_frame.box,order='Fortran')
-        temp_frame.box=10.0*temp_frame.box
+        temp_frame.coors=array(10.0*temp_frame.coors,dtype=float,order='F')
+        temp_frame.box=array(10.0*temp_frame.box,dtype=float,order='F')
         temp_frame.box2cell()
         temp_frame.wrap()
 

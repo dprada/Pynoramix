@@ -755,6 +755,42 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 ###############################################################
     # To handle the set
 
+    def translation(self,select='ALL',vector=None,wrap=True):
+
+        pass
+
+    def center(self,select='ALL',center_of=None,mass_weighted=False,traj=0,frame=0,pbc=True,wrap=True):
+
+        ## I have to correct here the split molecules.
+
+        if center_of==None:
+            print 'Selection in input variable "center_of" required.'
+            return
+
+        if mass_weighted:
+            print 'Mass_weighted option not implemented yet.'
+            return
+
+        pbc_opt=0
+        if pbc:
+            pbc_opt=1        
+
+        setcom,nlist_setcom,numsys=__read_set_opt__(self,center_of)
+        setmov,nlist_setmov,numsys=__read_set_opt__(self,select)
+
+        for iframe in __read_frame_opt__(self,traj,frame):
+            faux.glob.center(pbc_opt,setcom,setmov,iframe.coors,iframe.box,iframe.orthogonal,\
+                                 nlist_setcom,nlist_setmov,numsys)
+            if wrap: 
+                iframe.wrap()
+            
+        pass
+
+    def rotation(self,select='ALL',rotor=None,wrap=True):
+
+        pass
+
+
     def distance(self,setA='ALL',setB=None,traj=0,frame='ALL',pbc=True):
         
         if pbc:

@@ -1,4 +1,5 @@
 from numpy import zeros
+from numpy import array
 import libcell2box as libcell
 
 class cl_frame():
@@ -10,8 +11,8 @@ class cl_frame():
         self.lam=None                    # Coming from trr files... what is this?
         self.model=None
         self.coors=[]
-        self.box=zeros(shape=(3,3),order='Fortran')
-        self.cell=zeros(shape=(3,3),order='Fortran')
+        self.box=zeros(shape=(3,3),dtype=float,order='F')
+        self.cell=zeros(shape=(3,3),dtype=float,order='F')
         self.orthogonal=0
         self.volume=0.0
 
@@ -22,5 +23,5 @@ class cl_frame():
         self.cell,self.volume,self.orthogonal=libcell.box2cell(self.box)
 
     def wrap(self):
-        self.coors=libcell.wrap(self.coors,self.box,self.orthogonal,self.coors.shape[0])
+        libcell.wrap(self.coors,self.box,self.orthogonal,self.coors.shape[0])
 

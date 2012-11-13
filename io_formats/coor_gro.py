@@ -1,5 +1,6 @@
 from frame import *
 from numpy import array
+from numpy import dtype
 
 # open
 # close
@@ -70,7 +71,7 @@ def read_aux(file_unit,io_vars=None,io_pos=None):
             line=file_unit.readline().split()
             temp_frame.coors.append(map(float,line[3:6]))
 
-        temp_frame.coors=10.0*array(temp_frame.coors,order='Fortran')
+        temp_frame.coors=10.0*array(temp_frame.coors,order='F')
         line=file_unit.readline().split()                         # Reading the size of the cell
 
         temp_frame.box[0,0]=10.0*float(line[0])         
@@ -84,6 +85,7 @@ def read_aux(file_unit,io_vars=None,io_pos=None):
             temp_frame.box[2,0]=10.0*float(line[7])
             temp_frame.box[2,1]=10.0*float(line[8])
         temp_frame.box2cell()
+        temp_frame.coors=array(temp_frame.coors,dtype=float,order='F')
         temp_frame.wrap()
         io_pos=file_unit.tell()
 
