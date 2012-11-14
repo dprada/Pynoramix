@@ -118,12 +118,33 @@ class cl_traj():
         if type(frame) in [int]: frame=[frame]
 
         if begin!=None or end!=None:
-            if units==None:
-                print "# Option units=None."
-                print "# Choose units in ['ns','ps','md_steps','frames']"
-                pass
-            print "# Not supported yet."
-            pass
+            if units=='frames':
+                if begin==None:
+                    begin=0
+                if end==None:
+                    ii=begin
+                    while 1:
+                        temp_frame,self.io_pos,self.io_err,self.io_end=getattr(io,'coor_'+self.type).read_frame(self.io_file,ii,self.io_vars,self.io_pos)
+                        if self.io_err: return '# Error reading file'
+                        self.frame.append(temp_frame)
+                        self.num_frames+=1
+                        ii+=increment
+                        if self.io_end: break
+                    return
+                else:
+                    ii=begin
+                    while 1:
+                        temp_frame,self.io_pos,self.io_err,self.io_end=getattr(io,'coor_'+self.type).read_frame(self.io_file,ii,self.io_vars,self.io_pos)
+                        if self.io_err: return '# Error reading file'
+                        self.frame.append(temp_frame)
+                        self.num_frames+=1
+                        ii+=increment
+                        if ii>end: break
+                    return
+            else:
+                print "# Choose option 'units' in ['ps','md_steps','frames']"
+                print "# Not supported yet: 'ps' and 'md_steps'"
+                return
 
         else:
             ### Uploading next frame

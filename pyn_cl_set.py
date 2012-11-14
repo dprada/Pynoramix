@@ -13,7 +13,10 @@ from os import path
 from os import sys
 import copy as ccopy
 from numpy import *
-import pickle as pic
+try:
+    import cPickle as pic
+except:
+    import pickle as pic
 import datetime as datetime
 
 ### pyno libraries:
@@ -514,8 +517,8 @@ class molecule(labels_set):               # The suptra-estructure: System (water
     def load_topol (self,name_file):
 
         if name_file.endswith('pdb'):
-            ff=open(name_file,'r')
-            for line in ff:
+            fff=open(name_file,'r')
+            for line in fff:
                 ss=line.split()[0]
                 if ss in ['HEADER','TITLE','CRYST1']: self.pdb_header.append(line)
                 if ss.startswith('END'): break  # To read only the 1st model
@@ -538,19 +541,19 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                     temp_atom.index=len(self.atom)
                     self.atom.append(temp_atom)
 
-            ff.close()
+            fff.close()
 
         if name_file.endswith('gro'):
 
-            ff=open(name_file,'r')
-            line=ff.readline()                                          # Header of the gro file
-            line=ff.readline()                                        
+            fff=open(name_file,'r')
+            line=fff.readline()                                          # Header of the gro file
+            line=fff.readline()                                        
             self.num_atoms=int(line)
 
             for i in range(self.num_atoms):           
             ## Fixed format taken from http://manual.gromacs.org/online/gro.html
                 temp_atom=cl_unit()
-                line=ff.readline()
+                line=fff.readline()
                 temp_atom.pdb_index=int(line[15:20])
                 temp_atom.name=line[10:15].replace(" ", "")
                 temp_atom.resid.name=line[5:10].replace(" ", "")
@@ -559,7 +562,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 temp_atom.chain.name='A'
                 self.atom.append(temp_atom)
 
-            ff.close()
+            fff.close()
 
     def write_pdb (self,filename=None):
         
@@ -572,14 +575,14 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 print '# The file '+filename+' already exists.'
                 return
      
-            file=open(filename,'w')
+            fff=open(filename,'w')
      
             a='HEADER    '+'> CREATED BY PYNORAMIX '+datetime.datetime.now().strftime("%Y-%m-%d %H:%M")+' <\n'
-            file.write(str(a))
+            fff.write(str(a))
      
-            for ii in self.pdb_header: file.write(str(ii))
+            for ii in self.pdb_header: fff.write(str(ii))
             
-            for ii in self.pdb_ss:     file.write(str(ii))
+            for ii in self.pdb_ss:     fff.write(str(ii))
      
             dct_aux={'ATOM': 'ATOM  ', 'HETATM': 'HETATM'}
             
@@ -607,7 +610,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 a+="%2s" % self.atom[ii].elem_symb             # 77-78
                 a+="%2s" % self.atom[ii].charge                # 79-80
                 a+='\n' 
-                file.write(str(a))         
+                fff.write(str(a))         
                 if ii<(self.num_atoms-1):
                     if self.atom[ii].type_pdb!=self.atom[ii+1].type_pdb or self.atom[ii].chain.name!=self.atom[ii+1].chain.name :
                         new_index+=1
@@ -618,21 +621,21 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                         a+=' '                                         
                         a+="%3s" % self.atom[ii].resid.name            
                         a+='\n' 
-                        file.write(str(a))
+                        fff.write(str(a))
             a='END   '+'\n'
-            file.write(str(a))
-            file.close()
+            fff.write(str(a))
+            fff.close()
         return None
 
     def write_set_to_file(self,name_of_file):
-        file=open(name_of_file,'w')
-        pic.dump(self,file)
-        file.close()
+        fff=open(name_of_file,'w')
+        pic.dump(self,fff)
+        fff.close()
 
     def read_set_from_file(self,name_of_file):
-        file=open(name_of_file,'r')
-        A=pic.load(file)
-        file.close()
+        fff=open(name_of_file,'r')
+        A=pic.load(fff)
+        fff.close()
         return A
 
 
@@ -656,7 +659,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         pass
 
-    def load_traj (self,file_input=None,frame=None,begin=None,end=None,increment=1,units=None,verbose=True):
+    def load_traj (self,file_input=None,frame=None,begin=None,end=None,increment=1,units='frames',verbose=True):
 
         temp_traj=cl_traj(file_input,frame,begin,end,increment,units,verbose=False)
         if verbose:
@@ -802,15 +805,15 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
         num_frames=__length_frame_opt__(self,traj,frame)
-        dists=empty(shape=(nlist_A,nlist_B,num_frames),order='Fortran')
+        dists=empty(shape=(num_frames,nlist_A,nlist_B),dtype=float,order='Fortran')
 
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
-            dists[:,:,num_frames]=faux.glob.distance(diff_syst,diff_set,pbc,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
+            dists[num_frames,:,:]=faux.glob.distance(diff_syst,diff_set,pbc,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
             num_frames+=1
 
         if num_frames==1:
-            return dists[:,:,0]
+            return dists[0,:,:]
         else:
             return dists
 

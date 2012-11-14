@@ -39,40 +39,21 @@ MODULE stats
   
 
 
-  SUBROUTINE histograma (opt_norm,opt_prec,opt_range,opt,opt_cumul,idatos,ibins,imin_x,imax_x,idelta_x,iprec,l)
+  SUBROUTINE histogram1D (opt_norm,opt_range,opt,opt_cumul,idatos,ibins,imin_x,imax_x,idelta_x,part,l)
     
     implicit none
-    INTEGER,INTENT(IN)::opt_norm,opt_prec,opt_range,opt,l,ibins,opt_cumul
-    DOUBLE PRECISION,DIMENSION(l),INTENT(IN)::idatos
-    DOUBLE PRECISION,INTENT(IN)::idelta_x,imax_x,imin_x,iprec
+    INTEGER,INTENT(IN)::opt_norm,opt_range,opt,l,ibins,opt_cumul,part
+    DOUBLE PRECISION,DIMENSION(part,l),INTENT(IN)::idatos
+    DOUBLE PRECISION,INTENT(IN)::idelta_x,imax_x,imin_x
 
     DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::frecuencias
-    INTEGER::i,j,k,prec,aux,bins,tt
-    DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::datos
+    INTEGER::ii,jj,kk,aux,bins,tt
     DOUBLE PRECISION::max,min,delta_x,total,sobra
     
     bins=ibins
-
-    ALLOCATE(datos(l))
-    datos=0.0d0
-
-    !! Por un problema que hay con python 2.6 corrijo la precision
-    IF (opt_prec==1) THEN
-       prec=nint(1.0/iprec)
-       datos=0.0d0
-       DO i=1,l
-          aux=nint(idatos(i)*prec)
-          datos(i)=(aux*1.0d0)/(prec*1.0d0)
-       END DO
-       max=(nint(imax_x*prec)*1.0d0)/(prec*1.0d0)
-       min=(nint(imin_x*prec)*1.0d0)/(prec*1.0d0)
-       delta_x=idelta_x
-    ELSE
-       datos=idatos
-       max=imax_x
-       min=imin_x
-       delta_x=idelta_x
-    END IF
+    max=imax_x
+    min=imin_x
+    delta_x=idelta_x
     
     IF (opt_range==0) THEN
        IF (opt==1) THEN
@@ -91,10 +72,12 @@ MODULE stats
     ALLOCATE(frecuencias(bins))
     frecuencias=0.0d0
     
-    DO k=1,l
-       tt=CEILING((datos(k)-min)/delta_x) 
-       if (tt==0) tt=1
-       frecuencias(tt)=frecuencias(tt)+1.0d0
+    DO ii=1,part
+       DO kk=1,l
+          tt=CEILING((idatos(ii,kk)-min)/delta_x) 
+          if (tt==0) tt=1
+          frecuencias(tt)=frecuencias(tt)+1.0d0
+       END DO
     END DO
     
 
@@ -110,19 +93,18 @@ MODULE stats
     histo_y=frecuencias
     IF (opt_cumul==1) THEN
        histo_y=histo_y*delta_x
-       DO i=1,bins-1
-          histo_y(i+1)=histo_y(i+1)+histo_y(i)
+       DO ii=1,bins-1
+          histo_y(ii+1)=histo_y(ii+1)+histo_y(ii)
        END DO
     END IF
 
-    DO i=1,bins
-       histo_x(i)=min+(i*1.0d0-0.50d0)*delta_x
+    DO ii=1,bins
+       histo_x(ii)=min+(ii*1.0d0-0.50d0)*delta_x
     END DO
-    
-    
-    DEALLOCATE(datos,frecuencias)
+        
+    DEALLOCATE(frecuencias)
 
-  END SUBROUTINE histograma
+  END SUBROUTINE histogram1D
   
   SUBROUTINE histograma_2d (opt_norm,opt_prec,opt_range,opt,idatos,ibins,imin_x,imax_x,idelta_x,iprec,l)
     

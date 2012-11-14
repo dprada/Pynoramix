@@ -1261,38 +1261,33 @@ def standard_ranges(ranges):
 
     return ranges
 
-def standard_traj(traj,num_parts=None,dims=None):
+def standard_traj(traj,particles=None,dimensions=None):
 
     if type(traj) not in [ndarray]:
-        traj=array(traj,order='Fortran')
+        traj=array(traj,dtype=float,order='F')
 
     if len(traj.shape)==1:
-        num_parts=1
-        dims=1
+        traj.resize(traj.shape[0],1,1)
 
     elif len(traj.shape)==2:
-        if num_parts==None and dims==None:
-            print '# Error: num_parts or dims needed'
-            pass
-        elif num_parts==None:
-            dims=1
-        elif dims==None:
-            num_parts=1
+        if particles==None and dimensions==None:
+            nn=str(traj.shape[-1])
+            print '# Error! The trajectory format should be [frames,particles,dimensions].'
+            print '# Your input has the shape ['+str(traj.shape[0])+','+str(traj.shape[1])+']:'
+            print '# '+nn+' particles with a reaction coordinate? or just a '+nn+'-D reaction coordinate?'
+            print '# '
+            print '# Please, make use of the variables "particles" or/and "dimensions":'
+            print '#   traj:=[100 frames, 3 dimensions] --> "particles=1" or/and "dimensions=3"'
+            print '#   traj:=[100 frames, 8  particles] --> "particles=8" or/and "dimensions=1"'
+            print '# '
+            return 0
+        elif particles==1 or dimensions>=1:
+            traj.resize(traj.shape[0],1,traj.shape[1])
+        elif particles>1 or dimensions==1:
+            traj.resize(traj.shape[0],traj.shape[1],1)
 
-    if len(traj.shape)==1:
-        if num_parts!=1 or dims!=1:
-            print '# Error with dimensions'
-            pass
-        else:
-            traj.resize(traj.shape[0],1,1)
-    elif len(traj.shape)==2:
-        if num_parts!=1 and dims!=1:
-            print '# Error with dimensions'
-        else:
-            if num_parts==1 :
-                traj.resize(traj.shape[0],1,traj.shape[1])
-            else:
-                traj.resize(traj.shape[0],traj.shape[1],1)
+    if not isfortran(traj):
+        traj=array(traj,dtype=float,order='F')
 
     return traj
 

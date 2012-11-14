@@ -1,6 +1,6 @@
 import numpy as npy
 import copy as ccopy
-import pyn_fort_math as f
+import pyn_fort_math as fstat
 try:
     import pylab
     wpylab=1
@@ -13,7 +13,7 @@ def average(a):
 
     if leng > 0 :
 
-        v,sigm=f.stats.average(a,leng)
+        v,sigm=fstat.stats.average(a,leng)
 
     else :
         
@@ -23,25 +23,29 @@ def average(a):
 
 
 
-def histogram(traj,bins=20,segment=None,delta_x=None,prec=None,norm=False,cumul=False,plot=False):
+def histogram1D(traj,bins=20,segment=None,delta_x=None,norm=False,cumul=False,plot=False):
 
-    leng=len(traj)
+    if type(traj) not in [npy.ndarray]:
+        traj=npy.array(traj,dtype=float,order='F')
+
+    if len(traj.shape)==1:
+        traj.resize(1,traj.shape[0])
+
+    part=traj.shape[0]
+    leng=traj.shape[1]
+
+    if not npy.isfortran(traj):
+        traj=npy.array(traj,dtype=float,order='F')
 
     if norm==False:
         opt_norm=0
     else:
         opt_norm=1
 
-    if prec==None:
-        opt_prec=0
-        prec=1.0
-    else:
-        opt_prec=1
-
     if segment==None:
         opt_range=0
-        mmx=max(traj)
-        mmn=min(traj)
+        mmx=traj.max()
+        mmn=traj.min()
     else:
         opt_range=1
         mmn=segment[0]
@@ -58,17 +62,17 @@ def histogram(traj,bins=20,segment=None,delta_x=None,prec=None,norm=False,cumul=
     else:
         opt_cumul=0
 
-    f.stats.histograma(opt_norm,opt_prec,opt_range,opt,opt_cumul,traj,bins,mmn,mmx,delta_x,prec,leng)
+    fstat.stats.histogram1d(opt_norm,opt_range,opt,opt_cumul,traj,bins,mmn,mmx,delta_x,part,leng)
 
-    h_x=ccopy.deepcopy(f.stats.histo_x)
-    h_y=ccopy.deepcopy(f.stats.histo_y)
-    f.stats.free_mem()
+    h_x=ccopy.deepcopy(fstat.stats.histo_x)
+    h_y=ccopy.deepcopy(fstat.stats.histo_y)
+    fstat.stats.free_mem()
     if plot and wpylab:
         pylab.plot(h_x,h_y,'ro-')
 
     return h_x,h_y
 
-def histogram2d(traj,bins=[20,20],segment=None,delta_x=None,prec=None,norm=False,plot=False):
+def histogram2D(traj,bins=[20,20],segment=None,delta_x=None,prec=None,norm=False,plot=False):
 
     leng=len(traj)
 
@@ -102,12 +106,12 @@ def histogram2d(traj,bins=[20,20],segment=None,delta_x=None,prec=None,norm=False
         delta_x=[1.0,1.0]
         opt=2
 
-    f.stats.histograma_2d(opt_norm,opt_prec,opt_range,opt,traj,bins,[mmn0,mmn1],[mmx0,mmx1],delta_x,prec,leng)
+    fstat.stats.histograma_2d(opt_norm,opt_prec,opt_range,opt,traj,bins,[mmn0,mmn1],[mmx0,mmx1],delta_x,prec,leng)
 
-    h_x=ccopy.deepcopy(f.stats.histo_x)
-    h_y=ccopy.deepcopy(f.stats.histo_y)
-    h_z=ccopy.deepcopy(f.stats.histo_z)
-    f.stats.free_mem()
+    h_x=ccopy.deepcopy(fstat.stats.histo_x)
+    h_y=ccopy.deepcopy(fstat.stats.histo_y)
+    h_z=ccopy.deepcopy(fstat.stats.histo_z)
+    fstat.stats.free_mem()
     if plot and wpylab:
         pylab.plot(h_x,h_y,'ro-')
 
@@ -133,19 +137,19 @@ def binning(traj=None,bins=20,segment=None,delta_x=None,prec=None):
 
     if traj==None:
 
-        o_delta_x=f.stats.binning_x(opt_range,opt,bins,mmn,mmx,delta_x)
-        h_x=ccopy.deepcopy(f.stats.histo_x)
-        f.stats.free_mem()
+        o_delta_x=fstat.stats.binning_x(opt_range,opt,bins,mmn,mmx,delta_x)
+        h_x=ccopy.deepcopy(fstat.stats.histo_x)
+        fstat.stats.free_mem()
         
         return h_x
 
     else:
 
-        tray_bins=f.stats.binning(opt_range,opt_delta_x,traj,bins,mmn,mmx,delta_x,len(traj))
+        tray_bins=fstat.stats.binning(opt_range,opt_delta_x,traj,bins,mmn,mmx,delta_x,len(traj))
 
-        h_x=ccopy.deepcopy(f.stats.histo_x)
+        h_x=ccopy.deepcopy(fstat.stats.histo_x)
     
-        f.stats.free_mem()
+        fstat.stats.free_mem()
 
         return h_x,tray_bins
 

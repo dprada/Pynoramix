@@ -349,10 +349,10 @@ end subroutine traj2net
 !!$end subroutine rao_stat_1
 
 
-subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,len_traj,traj_out)
+subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,rv_min,rv_max,traj,ksi,tw,num_parts,len_traj,traj_out)
 
   IMPLICIT NONE
-  INTEGER,INTENT(IN)::opt_range,opt,ibins,tw,len_traj,num_parts
+  INTEGER,INTENT(IN)::opt_range,opt,ibins,tw,len_traj,num_parts,rv_min,rv_max
   DOUBLE PRECISION,INTENT(IN)::idelta_x,imin,imax
   DOUBLE PRECISION,INTENT(IN)::ksi
   DOUBLE PRECISION,DIMENSION(len_traj,num_parts,1),INTENT(IN)::traj
@@ -367,7 +367,10 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
   LOGICAL,DIMENSION(:),ALLOCATABLE::filter
   DOUBLE PRECISION::dist
   INTEGER::ii,jj,gg,kk,tt,lll,nn
-  LOGICAL::switch
+  LOGICAL::switch,filt_min,filt_max
+
+  filt_min=.FALSE.
+  filt_max=.FALSE.
 
   !!! For histogram:
 
@@ -394,6 +397,15 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
      END IF
   END IF
 
+  IF (rv_min==1) THEN
+     bins=bins+1
+     filt_min=.TRUE.
+  END IF
+  IF (rv_max==1) THEN
+     bins=bins+1
+     filt_max=.TRUE.
+  END IF
+
   !!
   ALLOCATE(cumul(bins))
   cumul=0.0d0
@@ -408,11 +420,26 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
   DO nn=1,num_parts
      DO ii=1,len_traj-2*tw
         cumul=0.0d0
-        DO kk=ii,ii+Ltw1
-           tt=CEILING((traj(kk,nn,1)-min)/delta_x) 
-           IF (tt==0) tt=1
-           cumul(tt)=cumul(tt)+1.0d0
-        END DO
+        IF ((filt_min==.TRUE.).OR.(filt_max==.TRUE.)) THEN
+           DO kk=ii,ii+Ltw1
+              tt=CEILING((traj(kk,nn,1)-min)/delta_x)
+              IF (filt_min==.TRUE.) THEN
+                 IF (tt<1) THEN
+                    tt=1
+                 ELSE
+                    tt=tt+1
+                 END IF
+              END IF
+              IF (tt>bins) tt=bins
+              cumul(tt)=cumul(tt)+1.0d0
+           END DO
+        ELSE
+           DO kk=ii,ii+Ltw1
+              tt=CEILING((traj(kk,nn,1)-min)/delta_x)
+              IF (tt==0) tt=1
+              cumul(tt)=cumul(tt)+1.0d0
+           END DO
+        END IF
         cumul=cumul/(1.0d0*Ltw)
         DO kk=1,bins-1
            cumul(kk+1)=cumul(kk+1)+cumul(kk)
