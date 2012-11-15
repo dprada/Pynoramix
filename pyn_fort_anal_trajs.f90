@@ -633,7 +633,8 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,rv_min,rv_max,traj,ksi,
 
   traj_out=traj_out-1
   DEALLOCATE(cumul_list,filter,cumul)
-
+  
+  print*,'llega'
 
 END subroutine ganna
 

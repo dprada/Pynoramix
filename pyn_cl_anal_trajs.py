@@ -549,7 +549,8 @@ class kinetic_1D_analysis():
 
         self.traj_nodes=ftrajs.aux.ganna(opt_range,opt,bins,mmn,mmx,delta_x,rv_min,rv_max,self.traj,ksi,window,self.particles,self.frames)
         self.__offset__=window
-
+        print 'sale'
+        return
         self.network=kinetic_network(self.traj_nodes,ranges=[self.traj_nodes.min(),self.traj_nodes.max()],verbose=False)
 
         if clusters:
