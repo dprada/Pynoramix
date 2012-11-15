@@ -201,6 +201,8 @@ class network():
         self.file_net=None
         self.file_labels=None
  
+        self.__symmetric__=False
+
         pass
 
     def __init_Ts__(self):
@@ -893,6 +895,8 @@ class network():
 
         for kk,vv in temp.labels.iteritems():
             temp.node[vv].label=kk
+
+        temp.__symmetric__=True
 
         if verbose==True :
             temp.info()

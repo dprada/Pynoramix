@@ -22,7 +22,7 @@ class kinetic_1D_analysis():
         self.network_clusters=None
         self.__type_nodes__=None
         self.__type_clusters__=None
-        self.__offset__=None
+        self.__offset__=0
 
         if traject==None:
             print 'Trajectory needed (name of file or array)'
@@ -100,21 +100,21 @@ class kinetic_1D_analysis():
 
         if cluster!=None:
 
-            if self.num_particles==1:
-                
-                if self.__type_clusters__=='berezovska2012':
-
-                    traj_inp=[]
-                    tw=(self.num_frames-len(self.traj_clusters))/2
-                    for ii in range(len(self.traj_clusters)):
-                        if (self.traj_clusters[ii]==cluster):
-                            traj_inp.append(self.traj[ii+tw])
-
-                return pyn_math.histogram(traj_inp,bins=bins,segment=segment,delta_x=delta_x,norm=norm,cumul=cumul,plot=False)
-
+            if self.network.__symmetric__:
+                traj_inp=empty((int(self.network.cluster[cluster].weight/2.0)+1,1,1),dtype=float,order='F')
             else:
-                print 'Not included yet'
-                pass
+                traj_inp=empty((int(self.network.cluster[cluster].weight)+1,1,1),dtype=float,order='F')
+
+            gg=0
+            for kk in range(self.traj_clusters.shape[0]):
+                for ii in range(self.particles):
+                    for jj in range(self.dimensions):
+                        if (self.traj_clusters[kk,ii,jj]==cluster):
+                            traj_inp[gg,0,0]=self.traj[kk+self.__offset__ ,ii,jj]
+                            gg+=1
+
+            xx,yy=pyn_math.histogram1D(traj_inp,bins=bins,segment=segment,delta_x=delta_x,norm=norm,cumul=cumul,plot=False)
+            return xx,yy
 
         if node!=None:
 
@@ -138,8 +138,8 @@ class kinetic_1D_analysis():
             elif type(state) in [list,tuple]:
                 num_states=len(state)
 
-            traj_inp=standard_traj(self.traj,num_parts=self.num_particles,dims=self.dimensions)
-            lt_mean=ftrajs.aux.life_time_dist(opt_norm,traj_inp,state,self.num_frames,self.num_particles,self.dimensions,num_states)
+            traj_inp=standard_traj(self.traj,num_parts=self.particles,dims=self.dimensions)
+            lt_mean=ftrajs.aux.life_time_dist(opt_norm,traj_inp,state,self.frames,self.particles,self.dimensions,num_states)
 
 
         elif traj in ['CLUSTERS','Clusters','clusters']:
@@ -150,8 +150,8 @@ class kinetic_1D_analysis():
             elif type(state) in [list,tuple]:
                 num_states=len(state)
 
-            traj_inp=standard_traj(self.traj_clusters,num_parts=self.num_particles,dims=self.dimensions)
-            lt_mean=ftrajs.aux.life_time_dist(opt_norm,traj_inp,state,self.num_frames,self.num_particles,self.dimensions,num_states)
+            traj_inp=standard_traj(self.traj_clusters,num_parts=self.particles,dims=self.dimensions)
+            lt_mean=ftrajs.aux.life_time_dist(opt_norm,traj_inp,state,self.frames,self.particles,self.dimensions,num_states)
 
         elif traj in ['NODES','Nodes','nodes']:
 
@@ -161,8 +161,8 @@ class kinetic_1D_analysis():
             elif type(state) in [list,tuple]:
                 num_states=len(state)
 
-            traj_inp=standard_traj(self.traj_nodes,num_parts=self.num_particles,dims=self.dimensions)
-            lt_mean=ftrajs.aux.life_time_dist(opt_norm,traj_inp,state,self.num_frames,self.num_particles,self.dimensions,num_states)
+            traj_inp=standard_traj(self.traj_nodes,num_parts=self.particles,dims=self.dimensions)
+            lt_mean=ftrajs.aux.life_time_dist(opt_norm,traj_inp,state,self.frames,self.particles,self.dimensions,num_states)
 
     
         lt_dist=ccopy.deepcopy(ftrajs.aux.distrib)
@@ -216,11 +216,11 @@ class kinetic_1D_analysis():
             pass
 
         if traj == None:
-            traj_inp=standard_traj(self.traj,num_parts=self.num_particles,dims=self.dimensions)
+            traj_inp=standard_traj(self.traj,num_parts=self.particles,dims=self.dimensions)
         elif traj in ['CLUSTERS','Clusters','clusters']:
-            traj_inp=standard_traj(self.traj_clusters,num_parts=self.num_particles,dims=self.dimensions)
+            traj_inp=standard_traj(self.traj_clusters,num_parts=self.particles,dims=self.dimensions)
         elif traj in ['NODES','Nodes','nodes']:
-            traj_inp=standard_traj(self.traj_nodes,num_parts=self.num_particles,dims=self.dimensions)
+            traj_inp=standard_traj(self.traj_nodes,num_parts=self.particles,dims=self.dimensions)
         else:
             print '# A readable traj is needed'
             pass
@@ -285,11 +285,11 @@ class kinetic_1D_analysis():
             pass
 
         if traj == None:
-            traj_inp=standard_traj(self.traj,num_parts=self.num_particles,dims=self.dimensions)
+            traj_inp=standard_traj(self.traj,num_parts=self.particles,dims=self.dimensions)
         elif traj in ['CLUSTERS','Clusters','clusters']:
-            traj_inp=standard_traj(self.traj_clusters,num_parts=self.num_particles,dims=self.dimensions)
+            traj_inp=standard_traj(self.traj_clusters,num_parts=self.particles,dims=self.dimensions)
         elif traj in ['NODES','Nodes','nodes']:
-            traj_inp=standard_traj(self.traj_nodes,num_parts=self.num_particles,dims=self.dimensions)
+            traj_inp=standard_traj(self.traj_nodes,num_parts=self.particles,dims=self.dimensions)
         else:
             print '# A readable traj is needed'
             pass
@@ -314,7 +314,7 @@ class kinetic_1D_analysis():
 
         commitment_in=[int(ii) for ii in commitment]
         fcpt_mean=ftrajs.aux.fcpt_dist(opt_norm,opt_noreturn,opt_states,opt_segments, states,segments,commitment_in,\
-                                                        traj_inp,self.num_frames,self.num_particles,self.dimensions,\
+                                                        traj_inp,self.frames,self.particles,self.dimensions,\
                                                         num_states,num_segments,num_commits)
 
         fcpt_dist=ccopy.deepcopy(ftrajs.aux.distrib)
@@ -372,11 +372,11 @@ class kinetic_1D_analysis():
             pass
 
         if traj == None:
-            traj_inp=standard_traj(self.traj,num_parts=self.num_particles,dims=self.dimensions)
+            traj_inp=standard_traj(self.traj,num_parts=self.particles,dims=self.dimensions)
         elif traj in ['CLUSTERS','Clusters','clusters']:
-            traj_inp=standard_traj(self.traj_clusters,num_parts=self.num_particles,dims=self.dimensions)
+            traj_inp=standard_traj(self.traj_clusters,num_parts=self.particles,dims=self.dimensions)
         elif traj in ['NODES','Nodes','nodes']:
-            traj_inp=standard_traj(self.traj_nodes,num_parts=self.num_particles,dims=self.dimensions)
+            traj_inp=standard_traj(self.traj_nodes,num_parts=self.particles,dims=self.dimensions)
         else:
             print '# A readable traj is needed'
             pass
@@ -396,7 +396,7 @@ class kinetic_1D_analysis():
 
         tt_mean=ftrajs.aux.tt_dist(opt_norm,opt_no_return,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, \
                                                         from_state,from_segment,to_state,to_segment, \
-                                                        traj_inp,self.num_frames,self.num_particles,self.dimensions,\
+                                                        traj_inp,self.frames,self.particles,self.dimensions,\
                                                         from_num_states,to_num_states)
 
         tt_dist=ccopy.deepcopy(ftrajs.aux.distrib)
@@ -440,11 +440,11 @@ class kinetic_1D_analysis():
             pass
 
         if traj == None:
-            traj_inp=standard_traj(self.traj,num_parts=self.num_particles,dims=self.dimensions)
+            traj_inp=standard_traj(self.traj,num_parts=self.particles,dims=self.dimensions)
         elif traj in ['CLUSTERS','Clusters','clusters']:
-            traj_inp=standard_traj(self.traj_clusters,num_parts=self.num_particles,dims=self.dimensions)
+            traj_inp=standard_traj(self.traj_clusters,num_parts=self.particles,dims=self.dimensions)
         elif traj in ['NODES','Nodes','nodes']:
-            traj_inp=standard_traj(self.traj_nodes,num_parts=self.num_particles,dims=self.dimensions)
+            traj_inp=standard_traj(self.traj_nodes,num_parts=self.particles,dims=self.dimensions)
         else:
             print '# A readable traj is needed'
             pass
@@ -469,7 +469,7 @@ class kinetic_1D_analysis():
 
         commitment_in=[int(ii) for ii in commitment]
         ctt_mean=ftrajs.aux.ctt_dist(opt_norm,opt_noreturn,opt_states,opt_segments, states,segments,commitment_in,\
-                                                        traj_inp,self.num_frames,self.num_particles,self.dimensions,\
+                                                        traj_inp,self.frames,self.particles,self.dimensions,\
                                                         num_states,num_segments,num_commits)
 
         ctt_dist=ccopy.deepcopy(ftrajs.aux.distrib)
@@ -501,7 +501,7 @@ class kinetic_1D_analysis():
             pass
 
         else:
-            self.traj=standard_traj(self.traj,num_parts=self.num_particles,dims=self.dimensions)
+            self.traj=standard_traj(self.traj,num_parts=self.particles,dims=self.dimensions)
             if ranges==None:
                 ranges=build_ranges(self.traj)
             else:
@@ -547,7 +547,8 @@ class kinetic_1D_analysis():
             if rv_max:
                 print '# Extra node for x >', mmx
 
-        self.traj_nodes=ftrajs.aux.ganna(opt_range,opt,bins,mmn,mmx,delta_x,rv_min,rv_max,self.traj,ksi,window,self.num_particles,self.num_frames)
+        self.traj_nodes=ftrajs.aux.ganna(opt_range,opt,bins,mmn,mmx,delta_x,rv_min,rv_max,self.traj,ksi,window,self.particles,self.frames)
+        self.__offset__=window
 
         self.network=kinetic_network(self.traj_nodes,ranges=[self.traj_nodes.min(),self.traj_nodes.max()],verbose=False)
 
@@ -556,22 +557,28 @@ class kinetic_1D_analysis():
             self.network.symmetrize(new=False,verbose=verbose)
             self.network.mcl(granularity=granularity,pruning=True,verbose=verbose)
 
-            if self.num_particles==1:
-                self.traj_clusters=[]
-                for ii in self.traj_nodes:
-                    self.traj_clusters.append(self.network.node[ii].cluster)
-            else:
-                self.traj_cluster=[[] for ii in range(len(self.num_particles))]
-                for jj in self.num_particles:
-                    for ii in self.traj_nodes[jj,:]:
-                        self.traj_clusters[jj].append(self.network.node[ii].cluster)
-             
-            self.traj_clusters=array(self.traj_clusters,order="Fortran")
+            num_nodes=self.network.num_nodes
+            aux_list=empty(num_nodes,dtype=int,order='F')
+            for ii in range(num_nodes):
+                aux_list[ii]=self.network.node[ii].cluster
 
-        self.__type_clusters__='berezovska2012'
+            new_num_frames=self.traj_nodes.shape[0]
+            self.traj_clusters=ftrajs.aux.trajnodes2trajclusters(aux_list,self.traj_nodes,num_nodes,new_num_frames,self.particles,self.dimensions)
+
+            del(num_nodes,new_num_frames,aux_list)
+
+            self.__type_clusters__='berezovska2012'
 
 
+    def pca(self,num_eigenvs='ALL',verbose=True):
 
+
+        if num_eigenvs in ['ALL','All','all']:
+            num_eigenvs=self.particles*self.dimensions
+
+        eigenvals,eigenvects=ftrajs.aux.pca(num_eigenvs,self.traj,self.frames,self.particles,self.dimensions)
+
+        return eigenvals,eigenvects
 
 #    def rao(self,traj=None,window=None,separators=None):
 # 
