@@ -316,6 +316,151 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
 
 end subroutine traj2net
 
+SUBROUTINE trajnodes2trajclusters (aux_list,trajnodes,num_nodes,frames,particles,dims,trajout)
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN)::frames,particles,dims,num_nodes
+  INTEGER,DIMENSION(frames,particles,dims),INTENT(IN)::trajnodes
+  INTEGER,DIMENSION(num_nodes),INTENT(IN)::aux_list
+  INTEGER,DIMENSION(frames,particles,dims),INTENT(OUT)::trajout
+
+  INTEGER::ii,jj,kk,gg,ll
+
+  DO ii=1,frames
+     DO jj=1,particles
+        DO kk=1,dims
+           ll=trajnodes(ii,jj,kk)
+           gg=aux_list(ll+1)
+           trajout(ii,jj,kk)=gg
+        END DO
+     END DO
+  END DO
+
+END SUBROUTINE trajnodes2trajclusters
+
+
+SUBROUTINE PCA (num_eigenvs,traj,frames,num_parts,dims,eigenvals,eigenvects)
+
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN)::frames,num_parts,dims,num_eigenvs
+  DOUBLE PRECISION,DIMENSION(frames,num_parts,dims),INTENT(IN)::traj
+  DOUBLE PRECISION,DIMENSION(num_eigenvs),INTENT(OUT)::eigenvals
+  DOUBLE PRECISION,DIMENSION(num_eigenvs,num_parts,dims),INTENT(OUT)::eigenvects
+
+  INTEGER::ii,jj,kk,gg,dim_mat
+  INTEGER::xx,yy,jj1,kk1,jj2,kk2
+  DOUBLE PRECISION::aux_coor,aver_xx
+  DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::C,CC
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::vals,aver
+  INTEGER,DIMENSION(:,:),ALLOCATABLE::aux_ind
+  DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::vects
+
+  !Para diagonalizar:
+  INTEGER::num_val,info,eigenlimit,lwork
+  INTEGER, DIMENSION(:), ALLOCATABLE::iwork,ifail
+  DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE::work
+
+
+  eigenvals=0.0d0
+  eigenvects=0.0d0
+
+  dim_mat=num_parts*dims
+
+  ALLOCATE(C(dim_mat,dim_mat),aver(dim_mat),aux_ind(num_parts,dims))
+
+  C=0.0d0
+  aver=0.0d0
+  aux_ind=0
+
+
+  gg=0
+  DO kk1=1,dims
+     DO jj1=1,num_parts
+        gg=gg+1
+        aux_ind(jj1,kk1)=gg
+     END DO
+  END DO
+
+  DO ii=1,frames
+
+     DO jj1=1,num_parts
+        DO kk1=1,dims
+           xx=aux_ind(jj1,kk1)
+           aux_coor=traj(ii,jj1,kk1)
+
+           aver(xx)=aver(xx)+aux_coor
+
+           DO jj2=jj1,num_parts
+              DO kk2=kk1,dims
+                 yy=aux_ind(jj2,kk2)
+
+                 C(xx,yy)=C(xx,yy)+aux_coor*traj(ii,jj2,kk2)
+
+              END DO
+           END DO
+        END DO
+     END DO
+
+  END DO
+
+  aver=aver/(frames*1.0d0)
+
+  DO kk1=1,dims
+     DO jj1=1,num_parts
+        xx=aux_ind(jj1,kk1)
+        aver_xx=aver(xx)
+        DO jj2=jj1,num_parts
+           DO kk2=kk1,dims
+              yy=aux_ind(jj2,kk2)
+              C(xx,yy)=C(xx,yy)/(frames*1.0d0)-aver_xx*aver(yy)
+              C(yy,xx)=C(xx,yy)
+           END DO
+        END DO
+     END DO
+  END DO
+
+  eigenlimit=dim_mat-num_eigenvs+1
+  lwork=8*dim_mat
+  ALLOCATE(work(lwork),iwork(5*dim_mat),ifail(dim_mat))
+  ALLOCATE(vects(num_eigenvs,dim_mat),vals(num_eigenvs))
+  vects=0.0d0
+  vals=0.0d0
+  work=0.0d0
+  iwork=0
+  ifail=0
+
+  CALL dsyevx ('V','I','U',dim_mat,C,dim_mat,0,0,eigenlimit,dim_mat,0.0d0,num_val&
+       &,vals,vects,dim_mat,work,8*dim_mat,iwork,ifail,info)
+
+  IF (info/=0) THEN
+
+     print*,'# Error diagonalising the covariance matrix.'
+     print*,'the array "work" should have the dimension:', work(1)
+     STOP
+     
+  END IF
+
+  DO ii=1,num_eigenvs
+     gg=num_eigenvs-ii+1
+     eigenvals(ii)=vals(gg)
+  END DO
+
+  DO ii=1,num_eigenvs
+     gg=num_eigenvs-ii+1
+     DO jj1=1,num_parts
+        DO kk1=1,dims
+           xx=aux_ind(jj1,kk1)
+           eigenvects(ii,jj1,kk1)=vects(gg,xx)
+        END DO
+     END DO
+  END DO
+
+  DEALLOCATE(aux_ind,aver)
+  DEALLOCATE(C,work,iwork,ifail)
+  DEALLOCATE(vals,vects)
+
+END SUBROUTINE PCA
 
 !!$subroutine rao_stat_1(tw,traj_dists,limits,num_parts,frames,len_lims,traj_bins)
 !!$
@@ -349,10 +494,10 @@ end subroutine traj2net
 !!$end subroutine rao_stat_1
 
 
-subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,len_traj,traj_out)
+subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,rv_min,rv_max,traj,ksi,tw,num_parts,len_traj,traj_out)
 
   IMPLICIT NONE
-  INTEGER,INTENT(IN)::opt_range,opt,ibins,tw,len_traj,num_parts
+  INTEGER,INTENT(IN)::opt_range,opt,ibins,tw,len_traj,num_parts,rv_min,rv_max
   DOUBLE PRECISION,INTENT(IN)::idelta_x,imin,imax
   DOUBLE PRECISION,INTENT(IN)::ksi
   DOUBLE PRECISION,DIMENSION(len_traj,num_parts,1),INTENT(IN)::traj
@@ -367,7 +512,10 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
   LOGICAL,DIMENSION(:),ALLOCATABLE::filter
   DOUBLE PRECISION::dist
   INTEGER::ii,jj,gg,kk,tt,lll,nn
-  LOGICAL::switch
+  LOGICAL::switch,filt_min,filt_max
+
+  filt_min=.FALSE.
+  filt_max=.FALSE.
 
   !!! For histogram:
 
@@ -394,6 +542,15 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
      END IF
   END IF
 
+  IF (rv_min==1) THEN
+     bins=bins+1
+     filt_min=.TRUE.
+  END IF
+  IF (rv_max==1) THEN
+     bins=bins+1
+     filt_max=.TRUE.
+  END IF
+
   !!
   ALLOCATE(cumul(bins))
   cumul=0.0d0
@@ -406,13 +563,29 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,traj,ksi,tw,num_parts,l
   dsm=sqrt(2.0d0/(1.0d0*Ltw))*ksi !Kolmogorov-Smirnov
 
   DO nn=1,num_parts
+     print*,nn
      DO ii=1,len_traj-2*tw
         cumul=0.0d0
-        DO kk=ii,ii+Ltw1
-           tt=CEILING((traj(kk,nn,1)-min)/delta_x) 
-           IF (tt==0) tt=1
-           cumul(tt)=cumul(tt)+1.0d0
-        END DO
+        IF ((filt_min==.TRUE.).OR.(filt_max==.TRUE.)) THEN
+           DO kk=ii,ii+Ltw1
+              tt=CEILING((traj(kk,nn,1)-min)/delta_x)
+              IF (filt_min==.TRUE.) THEN
+                 IF (tt<1) THEN
+                    tt=1
+                 ELSE
+                    tt=tt+1
+                 END IF
+              END IF
+              IF (tt>bins) tt=bins
+              cumul(tt)=cumul(tt)+1.0d0
+           END DO
+        ELSE
+           DO kk=ii,ii+Ltw1
+              tt=CEILING((traj(kk,nn,1)-min)/delta_x)
+              IF (tt==0) tt=1
+              cumul(tt)=cumul(tt)+1.0d0
+           END DO
+        END IF
         cumul=cumul/(1.0d0*Ltw)
         DO kk=1,bins-1
            cumul(kk+1)=cumul(kk+1)+cumul(kk)
