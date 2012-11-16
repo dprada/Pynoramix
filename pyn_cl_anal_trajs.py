@@ -100,20 +100,27 @@ class kinetic_1D_analysis():
 
         if cluster!=None:
 
-            if self.network.__symmetric__:
-                traj_inp=empty((int(self.network.cluster[cluster].weight/2.0)+1,1,1),dtype=float,order='F')
-            else:
-                traj_inp=empty((int(self.network.cluster[cluster].weight)+1,1,1),dtype=float,order='F')
+            #if self.network.__symmetric__:
+            #    ll=int(self.network.cluster[cluster].weight/2.0)+1
+            #else:
+            #    ll=int(self.network.cluster[cluster].weight)+1
+            # 
+            #traj_inp=empty((ll,1,1),dtype=float,order='F')
 
+            traj_inp=[]
             gg=0
             for kk in range(self.traj_clusters.shape[0]):
                 for ii in range(self.particles):
                     for jj in range(self.dimensions):
                         if (self.traj_clusters[kk,ii,jj]==cluster):
-                            traj_inp[gg,0,0]=self.traj[kk+self.__offset__ ,ii,jj]
+                            #traj_inp[gg,0,0]=self.traj[kk+self.__offset__ ,ii,jj]
+                            traj_inp.append(self.traj[kk+self.__offset__ ,ii,jj])
                             gg+=1
 
+            traj_inp=array(traj_inp,dtype=float,order='F')
+            traj_inp.resize(traj_inp.shape[0],1,1)
             xx,yy=pyn_math.histogram1D(traj_inp,bins=bins,segment=segment,delta_x=delta_x,norm=norm,cumul=cumul,plot=False)
+            del(traj_inp)
             return xx,yy
 
         if node!=None:
@@ -549,13 +556,13 @@ class kinetic_1D_analysis():
 
         self.traj_nodes=ftrajs.aux.ganna(opt_range,opt,bins,mmn,mmx,delta_x,rv_min,rv_max,self.traj,ksi,window,self.particles,self.frames)
         self.__offset__=window
-        print 'sale'
-        return
-        self.network=kinetic_network(self.traj_nodes,ranges=[self.traj_nodes.min(),self.traj_nodes.max()],verbose=False)
 
+        self.network=kinetic_network(self.traj_nodes,ranges=[self.traj_nodes.min(),self.traj_nodes.max()],verbose=False)
+        
         if clusters:
 
             self.network.symmetrize(new=False,verbose=verbose)
+
             self.network.mcl(granularity=granularity,pruning=True,verbose=verbose)
 
             num_nodes=self.network.num_nodes

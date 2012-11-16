@@ -853,6 +853,7 @@ class network():
         if self.Ts==False :
             self.build_Ts()
 
+
         aux_k_total=ccopy.deepcopy(self.k_total)
 
         if new:
@@ -875,7 +876,9 @@ class network():
         temp.k_total=len(aux)
         del(aux)        
 
+
         pfff=f_net.funcs.symmetrize_net(temp.k_total,self.T_ind,self.T_wl,self.T_start,self.num_nodes,aux_k_total)
+
         temp.k_max=pfff[0]
         temp.T_wl=pfff[1]
         temp.T_ind=pfff[2]

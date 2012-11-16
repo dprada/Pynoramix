@@ -381,6 +381,7 @@ SUBROUTINE SYMMETRIZE_NET(newKmax,TT_tau,TT_ind,TT_start,Pe,newKtot,T_ind,T_tau,
   SL=0.0d0
 
   DO i=1,N_nodes
+
      DO j=T_start(i)+1,T_start(i+1)
 
         IF (T_ind(j)==i) THEN
@@ -452,6 +453,7 @@ SUBROUTINE SYMMETRIZE_NET(newKmax,TT_tau,TT_ind,TT_start,Pe,newKtot,T_ind,T_tau,
         END IF
 
      END DO
+
   END DO
 
   g=0
@@ -486,18 +488,20 @@ SUBROUTINE SYMMETRIZE_NET(newKmax,TT_tau,TT_ind,TT_start,Pe,newKtot,T_ind,T_tau,
   TT_start(N_nodes+1)=g
 
   DO i=1,N_nodes
-     gg=size(F_ind(i)%p1(:),DIM=1)
-     aux2=0.0d0
-     DO j=1,gg
-        g=salidas(i)+1
-        salidas(i)=g
-        g=g+TT_start(i)
-        aux=flux(i)%d1(j)
-        TT_ind(g)=F_ind(i)%p1(j)
-        TT_tau(g)=aux
-        aux2=aux2+aux
-     END DO
-     Pe(i)=Pe(i)+aux2
+     IF ((TT_start(i+1)-TT_start(i)-salidas(i))>0) THEN
+        gg=size(F_ind(i)%p1(:),DIM=1)
+        aux2=0.0d0
+        DO j=1,gg
+           g=salidas(i)+1
+           salidas(i)=g
+           g=g+TT_start(i)
+           aux=flux(i)%d1(j)
+           TT_ind(g)=F_ind(i)%p1(j)
+           TT_tau(g)=aux
+           aux2=aux2+aux
+        END DO
+        Pe(i)=Pe(i)+aux2
+     END IF
   END DO
 
   newKmax=MAXVAL(salidas(:),DIM=1)

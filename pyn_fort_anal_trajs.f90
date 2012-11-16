@@ -5,8 +5,10 @@ MODULE AUX
 INTEGER,DIMENSION(:),ALLOCATABLE::T_ind,T_start
 DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::T_tau
 INTEGER,DIMENSION(:,:),ALLOCATABLE::labels
+DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::labels_daux
 
 DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::distrib,distrib_x
+
 
 TYPE array_pointer
 INTEGER,DIMENSION(:),POINTER::p1
@@ -25,6 +27,7 @@ SUBROUTINE free_memory_ts ()
   IF (ALLOCATED(T_tau))   DEALLOCATE(T_tau)
   IF (ALLOCATED(T_start)) DEALLOCATE(T_start)
   IF (ALLOCATED(labels))  DEALLOCATE(labels)
+  IF (ALLOCATED(labels_daux))  DEALLOCATE(labels_daux)
 
 END SUBROUTINE free_memory_ts
 
@@ -213,13 +216,13 @@ SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tra
         
         x2=tray(ii,index)
         contador=contador+1
-        
+
      END DO
 
      W(x)=W(x)+1
    
      switch=.true.
-   
+
      DO gg=1,K_out(x)
         IF(C(x)%p1(gg)==x2) THEN
            WK_out(x)%p1(gg)=WK_out(x)%p1(gg)+1
@@ -607,6 +610,23 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,rv_min,rv_max,traj,ksi,
            END IF
         END DO
         IF (switch.eqv..true.) THEN
+           DO jj=num_rep,1,-1
+              IF (COUNT(filter,DIM=1)==0) THEN
+                    EXIT
+                 END IF
+              IF (filter(jj).eqv..true.) THEN
+                 dist=MAXVAL(abs(cumul_list(jj,:)-cumul(:)),DIM=1)
+                 IF (dist<=dsm) THEN
+                    traj_out(ii,nn,1)=jj
+                    switch=.false.
+                    EXIT
+                 END IF
+                 filter(jj)=.false.
+              END IF
+           END DO
+        END IF
+
+        IF (switch.eqv..true.) THEN
            IF (num_rep>0) THEN
               ALLOCATE(aux_list(num_rep,bins))
               aux_list=cumul_list
@@ -632,9 +652,9 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,rv_min,rv_max,traj,ksi,
   END DO
 
   traj_out=traj_out-1
+
   DEALLOCATE(cumul_list,filter,cumul)
   
-  print*,'llega'
 
 END subroutine ganna
 
