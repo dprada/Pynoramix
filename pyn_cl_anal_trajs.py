@@ -44,8 +44,10 @@ class kinetic_1D_analysis():
                     return
                 elif particles==1 or dimensions>=1:
                     self.particles=1
+                    self.dimensions=len(columns)
                 elif particles>1 or dimensions==1:
                     self.dimensions=1
+                    self.particles=len(columns)
 
         elif columns in ['ALL','All','all']:
             fff=open(traject,'r')
@@ -73,13 +75,24 @@ class kinetic_1D_analysis():
 
             self.file_name=traject
             self.file_column=columns
-            
+
+            self.frames = 0
+            for line in open(traject): self.frames += 1
+
+            self.traj=empty((self.frames,self.particles,self.dimensions),dtype=float,order='F')
+
             fff=open(traject,'r')
+
+            gg=-1
             for line in fff:
                 line=line.split()
-                self.traj.append([float(line[ii]) for ii in columns])
+                gg+=1
+                for kk in range(len(columns)):
+                    self.traj[gg,0,kk]=float(line[columns[kk]])
  
             fff.close()
+
+            self.traj=standard_traj(self.traj,self.particles,self.dimensions)
 
         if type(traject) in [list,tuple,ndarray]:
             
@@ -90,8 +103,12 @@ class kinetic_1D_analysis():
         self.dimensions=self.traj.shape[2]
 
         if verbose:
-            print '# Loaded:',self.frames,'frames,',self.particles,'particles,',self.dimensions,'dimensions.'
+            print '# Loaded:'
+            self.info()
 
+    def info(self):
+
+        print '# ',self.frames,'frames,',self.particles,'particles,',self.dimensions,'dimensions.'
 
     def histogram1D(self,dimension=None,node=None,cluster=None,bins=20,segment=None,delta_x=None,norm=False,cumul=False):
 
