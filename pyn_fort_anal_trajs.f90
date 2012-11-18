@@ -496,6 +496,132 @@ END SUBROUTINE PCA
 !!$
 !!$end subroutine rao_stat_1
 
+subroutine params_bins (opt_range,opt,ibins,imin,imax,idelta_x,bins,max,min,delta_x)
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN)::opt_range,opt,ibins
+  DOUBLE PRECISION,INTENT(IN)::idelta_x,imin,imax
+
+  INTEGER,INTENT(OUT)::bins
+  DOUBLE PRECISION,INTENT(OUT)::max,min,delta_x
+  DOUBLE PRECISION::sobra
+
+  bins=ibins
+  max=imax
+  min=imin
+  delta_x=idelta_x
+
+  IF (opt_range==0) THEN
+     IF (opt==1) THEN
+        bins=CEILING((max-min)/delta_x)
+        sobra=(bins*delta_x-(max-min))/2.0d0
+        bins=bins+1
+        min=min-sobra
+        max=max+sobra
+     ELSE
+        delta_x=(max-min)/(bins*1.0d0)
+     END IF
+  ELSE
+     IF (opt==1) THEN
+        bins=CEILING((max-min)/delta_x)
+     ELSE
+        delta_x=(max-min)/(bins*1.0d0)
+     END IF
+  END IF
+
+END subroutine params_bins
+
+subroutine prada1 (ybins,bins,min,max,delta_x,traj,tw,num_parts,len_traj,traj_out)
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN)::ybins,bins,tw,len_traj,num_parts
+  DOUBLE PRECISION,INTENT(IN)::delta_x,min,max
+  DOUBLE PRECISION,DIMENSION(len_traj,num_parts,1),INTENT(IN)::traj
+  INTEGER,DIMENSION(len_traj-2*tw,num_parts,bins),INTENT(OUT)::traj_out
+
+  INTEGER::Ltw,Ltw1
+  INTEGER::nn,ii,tt,kk,gg
+  DOUBLE PRECISION::delta_y
+
+  traj_out=0
+  Ltw=(2*tw+1)
+  Ltw1=Ltw-1
+  delta_y=(1.0d0*ybins)/(1.0d0*Ltw)
+
+  DO nn=1,num_parts
+     DO ii=1,len_traj
+        tt=CEILING((traj(ii,nn,1)-min)/delta_x)
+        IF (tt>bins) tt=bins
+        DO kk=ii-tw,ii+tw
+           gg=kk-tw
+           IF ((gg>0).and.(kk<(len_traj-Ltw1))) THEN
+              traj_out(gg,nn,tt)=traj_out(gg,nn,tt)+1
+           END IF
+        END DO
+     END DO
+  END DO
+
+  DO nn=1,num_parts
+     DO ii=1,len_traj-Ltw1
+        DO kk=1,bins
+           tt=CEILING(delta_y*traj_out(ii,nn,kk))
+           traj_out(ii,nn,kk)=tt
+        END DO
+     END DO
+  END DO
+
+
+END SUBROUTINE prada1
+
+subroutine prada2 (ybins,sbins,bins,min,max,delta_x,traj,tw,num_parts,len_traj,traj_out)
+
+  IMPLICIT NONE
+  INTEGER,INTENT(IN)::ybins,sbins,bins,tw,len_traj,num_parts
+  DOUBLE PRECISION,INTENT(IN)::delta_x,min,max
+  DOUBLE PRECISION,DIMENSION(len_traj,num_parts,1),INTENT(IN)::traj
+  INTEGER,DIMENSION(len_traj-2*tw,num_parts,bins+1),INTENT(OUT)::traj_out
+
+  INTEGER::Ltw,Ltw1
+  INTEGER::nn,ii,tt,kk,gg
+  DOUBLE PRECISION::delta_y,sigma
+
+  traj_out=0
+  Ltw=(2*tw+1)
+  Ltw1=Ltw-1
+  delta_y=(1.0d0*ybins)/(1.0d0*Ltw)
+
+  DO nn=1,num_parts
+     DO ii=tw+1,len_traj-tw-1
+        DO kk=ii-tw,ii+tw
+           tt=CEILING((traj(kk,nn,1)-min)/delta_x)
+           IF (tt>bins) tt=bins
+           traj_out(ii,nn,tt)=traj_out(ii,nn,tt)+1
+        END DO
+        sigma=0.0d0
+        DO kk=ii-tw,ii+tw-1
+           sigma=sigma+(traj(kk+1,nn,1)-traj(kk,nn,1))**2
+        END DO
+        traj_out(ii,nn,bins+1)=int((sigma/(1.0d0*Ltw))*sbins)
+     END DO
+  END DO
+
+  print*,'Llega'
+
+  DO nn=1,num_parts
+     DO ii=1,len_traj-Ltw1
+        DO kk=1,bins
+           tt=CEILING(delta_y*traj_out(ii,nn,kk))
+           traj_out(ii,nn,kk)=tt
+        END DO
+     END DO
+  END DO
+
+END SUBROUTINE prada2
+
+
+
+
+
 
 subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,rv_min,rv_max,traj,ksi,tw,num_parts,len_traj,traj_out)
 
@@ -566,7 +692,6 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,rv_min,rv_max,traj,ksi,
   dsm=sqrt(2.0d0/(1.0d0*Ltw))*ksi !Kolmogorov-Smirnov
 
   DO nn=1,num_parts
-     print*,nn
      DO ii=1,len_traj-2*tw
         cumul=0.0d0
         IF ((filt_min==.TRUE.).OR.(filt_max==.TRUE.)) THEN

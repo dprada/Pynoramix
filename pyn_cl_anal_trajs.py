@@ -533,6 +533,107 @@ class kinetic_1D_analysis():
             self.network_nodes,self.traj_nodes=kinetic_network(self.traj,ranges=ranges,traj_out=True,verbose=verbose)                
             pass
 
+    def prada1(self,window=None,granularity=1.2,bins=20,ybins=10,segment=None,delta_x=None,clusters=True,verbose=False):
+
+        ref_max=self.traj.max()
+        ref_min=self.traj.min()
+
+        if segment==None:
+            opt_range=0
+            mmx=ref_max
+            mmn=ref_min
+        else:
+            opt_range=1
+            mmn=segment[0]
+            mmx=segment[1]
+
+        if delta_x!=None:
+            opt=1
+        else:
+            delta_x=1.0 # Its given by gannas function
+            opt=2
+
+        bins,mmx,mmn,delta_x=ftrajs.aux.params_bins(opt_range,opt,bins,mmn,mmx,delta_x)
+
+        traj_aux=ftrajs.aux.prada1(ybins,bins,mmn,mmx,delta_x,self.traj,window,self.particles,self.frames)
+
+        ranges=build_ranges(traj_aux)
+         
+        self.network,self.traj_nodes=kinetic_network(traj_aux,ranges=ranges,traj_out=True,verbose=False)
+         
+        del(traj_aux)
+         
+        self.__offset__=window
+         
+        if clusters:
+         
+            self.network.symmetrize(new=False,verbose=verbose)
+         
+            self.network.mcl(granularity=granularity,pruning=True,verbose=verbose)
+         
+            num_nodes=self.network.num_nodes
+            aux_list=empty(num_nodes,dtype=int,order='F')
+            for ii in range(num_nodes):
+                aux_list[ii]=self.network.node[ii].cluster
+         
+            new_num_frames=self.traj_nodes.shape[0]
+            self.traj_clusters=ftrajs.aux.trajnodes2trajclusters(aux_list,self.traj_nodes,num_nodes,new_num_frames,self.particles,self.dimensions)
+         
+            del(num_nodes,new_num_frames,aux_list)
+         
+            self.__type_clusters__='prada1'
+
+
+    def prada2(self,window=None,granularity=1.2,bins=10,ybins=10,sbins=10,segment=None,delta_x=None,clusters=True,verbose=False):
+
+        ref_max=self.traj.max()
+        ref_min=self.traj.min()
+
+        if segment==None:
+            opt_range=0
+            mmx=ref_max
+            mmn=ref_min
+        else:
+            opt_range=1
+            mmn=segment[0]
+            mmx=segment[1]
+
+        if delta_x!=None:
+            opt=1
+        else:
+            delta_x=1.0 # Its given by gannas function
+            opt=2
+
+        bins,mmx,mmn,delta_x=ftrajs.aux.params_bins(opt_range,opt,bins,mmn,mmx,delta_x)
+
+        traj_aux=ftrajs.aux.prada2(ybins,sbins,bins,mmn,mmx,delta_x,self.traj,window,self.particles,self.frames)
+
+        ranges=build_ranges(traj_aux)
+         
+        self.network,self.traj_nodes=kinetic_network(traj_aux,ranges=ranges,traj_out=True,verbose=False)
+         
+        del(traj_aux)
+         
+        self.__offset__=window
+         
+        if clusters:
+         
+            self.network.symmetrize(new=False,verbose=verbose)
+         
+            self.network.mcl(granularity=granularity,pruning=True,verbose=verbose)
+         
+            num_nodes=self.network.num_nodes
+            aux_list=empty(num_nodes,dtype=int,order='F')
+            for ii in range(num_nodes):
+                aux_list[ii]=self.network.node[ii].cluster
+         
+            new_num_frames=self.traj_nodes.shape[0]
+            self.traj_clusters=ftrajs.aux.trajnodes2trajclusters(aux_list,self.traj_nodes,num_nodes,new_num_frames,self.particles,self.dimensions)
+         
+            del(num_nodes,new_num_frames,aux_list)
+         
+            self.__type_clusters__='prada2'
+
 
 
     def berezovska2012(self,window=None,ksi=0.5,granularity=1.2,bins=20,segment=None,delta_x=None,clusters=True,verbose=False):
