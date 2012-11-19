@@ -531,10 +531,10 @@ subroutine params_bins (opt_range,opt,ibins,imin,imax,idelta_x,bins,max,min,delt
 
 END subroutine params_bins
 
-subroutine prada1 (ybins,bins,min,max,delta_x,traj,tw,num_parts,len_traj,traj_out)
+subroutine prada1 (ybins,bins,min,max,delta_x,rv_min,rv_max,traj,tw,num_parts,len_traj,traj_out)
 
   IMPLICIT NONE
-  INTEGER,INTENT(IN)::ybins,bins,tw,len_traj,num_parts
+  INTEGER,INTENT(IN)::ybins,bins,tw,len_traj,num_parts,rv_min,rv_max
   DOUBLE PRECISION,INTENT(IN)::delta_x,min,max
   DOUBLE PRECISION,DIMENSION(len_traj,num_parts,1),INTENT(IN)::traj
   INTEGER,DIMENSION(len_traj-2*tw,num_parts,bins),INTENT(OUT)::traj_out
@@ -542,24 +542,57 @@ subroutine prada1 (ybins,bins,min,max,delta_x,traj,tw,num_parts,len_traj,traj_ou
   INTEGER::Ltw,Ltw1
   INTEGER::nn,ii,tt,kk,gg
   DOUBLE PRECISION::delta_y
+  LOGICAL::filt_min,filt_max
 
   traj_out=0
   Ltw=(2*tw+1)
   Ltw1=Ltw-1
   delta_y=(1.0d0*ybins)/(1.0d0*Ltw)
 
-  DO nn=1,num_parts
-     DO ii=1,len_traj
-        tt=CEILING((traj(ii,nn,1)-min)/delta_x)
-        IF (tt>bins) tt=bins
-        DO kk=ii-tw,ii+tw
-           gg=kk-tw
-           IF ((gg>0).and.(kk<(len_traj-Ltw1))) THEN
-              traj_out(gg,nn,tt)=traj_out(gg,nn,tt)+1
+  filt_min=.FALSE.
+  filt_max=.FALSE.
+
+  IF (rv_min==1) THEN
+     filt_min=.TRUE.
+  END IF
+  IF (rv_max==1) THEN
+     filt_max=.TRUE.
+  END IF
+
+  IF ((filt_min==.TRUE.).OR.(filt_max==.TRUE.)) THEN
+     DO nn=1,num_parts
+        DO ii=1,len_traj
+           tt=CEILING((traj(ii,nn,1)-min)/delta_x)
+           IF (filt_min==.TRUE.) THEN
+              IF (tt<1) THEN
+                 tt=1
+              ELSE
+                 tt=tt+1
+              END IF
            END IF
+           IF (tt>bins) tt=bins
+           DO kk=ii-tw,ii+tw
+              gg=kk-tw
+              IF ((gg>0).and.(kk<(len_traj-Ltw1))) THEN
+                 traj_out(gg,nn,tt)=traj_out(gg,nn,tt)+1
+              END IF
+           END DO
         END DO
      END DO
-  END DO
+  ELSE
+     DO nn=1,num_parts
+        DO ii=1,len_traj
+           tt=CEILING((traj(ii,nn,1)-min)/delta_x)
+           IF (tt>bins) tt=bins
+           DO kk=ii-tw,ii+tw
+              gg=kk-tw
+              IF ((gg>0).and.(kk<(len_traj-Ltw1))) THEN
+                 traj_out(gg,nn,tt)=traj_out(gg,nn,tt)+1
+              END IF
+           END DO
+        END DO
+     END DO
+  END IF
 
   DO nn=1,num_parts
      DO ii=1,len_traj-Ltw1
@@ -590,6 +623,7 @@ subroutine prada2 (ybins,sbins,bins,min,max,delta_x,traj,tw,num_parts,len_traj,t
   Ltw1=Ltw-1
   delta_y=(1.0d0*ybins)/(1.0d0*Ltw)
 
+  
   DO nn=1,num_parts
      DO ii=tw+1,len_traj-tw-1
         DO kk=ii-tw,ii+tw
@@ -604,8 +638,6 @@ subroutine prada2 (ybins,sbins,bins,min,max,delta_x,traj,tw,num_parts,len_traj,t
         traj_out(ii,nn,bins+1)=int((sigma/(1.0d0*Ltw))*sbins)
      END DO
   END DO
-
-  print*,'Llega'
 
   DO nn=1,num_parts
      DO ii=1,len_traj-Ltw1

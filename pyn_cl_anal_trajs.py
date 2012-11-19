@@ -537,6 +537,8 @@ class kinetic_1D_analysis():
 
         ref_max=self.traj.max()
         ref_min=self.traj.min()
+        rv_min=0
+        rv_max=0
 
         if segment==None:
             opt_range=0
@@ -546,6 +548,10 @@ class kinetic_1D_analysis():
             opt_range=1
             mmn=segment[0]
             mmx=segment[1]
+            if mmn>ref_min:
+                rv_min=1
+            if mmx<ref_max:
+                rv_max=1
 
         if delta_x!=None:
             opt=1
@@ -553,9 +559,25 @@ class kinetic_1D_analysis():
             delta_x=1.0 # Its given by gannas function
             opt=2
 
+        if self.dimensions!=1:
+            print '# Method not implemented yet for more than 1D.'
+            return
+
+        if verbose:
+            if rv_min:
+                print '# Extra node for x <', mmn
+            if rv_max:
+                print '# Extra node for x >', mmx
+
+
         bins,mmx,mmn,delta_x=ftrajs.aux.params_bins(opt_range,opt,bins,mmn,mmx,delta_x)
 
-        traj_aux=ftrajs.aux.prada1(ybins,bins,mmn,mmx,delta_x,self.traj,window,self.particles,self.frames)
+        if rv_min:
+            bins+=1
+        if rv_max:
+            bins+=1
+
+        traj_aux=ftrajs.aux.prada1(ybins,bins,mmn,mmx,delta_x,rv_min,rv_max,self.traj,window,self.particles,self.frames)
 
         ranges=build_ranges(traj_aux)
          
