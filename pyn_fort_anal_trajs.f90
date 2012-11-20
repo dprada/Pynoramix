@@ -490,11 +490,11 @@ CONTAINS
     IF (rv_max==1) THEN
        filt_max=.TRUE.
     END IF
-    
+
     IF ((filt_min==.TRUE.).OR.(filt_max==.TRUE.)) THEN
        DO nn=1,num_parts
           DO ii=1,len_traj
-             tt=CEILING((traj(ii,nn,1)-min)/delta_x)
+             tt=INT((traj(ii,nn,1)-min)/delta_x)+1
              IF (filt_min==.TRUE.) THEN
                 IF (tt<1) THEN
                    tt=1
@@ -514,8 +514,10 @@ CONTAINS
     ELSE
        DO nn=1,num_parts
           DO ii=1,len_traj
-             tt=CEILING((traj(ii,nn,1)-min)/delta_x)
-             IF (tt>bins) tt=bins
+             tt=INT((traj(ii,nn,1)-min)/delta_x)+1
+             IF (tt>bins) THEN
+                tt=bins
+             END IF
              DO kk=ii-tw,ii+tw
                 gg=kk-tw
                 IF ((gg>0).and.(kk<(len_traj-Ltw1))) THEN
