@@ -1,8 +1,8 @@
-from numpy import *
-import pyn_fort_net as f_net
-import pyn_fort_anal_trajs as ftrajs
-import pyn_math as pymath
-import copy as ccopy
+from pyn_fort_net import glob as f_net
+from pyn_fort_anal_trajs import glob as f_trajs
+import pyn_math as pyn_math
+import numpy
+import copy
 from os import system
 
 #####################################################################################
@@ -322,9 +322,9 @@ class network():
             for ii in self.node:
                 alt_k_total+=len(ii.alt_link[ii])
 
-            alt_T_ind=zeros(shape=(alt_k_total),dtype=int,order='Fortran')
-            alt_T_start=zeros(shape=(self.num_nodes+1),dtype=int,order='Fortran')
-            alt_T_wl=zeros(shape=(alt_k_total),dtype=float,order='Fortran')
+            alt_T_ind=numpy.zeros(shape=(alt_k_total),dtype=int,order='Fortran')
+            alt_T_start=numpy.zeros(shape=(self.num_nodes+1),dtype=int,order='Fortran')
+            alt_T_wl=numpy.zeros(shape=(alt_k_total),dtype=float,order='Fortran')
 
             kk=0
             for ii in range(self.num_nodes):
@@ -347,10 +347,10 @@ class network():
 
             self.info(verbose=False)
             
-            self.T_ind=zeros(shape=(self.k_total),dtype=int,order='Fortran')
-            self.T_start=zeros(shape=(self.num_nodes+1),dtype=int,order='Fortran')
-            self.T_wl=zeros(shape=(self.k_total),dtype=float,order='Fortran')
-            self.T_wn=zeros(shape=(self.num_nodes),dtype=float,order='Fortran')
+            self.T_ind=numpy.zeros(shape=(self.k_total),dtype=int,order='Fortran')
+            self.T_start=numpy.zeros(shape=(self.num_nodes+1),dtype=int,order='Fortran')
+            self.T_wl=numpy.zeros(shape=(self.k_total),dtype=float,order='Fortran')
+            self.T_wn=numpy.zeros(shape=(self.num_nodes),dtype=float,order='Fortran')
             
             kk=0
             for ii in range(self.num_nodes):
@@ -397,7 +397,7 @@ class network():
         # merging the labels and weights of nodes
          
         net_to_total=[]
-        labels_aux=ccopy.deepcopy(self.labels)
+        labels_aux=copy.deepcopy(self.labels)
         for ii in range(net.num_nodes):
             try :
                 no=labels_aux[net.node[ii].label]
@@ -502,9 +502,9 @@ class network():
             k_max=int(line.split()[1])
             k_total=int(line.split()[2])
             
-            self.T_ind=zeros(shape=(k_total),dtype=int,order='Fortran')
-            self.T_start=zeros(shape=(self.num_nodes+1),dtype=int,order='Fortran')
-            self.T_wl=zeros(shape=(k_total),dtype=float,order='Fortran')
+            self.T_ind=numpy.zeros(shape=(k_total),dtype=int,order='Fortran')
+            self.T_start=numpy.zeros(shape=(self.num_nodes+1),dtype=int,order='Fortran')
+            self.T_wl=numpy.zeros(shape=(k_total),dtype=float,order='Fortran')
             
             data=fff.read()
 
@@ -752,7 +752,7 @@ class network():
             for ii in self.node:
                 scratch.append(ii.k_out)
 
-        xx,yy=pymath.histogram(scratch,bins,segment,delta_x,None,norm,plot=False)
+        xx,yy=pyn_math.histogram(scratch,bins,segment,delta_x,None,norm,plot=False)
 
         return xx, yy
 
@@ -773,7 +773,7 @@ class network():
             for ii in range(self.num_nodes):
                 scratch.append(self.node[ii].weight-self.node[ii].link[ii])
 
-        xx,yy=pymath.histogram(scratch,bins,segment,delta_x,None,norm,plot=False)
+        xx,yy=pyn_math.histogram(scratch,bins,segment,delta_x,None,norm,plot=False)
         
         return xx, yy
 
@@ -789,14 +789,14 @@ class network():
         for ii in range(num_runs):
             iseed=random.random_integers(0,4094,4)
             iseed[3]=(iseed[3]/2)*2+1
-            aa=f_net.funcs.brownian_run_fpt(self.T_start,self.T_ind,self.T_wl,iseed,node_origin,node_sink,self.num_nodes,self.k_total)
+            aa=f_net.brownian_run_fpt(self.T_start,self.T_ind,self.T_wl,iseed,node_origin,node_sink,self.num_nodes,self.k_total)
             scratch.append(aa)
 
         if option in ['distribution','both']:
-            xx,yy=pymath.histogram(scratch,bins,segment,delta_x,None,norm,plot=False)
+            xx,yy=pyn_math.histogram(scratch,bins,segment,delta_x,None,norm,plot=False)
 
         if option in ['mean','both']:
-            yy_av,yy_sigma=pymath.average(scratch)
+            yy_av,yy_sigma=pyn_math.average(scratch)
 
         if option=='distribution': return xx,yy
         if option=='mean': return yy_av, yy_sigma
@@ -818,9 +818,9 @@ class network():
         iseed[3]=(iseed[3]/2)*2+1
 
         if self_links:
-            scratch=f_net.funcs.brownian_run(1,self.T_start,self.T_ind,self.T_wl,iseed,origin,length,self.num_nodes,self.k_total)
+            scratch=f_net.brownian_run(1,self.T_start,self.T_ind,self.T_wl,iseed,origin,length,self.num_nodes,self.k_total)
         else:
-            scratch=f_net.funcs.brownian_run(0,self.T_start,self.T_ind,self.T_wl,iseed,origin,length,self.num_nodes,self.k_total)
+            scratch=f_net.brownian_run(0,self.T_start,self.T_ind,self.T_wl,iseed,origin,length,self.num_nodes,self.k_total)
 
         return scratch
 
@@ -835,7 +835,7 @@ class network():
 
             self.build_Ts()
             
-        db_dist=f_net.funcs.detailed_balance_distance(p,self.T_start,self.T_ind,self.T_wl,self.num_nodes,self.k_total)
+        db_dist=f_net.detailed_balance_distance(p,self.T_start,self.T_ind,self.T_wl,self.num_nodes,self.k_total)
 
         return db_dist
 
@@ -844,7 +844,7 @@ class network():
         if self.Ts==False:
             self.build_Ts()
 
-        vect_out=f_net.funcs.evolution_step(self.T_start,self.T_ind,self.T_wl,vect_in,self.num_nodes,self.k_total)
+        vect_out=f_net.evolution_step(self.T_start,self.T_ind,self.T_wl,vect_in,self.num_nodes,self.k_total)
 
         return vect_out
 
@@ -854,16 +854,16 @@ class network():
             self.build_Ts()
 
 
-        aux_k_total=ccopy.deepcopy(self.k_total)
+        aux_k_total=copy.deepcopy(self.k_total)
 
         if new:
             temp             = network(verbose=False)
-            temp.labels      = ccopy.deepcopy(self.labels)
-            temp.file_net    = ccopy.deepcopy(self.file_net)
-            temp.file_labels = ccopy.deepcopy(self.file_labels)
-            temp.num_nodes   = ccopy.deepcopy(self.num_nodes)
-            temp.directed    = ccopy.deepcopy(self.directed)
-            temp.kinetic     = ccopy.deepcopy(self.kinetic)
+            temp.labels      = copy.deepcopy(self.labels)
+            temp.file_net    = copy.deepcopy(self.file_net)
+            temp.file_labels = copy.deepcopy(self.file_labels)
+            temp.num_nodes   = copy.deepcopy(self.num_nodes)
+            temp.directed    = copy.deepcopy(self.directed)
+            temp.kinetic     = copy.deepcopy(self.kinetic)
         else:
             temp             = self
 
@@ -877,7 +877,7 @@ class network():
         del(aux)        
 
 
-        pfff=f_net.funcs.symmetrize_net(temp.k_total,self.T_ind,self.T_wl,self.T_start,self.num_nodes,aux_k_total)
+        pfff=f_net.symmetrize_net(temp.k_total,self.T_ind,self.T_wl,self.T_start,self.num_nodes,aux_k_total)
 
         temp.k_max=pfff[0]
         temp.T_wl=pfff[1]
@@ -919,7 +919,7 @@ class network():
             self.build_Ts()
 
 
-        self.num_clusters,pfff=f_net.funcs.grad(self.T_ind,self.T_wl,self.T_start,self.num_nodes,self.k_total)
+        self.num_clusters,pfff=f_net.grad(self.T_ind,self.T_wl,self.T_start,self.num_nodes,self.k_total)
 
 
         Clust={}
@@ -982,13 +982,13 @@ class network():
 
             A=A+1
             B=B+1
-            cfep_out,key_cfep1,key_cfep2=f_net.funcs.cfep_pfold(A,B,self.T_ind,self.T_wl,self.T_start,num_bins,num_iter,self.num_nodes,self.k_total)
+            cfep_out,key_cfep1,key_cfep2=f_net.cfep_pfold(A,B,self.T_ind,self.T_wl,self.T_start,num_bins,num_iter,self.num_nodes,self.k_total)
             return cfep_out,key_cfep1,key_cfep2
 
         if mode=='mfpt':
 
             A=A+1
-            cfep_out,key_cfep1,key_cfep2=f_net.funcs.cfep_mfpt(A,self.T_ind,self.T_wl,self.T_start,num_bins,num_iter,self.num_nodes,self.k_total)
+            cfep_out,key_cfep1,key_cfep2=f_net.cfep_mfpt(A,self.T_ind,self.T_wl,self.T_start,num_bins,num_iter,self.num_nodes,self.k_total)
             return cfep_out,key_cfep1,key_cfep2
 
     def dijkstra(self,node='all',alt_links=False):
@@ -1007,7 +1007,7 @@ class network():
         if self.directed:
             opt_directed=1
 
-        pfff=f_net.funcs.dijkstra(node,dim_out,opt_directed,self.T_start,self.T_ind,self.T_wl,self.num_nodes,self.k_total)
+        pfff=f_net.dijkstra(node,dim_out,opt_directed,self.T_start,self.T_ind,self.T_wl,self.num_nodes,self.k_total)
 
         return pfff
 
@@ -1024,7 +1024,7 @@ class network():
             return
 
         if distances==None: #Just to fill the variable
-            distances=zeros(shape=(1,1),dtype=float,order='Fortran')
+            distances=numpy.zeros(shape=(1,1),dtype=float,order='Fortran')
             dim_distances=1
         else:
             dim_distances=len(distances)
@@ -1042,12 +1042,12 @@ class network():
 
         if alt_links:
             alt_k_total, alt_T_start, alt_T_ind, alt_T_wl=self.build_Ts(alt_links=True)
-            o_coors,o_eigenvals,o_eigenvects,o_stress=f_net.funcs.mds(opt_directed,opt,opt_stress,dim,eigenvs,alt_T_start,alt_T_ind,alt_T_wl,distances,self.num_nodes,alt_k_total,dim_distances)
+            o_coors,o_eigenvals,o_eigenvects,o_stress=f_net.mds(opt_directed,opt,opt_stress,dim,eigenvs,alt_T_start,alt_T_ind,alt_T_wl,distances,self.num_nodes,alt_k_total,dim_distances)
             del(alt_k_total, alt_T_start, alt_T_ind, alt_T_wl)
         else:
             if self.Ts==False :
                 self.build_Ts()
-            o_coors,o_eigenvals,o_eigenvects,o_stress=f_net.funcs.mds(opt_directed,opt,opt_stress,dim,eigenvs,self.T_start,self.T_ind,self.T_wl,distances,self.num_nodes,self.k_total,dim_distances)
+            o_coors,o_eigenvals,o_eigenvects,o_stress=f_net.mds(opt_directed,opt,opt_stress,dim,eigenvs,self.T_start,self.T_ind,self.T_wl,distances,self.num_nodes,self.k_total,dim_distances)
 
         for ii in range(self.num_nodes):
             self.node[ii].coors=o_coors[ii][:]
@@ -1068,7 +1068,7 @@ class network():
         if alt_links:
 
             alt_k_total, alt_T_start, alt_T_ind, alt_T_wl=self.build_Ts(alt_links=True)
-            self.num_clusters,pfff=f_net.funcs.mcl(granularity,eps,iterations,alt_T_start,alt_T_ind,alt_T_wl,self.num_nodes,alt_k_total)
+            self.num_clusters,pfff=f_net.mcl(granularity,eps,iterations,alt_T_start,alt_T_ind,alt_T_wl,self.num_nodes,alt_k_total)
             del(alt_k_total, alt_T_start, alt_T_ind, alt_T_wl)
 
         else:
@@ -1107,7 +1107,7 @@ class network():
                 if self.Ts==False :
                     self.build_Ts()
                     
-                self.num_clusters,pfff=f_net.funcs.mcl(granularity,eps,iterations,self.T_start,self.T_ind,self.T_wl,self.num_nodes,self.k_total)
+                self.num_clusters,pfff=f_net.mcl(granularity,eps,iterations,self.T_start,self.T_ind,self.T_wl,self.num_nodes,self.k_total)
 
                 Clust={}
                  
@@ -1144,12 +1144,12 @@ class network():
 
         if alt_links:
             alt_k_total, alt_T_start, alt_T_ind, alt_T_wl=self.build_Ts(alt_links=True)
-            self.num_components,pfff=f_net.funcs.components(alt_T_start,alt_T_ind,alt_T_wl,self.num_nodes,alt_k_total)
+            self.num_components,pfff=f_net.components(alt_T_start,alt_T_ind,alt_T_wl,self.num_nodes,alt_k_total)
             del(alt_k_total, alt_T_start, alt_T_ind, alt_T_wl)
         else:
             if self.Ts==False :
                 self.build_Ts()
-            self.num_components,pfff=f_net.funcs.components(self.T_start,self.T_ind,self.T_wl,self.num_nodes,self.k_total)
+            self.num_components,pfff=f_net.components(self.T_start,self.T_ind,self.T_wl,self.num_nodes,self.k_total)
 
         Comp={}
 
@@ -1193,9 +1193,9 @@ class network():
 #            output=filename+'.pxn'
 # 
 #    if filename.endswith('.bin'):
-#        f_net.funcs.build_net_bin(filename,output,num_particles,num_frames)
+#        f_net.build_net_bin(filename,output,num_particles,num_frames)
 #    else:
-#        f_net.funcs.build_net(filename,output,num_particles,num_frames)
+#        f_net.build_net(filename,output,num_particles,num_frames)
 # 
 # 
 #    print ' # New network file:', output
@@ -1237,74 +1237,14 @@ class network():
 # 
 #        pass
 
-def build_ranges(traj):
-
-    dims=traj.shape[2]
-    num_parts=traj.shape[1]
-    ranges=zeros((dims,2),dtype=int,order='Fortran')
-    for jj in range(dims):
-        ranges[jj,0]=traj[:,0,jj].min()
-        ranges[jj,1]=traj[:,0,jj].max()
-    for ii in range(1,num_parts):
-        for jj in range(dims):
-            posmin=traj[:,ii,jj].min()
-            posmax=traj[:,ii,jj].max()
-            if (posmin<ranges[jj,0]): ranges[jj,0]=posmin
-            if (posmax>ranges[jj,1]): ranges[jj,1]=posmax
-
-    return ranges
-
-def standard_ranges(ranges):
-
-    if type(ranges) not in [ndarray]:
-        ranges=array(ranges,order='Fortran')
-
-    if len(ranges.shape)==1:
-        ranges.resize(1,ranges.shape[0])
-
-    if ranges.shape[1]!=2:
-        print '# Error with ranges'
-        pass
-
-    return ranges
-
-def standard_traj(traj,particles=None,dimensions=None):
-
-    if type(traj) not in [ndarray]:
-        traj=array(traj,dtype=float,order='F')
-
-    if len(traj.shape)==1:
-        traj.resize(traj.shape[0],1,1)
-
-    elif len(traj.shape)==2:
-        if particles==None and dimensions==None:
-            nn=str(traj.shape[-1])
-            print '# Error! The trajectory format should be [frames,particles,dimensions].'
-            print '# Your input has the shape ['+str(traj.shape[0])+','+str(traj.shape[1])+']:'
-            print '# '+nn+' particles with a reaction coordinate? or just a '+nn+'-D reaction coordinate?'
-            print '# '
-            print '# Please, make use of the variables "particles" or/and "dimensions":'
-            print '#   traj:=[100 frames, 3 dimensions] --> "particles=1" or/and "dimensions=3"'
-            print '#   traj:=[100 frames, 8  particles] --> "particles=8" or/and "dimensions=1"'
-            print '# '
-            return 0
-        elif particles==1 or dimensions>=1:
-            traj.resize(traj.shape[0],1,traj.shape[1])
-        elif particles>1 or dimensions==1:
-            traj.resize(traj.shape[0],traj.shape[1],1)
-
-    if not isfortran(traj):
-        traj=array(traj,dtype=float,order='F')
-
-    return traj
 
 def kinetic_network(traj=None,ranges=None,traj_out=False,verbose=True):
 
     prov_net=network(directed=True,kinetic=True,verbose=False)
 
-    ranges=standard_ranges(ranges)
+    ranges=pyn_math.standard_ranges(ranges)
     dimensions=ranges.shape[0]
-    traj=standard_traj(traj,dimensions)
+    traj=pyn_math.standard_traj(traj,dimensions)
     num_frames=traj.shape[0]
     num_parts=traj.shape[1]
 
@@ -1320,20 +1260,20 @@ def kinetic_network(traj=None,ranges=None,traj_out=False,verbose=True):
     len_str=len_str+1
 
 
-    traj_net=ftrajs.aux.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
+    traj_net=f_trajs.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
 
     prov_net.Ts=True
-    prov_net.T_ind=ccopy.deepcopy(ftrajs.aux.t_ind)
-    prov_net.T_wl=ccopy.deepcopy(ftrajs.aux.t_tau)
-    prov_net.T_start=ccopy.deepcopy(ftrajs.aux.t_start)
+    prov_net.T_ind=copy.deepcopy(f_trajs.t_ind)
+    prov_net.T_wl=copy.deepcopy(f_trajs.t_tau)
+    prov_net.T_start=copy.deepcopy(f_trajs.t_start)
     prov_net.build_from_Ts()
     for ii in range(prov_net.num_nodes):
-        label=str(ftrajs.aux.labels[ii][:])
+        label=str(f_trajs.labels[ii][:])
         prov_net.node[ii].label=label
         prov_net.labels[label]=ii
 
 
-    ftrajs.aux.free_memory_ts()
+    f_trajs.free_memory_ts()
     if verbose:
         prov_net.info(update=False,verbose=True)
         pass
@@ -1417,21 +1357,21 @@ def kinetic_network(traj=None,ranges=None,traj_out=False,verbose=True):
 ##        #print num_parts,num_frames,dimensions
 ##        #print ranges
 ## 
-##        ftrajs.aux.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
+##        f_trajs.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
 ##        
 ## 
 ##        self.Ts=True
-##        self.T_ind=ccopy.deepcopy(ftrajs.aux.t_ind)
-##        self.T_wl=ccopy.deepcopy(ftrajs.aux.t_tau)
-##        self.T_start=ccopy.deepcopy(ftrajs.aux.t_start)
+##        self.T_ind=copy.deepcopy(f_trajs.t_ind)
+##        self.T_wl=copy.deepcopy(f_trajs.t_tau)
+##        self.T_start=copy.deepcopy(f_trajs.t_start)
 ##        self.build_from_Ts()
 ##        for ii in range(self.num_nodes):
-##            label=str(ftrajs.aux.labels[ii][:])
+##            label=str(f_trajs.labels[ii][:])
 ##            self.node[ii].label=label
 ##            self.labels[label]=ii
 ## 
 ## 
-##        ftrajs.aux.free_memory_ts()
+##        f_trajs.free_memory_ts()
 ##        if verbose:
 ##            self.info(update=False,verbose=True)
 ##            pass

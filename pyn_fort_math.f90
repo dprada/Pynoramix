@@ -1,23 +1,23 @@
-MODULE stats
+MODULE GLOB
 
-    DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::histo_x,histo_y
-    DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::histo_z
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::histo_x,histo_y
+  DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::histo_z
 
-  CONTAINS
+CONTAINS
 
   SUBROUTINE free_mem ()
     IF (ALLOCATED(histo_x)) DEALLOCATE(histo_x)
     IF (ALLOCATED(histo_y)) DEALLOCATE(histo_y)
     IF (ALLOCATED(histo_z)) DEALLOCATE(histo_z)
   END SUBROUTINE free_mem
-
+  
   SUBROUTINE average (idatos,l,aa,sigma)
     
     implicit none
     INTEGER,INTENT(IN)::l
     DOUBLE PRECISION,DIMENSION(l),INTENT(IN)::idatos
     DOUBLE PRECISION,INTENT(OUT)::aa,sigma
-
+    
     INTEGER::i,j
     DOUBLE PRECISION::aux_ave,aux_ave2
 
@@ -37,52 +37,67 @@ MODULE stats
 
   END SUBROUTINE average
   
-
-
-  SUBROUTINE histogram1D (opt_norm,opt_range,opt,opt_cumul,idatos,ibins,imin_x,imax_x,idelta_x,part,l)
+  SUBROUTINE parameters_bins (opt_range,opt_delta,ibins,imin,imax,idelta,bins,max,min,delta)
     
-    implicit none
-    INTEGER,INTENT(IN)::opt_norm,opt_range,opt,l,ibins,opt_cumul,part
-    DOUBLE PRECISION,DIMENSION(part,l),INTENT(IN)::idatos
-    DOUBLE PRECISION,INTENT(IN)::idelta_x,imax_x,imin_x
-
-    DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::frecuencias
-    INTEGER::ii,jj,kk,aux,bins,tt
-    DOUBLE PRECISION::max,min,delta_x,total,sobra
+    IMPLICIT NONE
+    INTEGER,INTENT(IN)::opt_range,opt_delta,ibins
+    DOUBLE PRECISION,INTENT(IN)::idelta,imin,imax
+    
+    INTEGER,INTENT(OUT)::bins
+    DOUBLE PRECISION,INTENT(OUT)::max,min,delta
+    DOUBLE PRECISION::sobra
     
     bins=ibins
-    max=imax_x
-    min=imin_x
-    delta_x=idelta_x
+    max=imax
+    min=imin
+    delta=idelta
     
     IF (opt_range==0) THEN
-       IF (opt==1) THEN
-          bins=CEILING((max-min)/delta_x)
+       IF (opt_delta==1) THEN
+          bins=CEILING((max-min)/delta)
+          sobra=(bins*delta-(max-min))/2.0d0
+          bins=bins+1
+          min=min-sobra
+          max=max+sobra
        ELSE
-          delta_x=(max-min)/(bins*1.0d0)
+          delta=(max-min)/(bins*1.0d0)
        END IF
     ELSE
-       IF (opt==1) THEN
-          bins=CEILING((max-min)/delta_x)
+       IF (opt_delta==1) THEN
+          bins=CEILING((max-min)/delta)
        ELSE
-          delta_x=(max-min)/(bins*1.0d0)
+          delta=(max-min)/(bins*1.0d0)
        END IF
     END IF
     
+  END subroutine parameters_bins
+
+
+  SUBROUTINE histogram1d (opt_norm,opt_cumul,traj,bins,min,max,delta,dim_sel,frames,parts,dims)
+    
+    implicit none
+    INTEGER,INTENT(IN)::opt_norm,opt_cumul,bins
+    INTEGER,INTENT(IN)::frames,parts,dims,dim_sel
+    DOUBLE PRECISION,DIMENSION(frames,parts,dims),INTENT(IN)::traj
+    DOUBLE PRECISION,INTENT(IN)::delta,max,min
+
+    DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::frecuencias
+    INTEGER::ii,jj,kk,aux,tt
+    DOUBLE PRECISION::total
+    
     ALLOCATE(frecuencias(bins))
     frecuencias=0.0d0
-    
-    DO ii=1,part
-       DO kk=1,l
-          tt=CEILING((idatos(ii,kk)-min)/delta_x) 
+
+    DO ii=1,parts
+       DO kk=1,frames
+          tt=CEILING((traj(kk,ii,dim_sel)-min)/delta)
           if (tt==0) tt=1
           frecuencias(tt)=frecuencias(tt)+1.0d0
        END DO
     END DO
     
-
     IF (opt_norm==1) THEN
-       total=SUM(frecuencias)*delta_x
+       total=SUM(frecuencias)*delta
        frecuencias=frecuencias/total
     END IF
     
@@ -92,21 +107,89 @@ MODULE stats
     ALLOCATE(histo_y(bins),histo_x(bins))
     histo_y=frecuencias
     IF (opt_cumul==1) THEN
-       histo_y=histo_y*delta_x
+       histo_y=histo_y*delta
        DO ii=1,bins-1
           histo_y(ii+1)=histo_y(ii+1)+histo_y(ii)
        END DO
     END IF
 
     DO ii=1,bins
-       histo_x(ii)=min+(ii*1.0d0-0.50d0)*delta_x
+       histo_x(ii)=min+(ii*1.0d0-0.50d0)*delta
     END DO
         
     DEALLOCATE(frecuencias)
 
-  END SUBROUTINE histogram1D
+  END SUBROUTINE histogram1d
   
-  SUBROUTINE histograma_2d (opt_norm,opt_prec,opt_range,opt,idatos,ibins,imin_x,imax_x,idelta_x,iprec,l)
+
+  SUBROUTINE histogram1d_mask (opt_norm,opt_cumul,traj,bins,min,max,delta,dim_sel,traj_mask,select_mask,offset,&
+       & frames_mask,num_sel_mask,frames,parts,dims)
+    
+    implicit none
+    INTEGER,INTENT(IN)::opt_norm,opt_cumul,bins,frames_mask,num_sel_mask,offset
+    INTEGER,INTENT(IN)::frames,parts,dims,dim_sel
+    DOUBLE PRECISION,DIMENSION(frames,parts,dims),INTENT(IN)::traj
+    INTEGER,DIMENSION(frames_mask,parts),INTENT(IN)::traj_mask
+    INTEGER,DIMENSION(num_sel_mask),INTENT(IN)::select_mask
+    DOUBLE PRECISION,INTENT(IN)::delta,max,min
+
+    INTEGER::mx_mask,mn_mask
+    LOGICAL,DIMENSION(:),ALLOCATABLE::filter
+    DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::frecuencias
+    INTEGER::ii,jj,gg,kk,aux,tt
+    DOUBLE PRECISION::total
+    
+    mx_mask=MAXVAL(traj_mask)
+    mn_mask=MINVAL(traj_mask)
+
+    ALLOCATE(filter(mn_mask:mx_mask))
+    filter=.FALSE.
+    DO ii=1,num_sel_mask
+       filter(select_mask(ii))=.TRUE.
+    END DO
+
+    ALLOCATE(frecuencias(bins))
+    frecuencias=0.0d0
+
+    DO ii=1,parts
+       DO kk=1,frames_mask
+          gg=traj_mask(kk,ii)
+          IF (filter(gg).eqv..TRUE.) THEN
+             tt=CEILING((traj(kk+offset,ii,dim_sel)-min)/delta)
+             IF (tt==0) tt=1
+             frecuencias(tt)=frecuencias(tt)+1.0d0
+          END IF
+       END DO
+    END DO
+    
+    IF (opt_norm==1) THEN
+       total=SUM(frecuencias)*delta
+       frecuencias=frecuencias/total
+    END IF
+    
+    !! Output
+
+    CALL free_mem()
+    ALLOCATE(histo_y(bins),histo_x(bins))
+    histo_y=frecuencias
+    IF (opt_cumul==1) THEN
+       histo_y=histo_y*delta
+       DO ii=1,bins-1
+          histo_y(ii+1)=histo_y(ii+1)+histo_y(ii)
+       END DO
+    END IF
+
+    DO ii=1,bins
+       histo_x(ii)=min+(ii*1.0d0-0.50d0)*delta
+    END DO
+        
+    DEALLOCATE(frecuencias,filter)
+
+  END SUBROUTINE histogram1d_mask
+  
+
+
+  SUBROUTINE histogram2d (opt_norm,opt_prec,opt_range,opt,idatos,ibins,imin_x,imax_x,idelta_x,iprec,l)
     
     implicit none
     INTEGER,INTENT(IN)::opt_norm,opt_prec,opt_range,opt,l
@@ -199,7 +282,7 @@ MODULE stats
     
     DEALLOCATE(datos,frecuencias)
 
-  END SUBROUTINE histograma_2d
+  END SUBROUTINE histogram2d
 
 
   SUBROUTINE binning (opt_range,opt_delta_x,idatos,ibins,imin_x,imax_x,idelta_x,l,tray_bins)
@@ -310,7 +393,4 @@ MODULE stats
     
   END SUBROUTINE binning_x
 
-END MODULE stats
-
-! f2py -c -m pyn_fort_math pyn_fort_math.f90
-
+END MODULE GLOB

@@ -1,4 +1,4 @@
-MODULE funcs
+MODULE GLOB
 
 INTEGER::num_frames,num_parts,dim_mss
 INTEGER,DIMENSION(:),ALLOCATABLE::lim_inf_mss,lim_sup_mss
@@ -1927,7 +1927,7 @@ SUBROUTINE MCL (N_sets,comunidades,granularity,epsilon,iterations,T_start,T_ind,
 
 END SUBROUTINE MCL
 
-END MODULE funcs
+END MODULE GLOB
 
 
 
