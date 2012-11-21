@@ -787,7 +787,7 @@ class network():
 
         scratch=[]
         for ii in range(num_runs):
-            iseed=random.random_integers(0,4094,4)
+            iseed=numpy.random.random_integers(0,4094,4)
             iseed[3]=(iseed[3]/2)*2+1
             aa=f_net.brownian_run_fpt(self.T_start,self.T_ind,self.T_wl,iseed,node_origin,node_sink,self.num_nodes,self.k_total)
             scratch.append(aa)
@@ -814,7 +814,7 @@ class network():
         if self.Ts==False :
             self.build_Ts()
 
-        iseed=random.random_integers(0,4094,4)
+        iseed=numpy.random.random_integers(0,4094,4)
         iseed[3]=(iseed[3]/2)*2+1
 
         if self_links:
@@ -1118,20 +1118,41 @@ class network():
                         Clust[pfff[ii]]=[]
                         Clust[pfff[ii]].append(ii)
 
+        aux=numpy.array(Clust.keys(),dtype=int)
+        weight_clusts=numpy.zeros((self.num_clusters),dtype=float)
+        for ii in range(aux.shape[0]):
+            for jj in Clust[aux[ii]]:
+                weight_clusts[ii]+=self.node[jj].weight
 
-        a=0
+        tosort=weight_clusts.argsort(kind="mergesort")
+
         self.cluster=[]
-        for ii in Clust.keys():
+        aa=0
+        for ii in range(tosort.shape[0]-1,-1,-1):
+            kk=tosort[ii]
+            jj=aux[kk]
             temp=cl_cluster()
-            temp.label=self.node[int(ii)].label
-            temp.nodes=Clust[ii]
+            temp.label=self.node[jj].label
+            temp.nodes=Clust[jj]
             temp.num_nodes=len(temp.nodes)
-            temp.weight=0
-            for jj in temp.nodes:
-                self.node[jj].cluster=a
-                temp.weight+=self.node[jj].weight
+            temp.weight=weight_clusts[kk]
+            for ll in temp.nodes:
+                self.node[ll].cluster=aa
             self.cluster.append(temp)
-            a+=1
+            aa+=1
+
+        del(aux,weight_clusts,tosort,aa)
+        #for ii in Clust.keys():
+        #    temp=cl_cluster()
+        #    temp.label=self.node[int(ii)].label
+        #    temp.nodes=Clust[ii]
+        #    temp.num_nodes=len(temp.nodes)
+        #    temp.weight=0
+        #    for jj in temp.nodes:
+        #        self.node[jj].cluster=a
+        #        temp.weight+=self.node[jj].weight
+        #    self.cluster.append(temp)
+        #    a+=1
 
 
         # Output: self.clust_info, self.representants, self.node_belongs2, self.cluster_weight, self.num_clusters

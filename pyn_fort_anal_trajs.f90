@@ -505,7 +505,7 @@ CONTAINS
              IF (tt>bins) tt=bins
              DO kk=ii-tw,ii+tw
                 gg=kk-tw
-                IF ((gg>0).and.(kk<(len_traj-Ltw1))) THEN
+                IF ((gg>0).and.(gg<=(len_traj-Ltw1))) THEN
                    traj_out(gg,nn,tt)=traj_out(gg,nn,tt)+1
                 END IF
              END DO
@@ -520,7 +520,7 @@ CONTAINS
              END IF
              DO kk=ii-tw,ii+tw
                 gg=kk-tw
-                IF ((gg>0).and.(kk<(len_traj-Ltw1))) THEN
+                IF ((gg>0).and.(gg<=(len_traj-Ltw1))) THEN
                    traj_out(gg,nn,tt)=traj_out(gg,nn,tt)+1
                 END IF
              END DO
