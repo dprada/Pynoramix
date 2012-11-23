@@ -12,7 +12,8 @@ from os import system
 from os import path
 from os import sys
 import copy as ccopy
-from numpy import *
+import numpy as numpy
+
 try:
     import cPickle as pic
 except:
@@ -461,8 +462,8 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                             self.donors[0].append(atom.index)
                             self.donors[1].append(ii)
 
-            self.acceptors=array(self.acceptors,dtype=int,order='Fortran')
-            self.donors=array(self.donors,dtype=int,order='Fortran')
+            self.acceptors=numpy.array(self.acceptors,dtype=int,order='Fortran')
+            self.donors=numpy.array(self.donors,dtype=int,order='Fortran')
 
             ### Setting up the global attributes
 
@@ -751,8 +752,8 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             for ii in acc:
                 print ii
 
-        return [array(acc,order='F'),array(acc_start_H,order='F'),array(acc_H,order='F'), \
-                array(don,order='F'),array(don_start_H,order='F'),array(don_H,order='F'),all_wat]
+        return [numpy.array(acc,order='F'),numpy.array(acc_start_H,order='F'),numpy.array(acc_H,order='F'), \
+                numpy.array(don,order='F'),numpy.array(don_start_H,order='F'),numpy.array(don_H,order='F'),all_wat]
 
 ###############################################################
 ###############################################################
@@ -805,7 +806,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
         num_frames=__length_frame_opt__(self,traj,frame)
-        dists=empty(shape=(num_frames,nlist_A,nlist_B),dtype=float,order='Fortran')
+        dists=numpy.empty(shape=(num_frames,nlist_A,nlist_B),dtype=float,order='Fortran')
 
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
@@ -821,9 +822,9 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
         num_frames=__length_frame_opt__(self,traj,frame)
-        min_dists=empty(shape=(nlist_A,num_frames),dtype=float,order='Fortran')
-        ind_atoms_min=empty(shape=(nlist_A,num_frames),dtype=int,order='Fortran')
-        min_image=empty(shape=(nlist_A,3,num_frames),dtype=int,order='Fortran')
+        min_dists=numpy.empty(shape=(nlist_A,num_frames),dtype=float,order='Fortran')
+        ind_atoms_min=numpy.empty(shape=(nlist_A,num_frames),dtype=int,order='Fortran')
+        min_image=numpy.empty(shape=(nlist_A,3,num_frames),dtype=int,order='Fortran')
 
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
@@ -839,7 +840,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         setA,nlist_A,nsys_A=__read_set_opt__(self,setA)
         num_frames=__length_frame_opt__(self,traj,frame)
-        rgs=empty(shape=(num_frames),dtype=float,order='Fortran')
+        rgs=numpy.empty(shape=(num_frames),dtype=float,order='Fortran')
 
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
@@ -856,7 +857,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         setA,nlist_A,nsys_A=__read_set_opt__(self,setA)
         num_frames=__length_frame_opt__(self,traj,frame)
-        piaxis=empty(shape=(3,3,num_frames),dtype=float,order='Fortran')
+        piaxis=numpy.empty(shape=(3,3,num_frames),dtype=float,order='Fortran')
 
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
@@ -872,7 +873,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         setA,nlist_A,nsys_A=__read_set_opt__(self,setA)
         num_frames=__length_frame_opt__(self,traj,frame)
-        pgaxis=empty(shape=(3,3,num_frames),dtype=float,order='Fortran')
+        pgaxis=numpy.empty(shape=(3,3,num_frames),dtype=float,order='Fortran')
 
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
@@ -883,6 +884,32 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             return pgaxis[:,:,0]
         else:
             return pgaxis
+
+
+    def dihedral_angles(self,select='protein',phi=True,psi=True,omega=True,xis=False,traj=0,frame='ALL'):
+ 
+        setA,nlist_A,nsys_A==__read_set_opt__(self,select)
+
+        list_omega=[]
+        list_phi=[]
+        list_psi=[]
+ 
+        if omega:
+            list_omega=select_covalent_chain(system=self,select=setA,chain=[['CA','CH3'],'C','N',['CA','CH3']])
+ 
+        if phi:
+            list_phi=select_covalent_chain(system=self,select=setA,chain=['C','N','CA','C'])
+
+        if psi:
+            list_psi=select_covalent_chain(system=self,select=setA,chain=['N','CA','C','N'])
+                                        
+        if xis:
+
+            print '# Option not implemented yet: xis=True'
+            return
+
+        #num_frames=__length_frame_opt__(self,traj,frame)
+        #pgaxis=numpy.empty(shape=(num_frames,3,3),dtype=float,order='Fortran')
 
 
 #def min_distance(system,set_a,set_b=None,pbc=True,type_b='atoms'):
@@ -899,7 +926,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 #            if len(l_vects)==1:
 #                set_b=[set_b]
 #                l_vects=shape(set_b)
-#            array(set_b,order='Fortran')
+#            numpy.array(set_b,order='Fortran')
 #            ind_a1,ind_a2,min_dist = f.aux_funcs_general.min_dist_atoms_ref(pbc,system.frame[0].coors,system.frame[0].box,set_a,set_b,system.num_atoms,len(set_a),l_vects[0])
 #    
 #    return ind_a1,ind_a2,min_dist
@@ -912,7 +939,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         setA,nlist_A,nsys_A,setB,nlist_B,nsys_B,diff_syst,diff_set=__read_sets_opt__(self,setA,None,setB)
 
         xxx=pyn_math.binning(None,bins,segment,None,None)
-        rdf_tot=zeros(shape=(bins),dtype=float,order='Fortran')
+        rdf_tot=numpy.zeros(shape=(bins),dtype=float,order='Fortran')
         num_frames=0
         for iframe in __read_frame_opt__(self,traj,frame):
             dist_frame=faux.glob.distance(1,pbc,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
@@ -931,7 +958,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         if dist==None:
             neighbs=[]
-            neighbs=empty(shape=(nlist_A,ranking,num_frames),dtype=int,order='Fortran')
+            neighbs=numpy.empty(shape=(nlist_A,ranking,num_frames),dtype=int,order='Fortran')
             num_frames=0
             for iframe in __read_frame_opt__(self,traj,frame):
                 neighbs[:,:][num_frames]=faux.glob.neighbs_ranking(diff_syst,diff_set,pbc,ranking,setA,iframe.coors,iframe.box,iframe.orthogonal,setB,iframe.coors,nlist_A,nlist_B,nsys_A,nsys_B)
@@ -1182,7 +1209,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
     #    setA,n_A,natoms_A,setB,n_B,natoms_B,diff_system=__read_sets_opt__(self,setA,None,setB)
     #    num_frames=__length_frame_opt__(self,traj,frame)
     # 
-    #    contact_map=empty(shape=(n_A,n_B,num_frames),dtype=int,order='Fortran')
+    #    contact_map=numpy.empty(shape=(n_A,n_B,num_frames),dtype=int,order='Fortran')
     #    num_frames=0
     #    for iframe in __read_frame_opt__(self,traj,frame):
     #        contact_map[:,:][num_frames]=f.contact_map(diff_system,pbc,dist,setA,iframe.coors,iframe.box,setB,iframe.coors,n_A,n_B,natoms_A,natoms_B)
@@ -1360,7 +1387,7 @@ def __read_set_opt__(systA=None,setA=None):
 #            if len(l_vects)==1:
 #                set_b=[set_b]
 #                l_vects=shape(set_b)
-#            array(set_b,order='Fortran')
+#            numpy.array(set_b,order='Fortran')
 #            ind_a1,ind_a2,min_dist = f.aux_funcs_general.min_dist_atoms_ref(pbc,system.frame[0].coors,system.frame[0].box,set_a,set_b,system.num_atoms,len(set_a),l_vects[0])
 #    
 #    return ind_a1,ind_a2,min_dist
@@ -1438,6 +1465,53 @@ def hbonds_type(option=None,verbose=True):
 
 
 ######################################################
+
+def select_covalent_chain(system=None,select=None,chain=None):
+
+    setC,nlist_C,nsys_C=__read_set_opt__(system,select)
+ 
+    for ii in range(len(chain)):
+        if type(chain[ii]) is not list:
+            chain[ii]=[chain[ii]]
+ 
+    aux_dict={}
+    for ii in chain:
+        for jj in ii:
+            aux_dict[jj]=[]
+ 
+    aux_list=aux_dict.keys()
+    for ii in setC:
+        if system.atom[ii].name in aux_list:
+            aux_dict[system.atom[ii].name].append(ii)
+ 
+    aux_list=[]
+    for ii in range(len(chain)):
+        aux_list.append([])
+        for jj in chain[ii]:
+            aux_list[ii].extend(aux_dict[jj])
+        aux_list[ii].sort()
+ 
+    bonds=[]
+    for ii in range(len(aux_list)-1):
+        bonds.append({})
+        for jj in aux_list[ii]:
+            bonds[ii][jj]=[]
+            for kk in system.atom[jj].covalent_bonds:
+                if kk in aux_list[ii+1]:
+                    bonds[ii][jj].append(kk)
+
+    salida=[[ii] for ii in aux_list[0]]
+    for kk in range(len(aux_list)-1):
+        salida2=[]
+        for ii in range(len(salida)):
+            desde=salida[ii][-1]
+            for hacia in bonds[kk][desde]:
+                salida2.append(salida[ii]+[hacia])
+        salida=salida2
+
+    del(salida2,bonds,aux_list,aux_dict,setC,nlist_C,nsys_C)
+
+    return salida
 
 
 def selection(system=None,condition=None,traj=0,frame='ALL',pbc=True):

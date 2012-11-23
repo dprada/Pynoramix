@@ -129,7 +129,7 @@ CONTAINS
     INTEGER,INTENT(IN)::opt_norm,opt_cumul,bins,frames_mask,num_sel_mask,offset
     INTEGER,INTENT(IN)::frames,parts,dims,dim_sel
     DOUBLE PRECISION,DIMENSION(frames,parts,dims),INTENT(IN)::traj
-    INTEGER,DIMENSION(frames_mask,parts),INTENT(IN)::traj_mask
+    INTEGER,DIMENSION(frames_mask,parts,1),INTENT(IN)::traj_mask
     INTEGER,DIMENSION(num_sel_mask),INTENT(IN)::select_mask
     DOUBLE PRECISION,INTENT(IN)::delta,max,min
 
@@ -153,7 +153,7 @@ CONTAINS
 
     DO ii=1,parts
        DO kk=1,frames_mask
-          gg=traj_mask(kk,ii)
+          gg=traj_mask(kk,ii,1)
           IF (filter(gg).eqv..TRUE.) THEN
              tt=CEILING((traj(kk+offset,ii,dim_sel)-min)/delta)
              IF (tt==0) tt=1

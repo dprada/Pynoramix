@@ -63,9 +63,11 @@ def standard_traj(traj,particles=None,dimensions=None):
             print '#   traj:=[100 frames, 8  particles] --> "particles=8" or/and "dimensions=1"'
             print '# '
             return 0
-        elif particles==1 or dimensions>=1:
+        elif particles==1 or dimensions>1:
             traj.resize(traj.shape[0],1,traj.shape[1])
         elif particles>1 or dimensions==1:
+            traj.resize(traj.shape[0],traj.shape[1],1)
+        elif particles==1 and dimensions==1:
             traj.resize(traj.shape[0],traj.shape[1],1)
 
     if not numpy.isfortran(traj):
@@ -73,18 +75,18 @@ def standard_traj(traj,particles=None,dimensions=None):
 
     return traj
 
-def standard_traj_nodes(traj,particles=None,dimensions=None):
-
-    if type(traj) not in [numpy.ndarray]:
-        traj=numpy.array(traj,dtype=int,order='F')
-
-    if len(traj.shape)==1:
-        traj.resize(traj.shape[0],1)
-
-    if not numpy.isfortran(traj):
-        traj=numpy.array(traj,dtype=int,order='F')
-
-    return traj
+#def standard_traj_nodes(traj,particles=None,dimensions=None):
+# 
+#    if type(traj) not in [numpy.ndarray]:
+#        traj=numpy.array(traj,dtype=int,order='F')
+# 
+#    if len(traj.shape)==1:
+#        traj.resize(traj.shape[0],1)
+# 
+#    if not numpy.isfortran(traj):
+#        traj=numpy.array(traj,dtype=int,order='F')
+# 
+#    return traj
 
 
 def average(a):
@@ -149,7 +151,7 @@ def histogram(traj,bins=20,segment=None,delta=None,select_dim=0,norm=False,cumul
 def histogram_mask(traj,bins=20,segment=None,delta=None,select_dim=0,traj_mask=None,select_mask=None,offset_mask=None,norm=False,cumul=False):
     
     traj=standard_traj(traj)
-    traj_mask=standard_traj_nodes(traj_mask)
+    traj_mask=standard_traj(traj_mask)
 
     opt_norm=0
     if norm:

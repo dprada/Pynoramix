@@ -30,7 +30,7 @@ CONTAINS
     
   END SUBROUTINE free_memory_ts
   
-  SUBROUTINE traj2net(len_str,traj_full,ranges,num_parts,num_frames,dimensions,tray)
+  SUBROUTINE traj2net(len_str,traj_full,ranges,num_frames,num_parts,dimensions,tray)
     
     IMPLICIT NONE
     INTEGER,INTENT(IN)::len_str,num_parts,num_frames,dimensions
@@ -322,17 +322,17 @@ CONTAINS
     
     IMPLICIT NONE
     INTEGER,INTENT(IN)::frames,particles,num_nodes
-    INTEGER,DIMENSION(frames,particles),INTENT(IN)::trajnodes
+    INTEGER,DIMENSION(frames,particles,1),INTENT(IN)::trajnodes
     INTEGER,DIMENSION(num_nodes),INTENT(IN)::aux_list
-    INTEGER,DIMENSION(frames,particles),INTENT(OUT)::trajout
+    INTEGER,DIMENSION(frames,particles,1),INTENT(OUT)::trajout
     
     INTEGER::ii,jj,kk,gg,ll
     
     DO ii=1,frames
        DO jj=1,particles
-          ll=trajnodes(ii,jj)
+          ll=trajnodes(ii,jj,1)
           gg=aux_list(ll+1)
-          trajout(ii,jj)=gg
+          trajout(ii,jj,1)=gg
        END DO
     END DO
     
@@ -540,6 +540,118 @@ CONTAINS
     
   END SUBROUTINE prada1
   
+
+  subroutine prada11 (ybins,bins,min,max,delta_x,rv_min,rv_max,traj,tw,num_parts,len_traj,traj_out)
+    
+    IMPLICIT NONE
+    INTEGER,INTENT(IN)::ybins,bins,tw,len_traj,num_parts,rv_min,rv_max
+    DOUBLE PRECISION,INTENT(IN)::delta_x,min,max
+    DOUBLE PRECISION,DIMENSION(len_traj,num_parts,1),INTENT(IN)::traj
+    INTEGER,DIMENSION(len_traj-2*tw,num_parts,bins),INTENT(OUT)::traj_out
+    
+    INTEGER::Ltw,Ltw1
+    INTEGER::nn,ii,tt,kk,gg,qq
+    DOUBLE PRECISION::delta_y
+    LOGICAL::filt_min,filt_max
+    INTEGER,DIMENSION(:),ALLOCATABLE::histo_aux
+
+    traj_out=0
+    Ltw=(2*tw+1)
+    Ltw1=Ltw-1
+    delta_y=(1.0d0*ybins)/(1.0d0*Ltw)
+    
+    filt_min=.FALSE.
+    filt_max=.FALSE.
+    
+    IF (rv_min==1) THEN
+       filt_min=.TRUE.
+    END IF
+    IF (rv_max==1) THEN
+       filt_max=.TRUE.
+    END IF
+
+    ALLOCATE(histo_aux(bins))
+
+    IF ((filt_min==.TRUE.).OR.(filt_max==.TRUE.)) THEN
+       
+       DO nn=1,num_parts
+          histo_aux=0
+          DO ii=1,Ltw
+             tt=INT((traj(ii,nn,1)-min)/delta_x)+1
+             IF (filt_min==.TRUE.) THEN
+                IF (tt<1) THEN
+                   tt=1
+                ELSE
+                   tt=tt+1
+                END IF
+             END IF
+             IF (tt>bins) tt=bins
+             histo_aux(tt)=histo_aux(tt)+1
+          END DO
+          DO ii=1,len_traj-Ltw
+             traj_out(tw+ii,nn,:)=histo_aux(:)
+             qq=INT((traj(Ltw+ii,nn,1)-min)/delta_x)+1
+             IF (filt_min==.TRUE.) THEN
+                IF (qq<1) THEN
+                   qq=1
+                ELSE
+                   qq=qq+1
+                END IF
+             END IF
+             IF (qq>bins) qq=bins
+             tt=INT((traj(ii,nn,1)-min)/delta_x)+1
+             IF (filt_min==.TRUE.) THEN
+                IF (tt<1) THEN
+                   tt=1
+                ELSE
+                   tt=tt+1
+                END IF
+             END IF
+             IF (tt>bins) tt=bins
+             histo_aux(qq)=histo_aux(qq)+1
+             histo_aux(tt)=histo_aux(tt)-1
+          END DO
+          traj_out(len_traj-Ltw1,nn,:)=histo_aux(:)
+       END DO
+       
+       
+    ELSE
+
+       DO nn=1,num_parts
+          histo_aux=0
+          DO ii=1,Ltw
+             tt=INT((traj(ii,nn,1)-min)/delta_x)+1
+             IF (tt>bins) tt=bins
+             histo_aux(tt)=histo_aux(tt)+1
+          END DO
+          DO ii=1,len_traj-Ltw
+             traj_out(tw+ii,nn,:)=histo_aux(:)
+             qq=INT((traj(Ltw+ii,nn,1)-min)/delta_x)+1
+             IF (qq>bins) qq=bins
+             tt=INT((traj(ii,nn,1)-min)/delta_x)+1
+             IF (tt>bins) tt=bins
+             histo_aux(qq)=histo_aux(qq)+1
+             histo_aux(tt)=histo_aux(tt)-1
+          END DO
+          traj_out(len_traj-Ltw1,nn,:)=histo_aux(:)
+       END DO
+
+    END IF
+
+    DO nn=1,num_parts
+       DO ii=1,len_traj-Ltw1
+          DO kk=1,bins
+             tt=CEILING(delta_y*traj_out(ii,nn,kk))
+             traj_out(ii,nn,kk)=tt
+          END DO
+       END DO
+    END DO
+    
+    
+  END SUBROUTINE prada11
+  
+
+
   subroutine prada2 (ybins,sbins,bins,min,max,delta_x,traj,tw,num_parts,len_traj,traj_out)
     
     IMPLICIT NONE

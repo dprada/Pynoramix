@@ -1281,7 +1281,8 @@ def kinetic_network(traj=None,ranges=None,traj_out=False,verbose=True):
     len_str=len_str+1
 
 
-    traj_net=f_trajs.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
+    traj_net=f_trajs.traj2net(len_str,traj,ranges,num_frames,num_parts,dimensions)
+    traj_net=pyn_math.standard_traj(traj_net,particles=num_parts,dimensions=1)
 
     prov_net.Ts=True
     prov_net.T_ind=copy.deepcopy(f_trajs.t_ind)
