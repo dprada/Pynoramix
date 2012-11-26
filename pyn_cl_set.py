@@ -1314,7 +1314,7 @@ def __read_sets_opt__(systA=None,setA=None,systB=None,setB=None):
         if setA in ['ALL','All','all']:
             setA=[ii for ii in range(systA.num_atoms)]
             nlist_a=systA.num_atoms
-        elif type(setA) in [int32,int]:
+        elif type(setA) in [numpy.int32,numpy.int64,int]:
             setA=[setA]
             nlist_a=1
         elif type(setA) in [list,tuple]:
@@ -1330,7 +1330,7 @@ def __read_sets_opt__(systA=None,setA=None,systB=None,setB=None):
         elif setB in ['ALL','All','all']:
             setB=[ii for ii in range(systA.num_atoms)]
             nlist_b=systA.num_atoms
-        elif type(setB) in [int32,int]:
+        elif type(setB) in [numpy.int64,numpy.int32,int]:
             setB=[setB]
             nlist_b=1
         elif type(setB) in [list,tuple]:

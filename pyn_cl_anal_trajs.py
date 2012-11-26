@@ -152,7 +152,7 @@ class kinetic_1D_analysis():
             print '# A readable traj is needed'
             return
 
-        traj_inp=pyn_math.standard_traj(self.traj,particles=self.particles,dimensions=aux_dims)
+        traj_inp=pyn_math.standard_traj(traj_inp,particles=self.particles,dimensions=aux_dims)
 
         if type(state) in [int,float]:
             num_states=1
@@ -225,7 +225,7 @@ class kinetic_1D_analysis():
             print '# A readable traj is needed'
             return
 
-        traj_inp=pyn_math.standard_traj(self.traj,particles=self.particles,dimensions=aux_dims)
+        traj_inp=pyn_math.standard_traj(traj_inp,particles=self.particles,dimensions=aux_dims)
 
         if type(from_state) in [int,float]:
             from_num_states=1
@@ -299,7 +299,7 @@ class kinetic_1D_analysis():
             print '# A readable traj is needed'
             return
 
-        traj_inp=pyn_math.standard_traj(self.traj,particles=self.particles,dimensions=aux_dims)
+        traj_inp=pyn_math.standard_traj(traj_inp,particles=self.particles,dimensions=aux_dims)
 
         if type(states) in [int,float]:
             num_states=1
@@ -391,7 +391,7 @@ class kinetic_1D_analysis():
             print '# A readable traj is needed'
             return
 
-        traj_inp=pyn_math.standard_traj(self.traj,particles=self.particles,dimensions=aux_dims)
+        traj_inp=pyn_math.standard_traj(traj_inp,particles=self.particles,dimensions=aux_dims)
 
         if type(from_state) in [int,float]:
             from_num_states=1
@@ -404,7 +404,6 @@ class kinetic_1D_analysis():
             to_state=[to_state]
         elif type(to_state) in [list,tuple]:
             to_num_states=len(to_state)
-
 
         tt_mean=f_trajs.tt_dist(opt_norm,opt_no_return,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, \
                                                         from_state,from_segment,to_state,to_segment, \
@@ -464,7 +463,7 @@ class kinetic_1D_analysis():
             print '# A readable traj is needed'
             return
 
-        traj_inp=pyn_math.standard_traj(self.traj,particles=self.particles,dimensions=aux_dims)
+        traj_inp=pyn_math.standard_traj(traj_inp,particles=self.particles,dimensions=aux_dims)
 
         if type(states) in [int,float]:
             num_states=1
