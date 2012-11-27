@@ -3,7 +3,7 @@
 # f2py command
 F2PY=
 # fortran compiler command
-FCOMP=gfortran
+FCOMP=
 # fortran compiler for f2py (not manually given)
 FTYPE=
 # lapack libraries
