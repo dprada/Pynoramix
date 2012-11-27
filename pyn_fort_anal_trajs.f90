@@ -491,11 +491,11 @@ CONTAINS
        filt_max=.TRUE.
     END IF
 
-    IF ((filt_min==.TRUE.).OR.(filt_max==.TRUE.)) THEN
+    IF ((filt_min.eqv..TRUE.).OR.(filt_max.eqv..TRUE.)) THEN
        DO nn=1,num_parts
           DO ii=1,len_traj
              tt=INT((traj(ii,nn,1)-min)/delta_x)+1
-             IF (filt_min==.TRUE.) THEN
+             IF (filt_min.eqv..TRUE.) THEN
                 IF (tt<1) THEN
                    tt=1
                 ELSE
@@ -572,13 +572,13 @@ CONTAINS
 
     ALLOCATE(histo_aux(bins))
 
-    IF ((filt_min==.TRUE.).OR.(filt_max==.TRUE.)) THEN
+    IF ((filt_min.eqv..TRUE.).OR.(filt_max.eqv..TRUE.)) THEN
        
        DO nn=1,num_parts
           histo_aux=0
           DO ii=1,Ltw
              tt=INT((traj(ii,nn,1)-min)/delta_x)+1
-             IF (filt_min==.TRUE.) THEN
+             IF (filt_min.eqv..TRUE.) THEN
                 IF (tt<1) THEN
                    tt=1
                 ELSE
@@ -591,7 +591,7 @@ CONTAINS
           DO ii=1,len_traj-Ltw
              traj_out(tw+ii,nn,:)=histo_aux(:)
              qq=INT((traj(Ltw+ii,nn,1)-min)/delta_x)+1
-             IF (filt_min==.TRUE.) THEN
+             IF (filt_min.eqv..TRUE.) THEN
                 IF (qq<1) THEN
                    qq=1
                 ELSE
@@ -600,7 +600,7 @@ CONTAINS
              END IF
              IF (qq>bins) qq=bins
              tt=INT((traj(ii,nn,1)-min)/delta_x)+1
-             IF (filt_min==.TRUE.) THEN
+             IF (filt_min.eqv..TRUE.) THEN
                 IF (tt<1) THEN
                    tt=1
                 ELSE
@@ -772,10 +772,10 @@ CONTAINS
     DO nn=1,num_parts
        DO ii=1,len_traj-2*tw
           cumul=0.0d0
-          IF ((filt_min==.TRUE.).OR.(filt_max==.TRUE.)) THEN
+          IF ((filt_min.eqv..TRUE.).OR.(filt_max.eqv..TRUE.)) THEN
              DO kk=ii,ii+Ltw1
                 tt=CEILING((traj(kk,nn,1)-min)/delta_x)
-                IF (filt_min==.TRUE.) THEN
+                IF (filt_min.eqv..TRUE.) THEN
                    IF (tt<1) THEN
                       tt=1
                    ELSE
@@ -895,10 +895,10 @@ CONTAINS
     ALLOCATE(distrib(gg))
     distrib=0.0d0
     
-    inside_old=.false.
     DO kkk=1,num_parts
        DO lll=1,dims
           contador=0
+          inside_old=.false.
           DO ii=1,num_frames
              inside=.false.
              DO jj=1,num_states

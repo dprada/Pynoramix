@@ -149,10 +149,12 @@ class cl_water(labels_set):             # Attributes of a water molecule
         self.H1=labels_unit()
         self.H2=labels_unit()
         self.uvect_norm=[]
+        self.bisector=[]
         self.microstate=''
-        #def get_uvect_norm(self):
         
         pass
+
+
 
 ####
 #### Class set (set of atoms: Molecule)
@@ -294,12 +296,6 @@ class molecule(labels_set):               # The suptra-estructure: System (water
              
                 if residue.type=='Water':       ### Waters
              
-                    for aa in residue.list_atoms:
-                        if self.atom[aa].name in ['H1']:
-                            self.atom[aa].__int_name__='atHW1'
-                        if self.atom[aa].name in ['H2']:
-                            self.atom[aa].__int_name__='atHW2'
-
                     if without_hs:
                         residue.__int_name__='SOL3'
                     else:
@@ -319,7 +315,15 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                         xxx=residue.__int_dict_atoms__.pop('atO')
                         residue.__int_dict_atoms__['atOW']=xxx
                         self.atom[xxx].__int_name__='atOW'
-             
+                    if 'atH1' in residue.__int_dict_atoms__.keys():
+                        xxx=residue.__int_dict_atoms__.pop('atH1')
+                        residue.__int_dict_atoms__['atHW1']=xxx
+                        self.atom[xxx].__int_name__='atHW1'
+                    if 'atH2' in residue.__int_dict_atoms__.keys():
+                        xxx=residue.__int_dict_atoms__.pop('atH2')
+                        residue.__int_dict_atoms__['atHW2']=xxx
+                        self.atom[xxx].__int_name__='atHW2'
+
                     for aa in [[False,'atOW',temp_water.O],[without_hs,'atHW1',temp_water.H1],[without_hs,'atHW2',temp_water.H2]]:
                         if not aa[0]:
                             xxx=residue.__int_dict_atoms__[aa[1]]
@@ -745,12 +749,18 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         if verbose:
             print '# [ Donor, Hydrogen ]'
             for ii in range(len(don)):
+                adon=self.atom[don[ii]]
+                adonstr=adon.name+'-'+str(adon.pdb_index)+'/'+adon.resid.name+'-'+str(adon.resid.pdb_index)
                 for jj in range(don_start_H[ii],don_start_H[ii+1]):
-                    print don[ii], don_H[jj]
+                    adon_H=self.atom[don_H[jj]]
+                    adon_Hstr=adon_H.name+'-'+str(adon_H.pdb_index)+'/'+adon_H.resid.name+'-'+str(adon_H.resid.pdb_index)
+                    print don[ii],'\t',adonstr,'\t',don_H[jj],'\t',adon_Hstr
             print ' '
             print '# [ Acceptor ]'
             for ii in acc:
-                print ii
+                aacc=self.atom[ii]
+                aaccstr=aacc.name+'-'+str(aacc.pdb_index)+'/'+aacc.resid.name+'-'+str(aacc.resid.pdb_index)
+                print ii,'\t',aaccstr
 
         return [numpy.array(acc,order='F'),numpy.array(acc_start_H,order='F'),numpy.array(acc_H,order='F'), \
                 numpy.array(don,order='F'),numpy.array(don_start_H,order='F'),numpy.array(don_H,order='F'),all_wat]
@@ -1014,8 +1024,11 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             if update:
                 faux.glob.update_verlet_list_grid_ns(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume,iframe.orthogonal,self.num_atoms)
             else:
+                #print 'aqui si'
                 faux.glob.make_cell_ns(rcell,r2,iframe.box,self.num_atoms)
+                #print 'aqui tambien'
                 faux.glob.make_verlet_list_grid_ns(r1,r2,pbc_opt,iframe.coors,iframe.box,iframe.volume,iframe.orthogonal,self.num_atoms)
+                #print 'aqui sale'
         else:
             if update:
                 for iframe in __read_frame_opt__(self,traj,frame):
@@ -1027,7 +1040,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         
 
 
-    def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=False,pbc=True,verbose=False):
+    def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=True,pbc=True,verbose=False):
 
         opt_effic=0
         opt_diff_syst=0
@@ -1089,22 +1102,35 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             pass
 
         elif faux.hbonds.definition == 3 : # ROO_ANG
-            faux.hbonds.roo2_param, faux.hbonds.cos_angooh_param= roo_param**2, cos(radians(angooh_param))
+            faux.hbonds.roo2_param, faux.hbonds.cos_angooh_param= roo_param**2, numpy.cos(numpy.radians(angooh_param))
 
-            gg=0
-            for iframe in __read_frame_opt__(self,traj,frame):
-                if (gg==0): 
-                    self.verlet_list_grid_ns(r1=3.5,r2=3.5,rcell=3.5,iframe=iframe)
-                else:
-                    self.verlet_list_grid_ns(r1=3.5,r2=3.5,rcell=3.5,iframe=iframe,update=True)
-                faux.hbonds.get_hbonds_roo_ang_ns_list( opt_diff_set, opt_pbc, \
+            if optimize:
+                gg=0
+                hbout=[]
+                for iframe in __read_frame_opt__(self,traj,frame):
+                    if (gg==0): 
+                        self.verlet_list_grid_ns(r1=3.5,r2=3.5,rcell=3.5,iframe=iframe)
+                    else:
+                        self.verlet_list_grid_ns(r1=3.5,r2=3.5,rcell=3.5,iframe=iframe,update=True)
+
+                    faux.hbonds.get_hbonds_roo_ang_ns_list( opt_diff_set, opt_pbc, \
                                            acc_don_A[0],acc_don_A[1],acc_don_A[2],acc_don_A[3],acc_don_A[4],acc_don_A[5], \
                                            iframe.coors,iframe.box,iframe.orthogonal, \
                                            acc_don_B[0],acc_don_B[1],acc_don_B[2],acc_don_B[3],acc_don_B[4],acc_don_B[5], \
                                            nA_acc,nA_acc_sH,nA_acc_H,nA_don,nA_don_sH,nA_don_H, \
                                            nB_acc,nB_acc_sH,nB_acc_H,nB_don,nB_don_sH,nB_don_H, \
                                            self.num_atoms)
-                gg+=1
+
+                    hbout.append([faux.glob.hbs_out,faux.glob.hbs_vals_out])
+                    gg+=1
+            else:
+                print '# Error: Not implemented yet.'
+                return
+
+            if gg==1:
+                return hbout[0]
+            else:
+                return hbout
 
         elif faux.hbonds.definition == 4 : 
             if not (allwat_A and allwat_B):
@@ -1119,7 +1145,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             pass
 
         elif faux.hbonds.definition == 6 : 
-            faux.hbonds.cos_angooh_param= cos(radians(angooh_param))
+            faux.hbonds.cos_angooh_param= numpy.cos(numpy.radians(angooh_param))
             if not (allwat_A and allwat_B):
                 print '# This type of hbond only works for water molecules.'
             print 'Not implemented yet'
@@ -1183,7 +1209,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         faux.hbonds.definition=hbonds_type(definition,verbose=False)
 
         if faux.hbonds.definition == 3 : # ROO_ANG
-            faux.hbonds.roo2_param, faux.hbonds.cos_angooh_param= roo_param**2, cos(radians(angooh_param))
+            faux.hbonds.roo2_param, faux.hbonds.cos_angooh_param= roo_param**2, numpy.cos(numpy.radians(angooh_param))
             
             gg=0
             for iframe in __read_frame_opt__(self,traj,frame):
@@ -1202,6 +1228,78 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
 
         pass
+
+
+    def water_bisector (self,water='ALL',traj=0,frame=0,pbc=True):
+
+        opt_pbc=0
+        if pbc:
+            opt_pbc=1
+
+        if water in ['ALL','All','all']:
+            wat_ind=[ii for ii in range(self.num_waters)]
+        elif type(water) in [int]:
+            wat_ind=[water]
+        elif type(water) in [list,tuple]:
+            wat_ind=water
+        else:
+            print '# List of water molecules in input variable "water" needed.'
+            return
+
+        list_atoms=numpy.empty((len(wat_ind),3),dtype=int,order='F')
+        for ii in wat_ind:
+            list_atoms[ii,0]=self.water[ii].O.index
+            list_atoms[ii,1]=self.water[ii].H1.index
+            list_atoms[ii,2]=self.water[ii].H2.index
+
+        ddd=[]
+        for iframe in __read_frame_opt__(self,traj,frame):
+            dd=faux.glob.water_bisector(opt_pbc,list_atoms,iframe.coors,iframe.box,iframe.orthogonal,len(list_atoms),self.num_atoms)
+            ddd.append(dd)
+            
+    def water_angle_bisector_atom (self,water='ALL',atoms=None,traj=0,frame=0,pbc=True):
+
+        opt_pbc=0
+        if pbc:
+            opt_pbc=1
+
+        if water in ['ALL','All','all']:
+            wat_ind=[ii for ii in range(self.num_waters)]
+        elif type(water) in [int]:
+            wat_ind=[water]
+        elif type(water) in [list,tuple]:
+            wat_ind=water
+        else:
+            print '# List of water molecules in input variable "water" needed.'
+            return
+
+        list_atoms=numpy.empty((len(wat_ind),3),dtype=int,order='F')
+        for ii in wat_ind:
+            list_atoms[ii,0]=self.water[ii].O.index
+            list_atoms[ii,1]=self.water[ii].H1.index
+            list_atoms[ii,2]=self.water[ii].H2.index
+
+        if type(atoms) in [int]:
+            atoms=[atoms]
+            natoms=1
+        elif type(atoms) in [tuple,list]:
+            natoms=len(atoms)
+        else:
+            print '# List of atoms in input variable "atoms" needed.'
+            return
+
+        num_frames=__length_frame_opt__(self,traj,frame)
+        angls=numpy.empty(shape=(num_frames,len(wat_ind),natoms),dtype=float,order='Fortran')
+        
+        num_frames=0
+        for iframe in __read_frame_opt__(self,traj,frame):
+            angls[num_frames,:,:]=faux.glob.water_angle_bisector_atom(opt_pbc,atoms,list_atoms,iframe.coors,iframe.box,iframe.orthogonal,len(list_atoms),natoms,self.num_atoms)
+            num_frames+=1
+
+        if num_frames==1:
+            return angls[0,:,:]
+        else:
+            return angls
 
 
     #def contact_map (self,setA=None,setB=None,dist=None,traj=0,frame=0,pbc=True):
@@ -1280,7 +1378,7 @@ def __read_frame_opt__ (syst=None,traj=0,frame=None):
 
     if frame in ['ALL','All','all']:
         return syst.traj[traj].frame
-    elif type(frame) in [int32,int]:
+    elif type(frame) in [numpy.int32,int]:
         return [syst.traj[0].frame[ii] for ii in [frame]]
     elif type(frame) in [list,tuple]:
         return [syst.traj[0].frame[ii] for ii in frame]
@@ -1291,7 +1389,7 @@ def __length_frame_opt__ (syst=None,traj=0,frame=None):
 
     if frame in ['ALL','All','all']:
         return syst.traj[traj].num_frames
-    elif type(frame) in [int32,int]:
+    elif type(frame) in [numpy.int32,int]:
         return 1
     elif type(frame) in [list,tuple]:
         return len(frame)
@@ -1516,7 +1614,7 @@ def select_covalent_chain(system=None,select=None,chain=None):
 
 def selection(system=None,condition=None,traj=0,frame='ALL',pbc=True):
 
-    icondition=condition
+    icondition=' '+condition+' '
 
     # attributes syntaxis:
 
@@ -1550,8 +1648,9 @@ def selection(system=None,condition=None,traj=0,frame='ALL',pbc=True):
     icondition=icondition.replace(' In ',' ')
     icondition=icondition.replace(' IN ',' ')
     ### Second block.
-    icondition=icondition.replace(' chain',' atom.chain')
-    icondition=icondition.replace(' resid',' atom.resid')
+    icondition=icondition.replace(' chain.',' atom.chain.')
+    icondition=icondition.replace(' resid.',' atom.resid.')
+    icondition=icondition.replace('  ',' ')
 
     # logic syntaxis
 

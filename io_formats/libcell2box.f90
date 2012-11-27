@@ -98,21 +98,21 @@ SUBROUTINE WRAP (coors,box,ortho,natom)
         y=coors(ii,2)
         z=coors(ii,3)
         IF (x<0.0d0) THEN
-           nn=INT(abs(x)/Lx)+1
+           nn=CEILING(abs(x)/Lx)
            x=x+nn*Lx
         ELSE IF (x>=Lx) THEN
            nn=INT(x/Lx)
            x=x-nn*Lx
         END IF
         IF (y<0.0d0) THEN
-           nn=INT(abs(y)/Ly)+1
+           nn=CEILING(abs(y)/Ly)
            y=y+nn*Ly
         ELSE IF (y>=Ly) THEN
            nn=INT(y/Ly)
            y=y-nn*Ly
         END IF
         IF (z<0.0d0) THEN
-           nn=INT(abs(z)/Lz)+1
+           nn=CEILING(abs(z)/Lz)
            z=z+nn*Lz
         ELSE IF (z>=Lz) THEN
            nn=INT(z/Lz)

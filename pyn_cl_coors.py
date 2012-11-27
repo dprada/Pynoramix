@@ -89,9 +89,9 @@ class cl_traj():
     # 
     #    pass
 
-    def reload_frame(self,new='next',old=0):
+    def reload_frame(self,frame='next',old=0):
 
-        if new=='next':
+        if frame=='next':
             temp_frame,self.io_pos,self.io_err,self.io_end=getattr(io,'coor_'+self.type).read_next(self.io_file,self.io_vars,self.io_pos)
             if self.io_err: 
                 print '# Error reading the file'
@@ -110,8 +110,26 @@ class cl_traj():
                 self.num_frames+=1
             del(temp_frame)
         else:
-            print '# Not supported yet.'
-            return
+            if type(frame) not in [int]:
+                print '# Not supported yet.'
+                return
+            else:
+                temp_frame,self.io_pos,self.io_err,self.io_end=getattr(io,'coor_'+self.type).read_frame(self.io_file,frame,self.io_vars,self.io_pos)
+                if self.io_err: 
+                    return '# Error reading file'
+                if self.io_end: 
+                    print '# End of file'
+                    self.io_err=getattr(io,'coor_'+self.type).close_traj(self.io_file)
+                    if self.io_err: return '# Error closing file'
+                    self.io_opened=0
+                    self.io_file=None
+                    return
+                try:
+                    self.frame[old]=temp_frame
+                except:
+                    self.frame.append(temp_frame)
+                    self.num_frames+=1
+                del(temp_frame)
 
     def upload_frame(self,frame='next',begin=None,end=None,increment=1,units=None):
 
