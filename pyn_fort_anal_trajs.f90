@@ -566,10 +566,10 @@ subroutine ganna (opt_range,opt,ibins,imin,imax,idelta_x,rv_min,rv_max,traj,ksi,
      print*,nn
      DO ii=1,len_traj-2*tw
         cumul=0.0d0
-        IF ((filt_min==.TRUE.).OR.(filt_max==.TRUE.)) THEN
+        IF ((filt_min.eqv..TRUE.).OR.(filt_max.eqv..TRUE.)) THEN
            DO kk=ii,ii+Ltw1
               tt=CEILING((traj(kk,nn,1)-min)/delta_x)
-              IF (filt_min==.TRUE.) THEN
+              IF (filt_min.eqv..TRUE.) THEN
                  IF (tt<1) THEN
                     tt=1
                  ELSE
