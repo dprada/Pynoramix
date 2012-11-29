@@ -1,4 +1,4 @@
-from pyn_fort_anal_trajs import glob as f_trajs
+from pyn_fort_kin_anal import glob as f_kin_anal
 from pyn_cl_net import *
 import pyn_math as pyn_math
 import numpy
@@ -6,77 +6,113 @@ import copy
 
 ## traj: frame,num_part,dim
 
-class kinetic_1D_analysis():
+class kinetic_analysis():
 
-    def __init__ (self,traject=None,columns=None,particles=None,dimensions=None,verbose=True):
+    def __init__ (self,traject=None,columns=None,frames=None,particles=None,dimensions=None,\
+                      traject_type='Traj',in_ram=True,in_file=False,by_frame=False,verbose=True):
+
+        self.dimensions=dimensions
+        self.particles=particles
+        self.frames=0
 
         self.file_traj=''
         self.file_nodes=''
         self.file_clusters=''
         self.file_traj_columns=None
+
         self.traj=None
-        self.dimensions=dimensions
-        self.particles=particles
-        self.frames=0
         self.traj_nodes=None
         self.traj_clusters=None
+
         self.network_nodes=None
         self.network_clusters=None
-        self.__mode_in_ram__=True
-        self.__mode_in_file__=False
-        self.__mode_by_frame__=False
+
+        self.__tr_mode_in_ram__   = False
+        self.__tr_mode_in_file__  = False
+        self.__tr_mode_by_frame__ = False
+
+        self.__no_mode_in_ram__   = False
+        self.__no_mode_in_file__  = False
+        self.__no_mode_by_frame__ = False
+
+        self.__cl_mode_in_ram__   = False
+        self.__cl_mode_in_file__  = False
+        self.__cl_mode_by_frame__ = False
+
         self.__type_nodes__=None
         self.__type_clusters__=None
         self.__offset__=0
 
+        if traject_type in ['TRAJ','Traj','traj']:
+            self.__tr_mode_in_ram__   = in_ram
+            self.__tr_mode_in_file__  = in_file
+            self.__tr_mode_by_frame__ = by_frame
+        elif traject_type in ['NODES','Nodes','nodes']:
+            self.__no_mode_in_ram__   = in_ram
+            self.__no_mode_in_file__  = in_file
+            self.__no_mode_by_frame__ = by_frame
+        elif traject_type in ['CLUSTERS','Clusters','clusters']:
+            self.__cl_mode_in_ram__   = in_ram
+            self.__cl_mode_in_file__  = in_file
+            self.__cl_mode_by_frame__ = by_frame
+
         if traject==None:
-            print 'Trajectory needed (name of file or array)'
+            if frames!=None:
+                self.frames=frames
+                if dimensions==None:
+                    self.dimensions=1
+                else:
+                    self.dimensions=dimensions
+                if particles==None:
+                    self.particles=1
+                else:
+                    self.particles=particles
+
             return
         
-        if type(columns) in [int]:
-            self.particles=1
-            self.dimensions=1
-            columns=[columns]
-        elif type(columns) in [tuple,list]:
-            if (len(columns))==1:
-                self.particles=1
-                self.dimensions=1
-            else:
-                if particles==None and dimensions==None:
-                    print '# Please, make use of the variables "particles" or/and "dimensions":'
-                    print '#   traj:=[100 frames, 3 dimensions] --> "particles=1" or/and "dimensions=3"'
-                    print '#   traj:=[100 frames, 8  particles] --> "particles=8" or/and "dimensions=1"'
-                    return
-                elif particles==1 or dimensions>=1:
-                    self.particles=1
-                    self.dimensions=len(columns)
-                elif particles>1 or dimensions==1:
-                    self.dimensions=1
-                    self.particles=len(columns)
-
-        elif columns in ['ALL','All','all']:
-            fff=open(traject,'r')
-            line=fff.readline().split()
-            nn=len(line)
-            fff.close()
-            columns=[ii for ii in range(nn)]
-            if nn>1:
-                if particles==None and dimensions==None:
-                    print '# Please, make use of the variables "particles" or/and "dimensions":'
-                    print '#   traj:=[100 frames, 3 dimensions] --> "particles=1" or/and "dimensions=3"'
-                    print '#   traj:=[100 frames, 8  particles] --> "particles=8" or/and "dimensions=1"'
-                    return
-                elif particles==1 or dimensions>=1:
-                    self.particles=1
-                    self.dimensions=nn
-                elif particles>1 or dimensions==1:
-                    self.dimensions=1
-                    self.particles=nn
-            else:
-                self.dimensions=1
-                self.particles=1
-
         if type(traject) in [str]:
+
+            if type(columns) in [int]:
+                self.particles=1
+                self.dimensions=1
+                columns=[columns]
+            elif type(columns) in [tuple,list]:
+                if (len(columns))==1:
+                    self.particles=1
+                    self.dimensions=1
+                else:
+                    if particles==None and dimensions==None:
+                        print '# Please, make use of the variables "particles" or/and "dimensions":'
+                        print '#   traj:=[100 frames, 3 dimensions] --> "particles=1" or/and "dimensions=3"'
+                        print '#   traj:=[100 frames, 8  particles] --> "particles=8" or/and "dimensions=1"'
+                        return
+                    elif particles==1 or dimensions>=1:
+                        self.particles=1
+                        self.dimensions=len(columns)
+                    elif particles>1 or dimensions==1:
+                        self.dimensions=1
+                        self.particles=len(columns)
+            elif columns in ['ALL','All','all']:
+                fff=open(traject,'r')
+                line=fff.readline().split()
+                nn=len(line)
+                fff.close()
+                columns=[ii for ii in range(nn)]
+                if nn>1:
+                    if particles==None and dimensions==None:
+                        print '# Please, make use of the variables "particles" or/and "dimensions":'
+                        print '#   traj:=[100 frames, 3 dimensions] --> "particles=1" or/and "dimensions=3"'
+                        print '#   traj:=[100 frames, 8  particles] --> "particles=8" or/and "dimensions=1"'
+                        return
+                    elif particles==1 or dimensions>=1:
+                        self.particles=1
+                        self.dimensions=nn
+                    elif particles>1 or dimensions==1:
+                        self.dimensions=1
+                        self.particles=nn
+                else:
+                    self.dimensions=1
+                    self.particles=1
 
             self.file_traj=traject
             self.file_column=columns
@@ -99,6 +135,9 @@ class kinetic_1D_analysis():
 
             self.traj=pyn_math.standard_traj(self.traj,self.particles,self.dimensions)
 
+
+
+
         if type(traject) in [list,tuple,numpy.ndarray]:
             
             self.traj=pyn_math.standard_traj(traject,particles=self.particles,dimensions=self.dimensions)
@@ -108,7 +147,6 @@ class kinetic_1D_analysis():
         self.dimensions=self.traj.shape[2]
 
         if verbose:
-            print '# Loaded:'
             self.info()
 
     def info(self):
@@ -165,11 +203,11 @@ class kinetic_1D_analysis():
         elif type(state) in [list,tuple]:
             num_states=len(state)
 
-        lt_mean=f_trajs.life_time_dist(opt_norm,traj_inp,state,traj_inp.shape[0],traj_inp.shape[1],traj_inp.shape[2],num_states)
+        lt_mean=f_kin_anal.life_time_dist(opt_norm,traj_inp,state,traj_inp.shape[0],traj_inp.shape[1],traj_inp.shape[2],num_states)
 
-        lt_dist=copy.deepcopy(f_trajs.distrib)
-        lt_x=copy.deepcopy(f_trajs.distrib_x)
-        f_trajs.free_distrib()
+        lt_dist=copy.deepcopy(f_kin_anal.distrib)
+        lt_x=copy.deepcopy(f_kin_anal.distrib_x)
+        f_kin_anal.free_distrib()
 
         if verbose:
             print '# Mean life time:', lt_mean,'frames.'
@@ -245,14 +283,14 @@ class kinetic_1D_analysis():
             to_num_states=len(to_state)
 
 
-        fpt_mean=f_trajs.fpt_dist(opt_norm,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, \
+        fpt_mean=f_kin_anal.fpt_dist(opt_norm,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, \
                                                         from_state,from_segment,to_state,to_segment, \
                                                         traj_inp,traj_inp.shape[0],traj_inp.shape[1],traj_inp.shape[2],\
                                                         from_num_states,to_num_states)
 
-        fpt_dist=copy.deepcopy(f_trajs.distrib)
-        fpt_x=copy.deepcopy(f_trajs.distrib_x)
-        f_trajs.free_distrib()
+        fpt_dist=copy.deepcopy(f_kin_anal.distrib)
+        fpt_x=copy.deepcopy(f_kin_anal.distrib_x)
+        f_kin_anal.free_distrib()
 
         if verbose:
             print '# Mean first passage time:', fpt_mean,'frames.'
@@ -325,13 +363,13 @@ class kinetic_1D_analysis():
             num_commits=len(commitment)
 
         commitment_in=[int(ii) for ii in commitment]
-        fcpt_mean=f_trajs.fcpt_dist(opt_norm,opt_noreturn,opt_states,opt_segments, states,segments,commitment_in,\
+        fcpt_mean=f_kin_anal.fcpt_dist(opt_norm,opt_noreturn,opt_states,opt_segments, states,segments,commitment_in,\
                                                         traj_inp,traj_inp.shape[0],traj_inp.shape[1],traj_inp.shape[2],\
                                                         num_states,num_segments,num_commits)
 
-        fcpt_dist=copy.deepcopy(f_trajs.distrib)
-        fcpt_x=copy.deepcopy(f_trajs.distrib_x)
-        f_trajs.free_distrib()
+        fcpt_dist=copy.deepcopy(f_kin_anal.distrib)
+        fcpt_x=copy.deepcopy(f_kin_anal.distrib_x)
+        f_kin_anal.free_distrib()
 
         if verbose:
             print '# Mean first passage time:', fcpt_mean,'frames.'
@@ -410,14 +448,14 @@ class kinetic_1D_analysis():
         elif type(to_state) in [list,tuple]:
             to_num_states=len(to_state)
 
-        tt_mean=f_trajs.tt_dist(opt_norm,opt_no_return,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, \
+        tt_mean=f_kin_anal.tt_dist(opt_norm,opt_no_return,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, \
                                                         from_state,from_segment,to_state,to_segment, \
                                                         traj_inp,traj_inp.shape[0],traj_inp.shape[1],traj_inp.shape[2],\
                                                         from_num_states,to_num_states)
 
-        tt_dist=copy.deepcopy(f_trajs.distrib)
-        tt_x=copy.deepcopy(f_trajs.distrib_x)
-        f_trajs.free_distrib()
+        tt_dist=copy.deepcopy(f_kin_anal.distrib)
+        tt_x=copy.deepcopy(f_kin_anal.distrib_x)
+        f_kin_anal.free_distrib()
 
         if verbose:
             print '# Mean first passage time:', tt_mean,'frames.'
@@ -489,13 +527,13 @@ class kinetic_1D_analysis():
             num_commits=len(commitment)
 
         commitment_in=[int(ii) for ii in commitment]
-        ctt_mean=f_trajs.ctt_dist(opt_norm,opt_noreturn,opt_states,opt_segments, states,segments,commitment_in,\
+        ctt_mean=f_kin_anal.ctt_dist(opt_norm,opt_noreturn,opt_states,opt_segments, states,segments,commitment_in,\
                                                         traj_inp,traj_inp.shape[0],traj_inp.shape[1],traj_inp.shape[2],\
                                                         num_states,num_segments,num_commits)
 
-        ctt_dist=copy.deepcopy(f_trajs.distrib)
-        ctt_x=copy.deepcopy(f_trajs.distrib_x)
-        f_trajs.free_distrib()
+        ctt_dist=copy.deepcopy(f_kin_anal.distrib)
+        ctt_x=copy.deepcopy(f_kin_anal.distrib_x)
+        f_kin_anal.free_distrib()
 
         if verbose:
             print '# Mean first passage time:', ctt_mean,'frames.'
@@ -554,7 +592,7 @@ class kinetic_1D_analysis():
             if rv_max:
                 print '# Extra node for x >', mmx
 
-        traj_aux=f_trajs.prada1(ybins,bins,mmn,mmx,delta,rv_min,rv_max,self.traj,window,self.particles,self.frames)
+        traj_aux=f_kin_anal.prada1(ybins,bins,mmn,mmx,delta,rv_min,rv_max,self.traj,window,self.particles,self.frames)
 
         ranges=pyn_math.build_ranges(traj_aux)
 
@@ -576,7 +614,7 @@ class kinetic_1D_analysis():
                 aux_list[ii]=self.network.node[ii].cluster
          
             new_num_frames=self.traj_nodes.shape[0]
-            self.traj_clusters=f_trajs.trajnodes2trajclusters(aux_list,self.traj_nodes,num_nodes,new_num_frames,self.particles)
+            self.traj_clusters=f_kin_anal.trajnodes2trajclusters(aux_list,self.traj_nodes,num_nodes,new_num_frames,self.particles)
             
             del(num_nodes,new_num_frames,aux_list)
          
@@ -605,7 +643,7 @@ class kinetic_1D_analysis():
 
         bins,mmx,mmn,delta=pyn_math.parameters_bins(opt_range,opt,bins,mmn,mmx,delta)
 
-        traj_aux=f_trajs.prada2(ybins,sbins,bins,mmn,mmx,delta,self.traj,window,self.particles,self.frames)
+        traj_aux=f_kin_anal.prada2(ybins,sbins,bins,mmn,mmx,delta,self.traj,window,self.particles,self.frames)
 
         ranges=pyn_math.build_ranges(traj_aux)
          
@@ -627,7 +665,7 @@ class kinetic_1D_analysis():
                 aux_list[ii]=self.network.node[ii].cluster
          
             new_num_frames=self.traj_nodes.shape[0]
-            self.traj_clusters=f_trajs.trajnodes2trajclusters(aux_list,self.traj_nodes,num_nodes,new_num_frames,self.particles,self.dimensions)
+            self.traj_clusters=f_kin_anal.trajnodes2trajclusters(aux_list,self.traj_nodes,num_nodes,new_num_frames,self.particles,self.dimensions)
          
             del(num_nodes,new_num_frames,aux_list)
          
@@ -671,7 +709,7 @@ class kinetic_1D_analysis():
             if rv_max:
                 print '# Extra node for x >', mmx
 
-        self.traj_nodes=f_trajs.ganna(opt_range,opt,bins,mmn,mmx,delta,rv_min,rv_max,self.traj,ksi,window,self.particles,self.frames)
+        self.traj_nodes=f_kin_anal.ganna(opt_range,opt,bins,mmn,mmx,delta,rv_min,rv_max,self.traj,ksi,window,self.particles,self.frames)
         self.__offset__=window
 
         self.network=kinetic_network(self.traj_nodes,ranges=[self.traj_nodes.min(),self.traj_nodes.max()],verbose=False)
@@ -688,7 +726,7 @@ class kinetic_1D_analysis():
                 aux_list[ii]=self.network.node[ii].cluster
 
             new_num_frames=self.traj_nodes.shape[0]
-            self.traj_clusters=f_trajs.trajnodes2trajclusters(aux_list,self.traj_nodes,num_nodes,new_num_frames,self.particles)
+            self.traj_clusters=f_kin_anal.trajnodes2trajclusters(aux_list,self.traj_nodes,num_nodes,new_num_frames,self.particles)
 
             del(num_nodes,new_num_frames,aux_list)
 
@@ -701,7 +739,7 @@ class kinetic_1D_analysis():
         if num_eigenvs in ['ALL','All','all']:
             num_eigenvs=self.particles*self.dimensions
 
-        eigenvals,eigenvects=f_trajs.pca(num_eigenvs,self.traj,self.frames,self.particles,self.dimensions)
+        eigenvals,eigenvects=f_kin_anal.pca(num_eigenvs,self.traj,self.frames,self.particles,self.dimensions)
 
         return eigenvals,eigenvects
 
