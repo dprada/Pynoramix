@@ -121,6 +121,85 @@ CONTAINS
 
   END SUBROUTINE histogram1d
   
+  SUBROUTINE histogram1d_infile (fname,fbinary,funit,opt_norm,opt_cumul,bins,min,max,delta,dim_sel,frames,parts,dims)
+    
+    implicit none
+    
+    CHARACTER*80,INTENT(IN)::fname
+    INTEGER,INTENT(IN)::funit,fbinary
+    INTEGER,INTENT(IN)::opt_norm,opt_cumul,bins
+    INTEGER,INTENT(IN)::frames,parts,dims,dim_sel
+    DOUBLE PRECISION,INTENT(IN)::delta,max,min
+
+    DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::traj
+    DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::frecuencias
+    INTEGER::ii,jj,kk,aux,tt
+    DOUBLE PRECISION::total
+    
+    
+    ALLOCATE(traj(parts,dims))
+
+    ALLOCATE(frecuencias(bins))
+    frecuencias=0.0d0
+
+    IF (fbinary==1) THEN
+       
+       OPEN(unit=funit,FILE=TRIM(fname),STATUS='old',action='READ',form='unformatted',access='stream')
+
+       DO
+          READ(funit,end=600) traj(:,:)
+
+          DO ii=1,parts
+             tt=CEILING((traj(ii,dim_sel)-min)/delta)
+             if (tt==0) tt=1
+             frecuencias(tt)=frecuencias(tt)+1.0d0
+          END DO
+       END DO
+
+    ELSE
+
+       OPEN(unit=funit,FILE=TRIM(fname),STATUS='old',action='READ')
+
+       DO 
+          READ(funit,end=600) traj(:,:)
+
+          DO ii=1,parts
+             tt=CEILING((traj(ii,dim_sel)-min)/delta)
+             if (tt==0) tt=1
+             frecuencias(tt)=frecuencias(tt)+1.0d0
+          END DO
+       END DO
+
+    END IF
+    
+600 CLOSE(funit)
+    
+    IF (opt_norm==1) THEN
+       total=SUM(frecuencias)*delta
+       frecuencias=frecuencias/total
+    END IF
+    
+    !! Output
+
+    CALL free_mem()
+    ALLOCATE(histo_y(bins),histo_x(bins))
+    histo_y=frecuencias
+    IF (opt_cumul==1) THEN
+       histo_y=histo_y*delta
+       DO ii=1,bins-1
+          histo_y(ii+1)=histo_y(ii+1)+histo_y(ii)
+       END DO
+    END IF
+
+    DO ii=1,bins
+       histo_x(ii)=min+(ii*1.0d0-0.50d0)*delta
+    END DO
+        
+    DEALLOCATE(frecuencias,traj)
+
+  END SUBROUTINE histogram1d_infile
+  
+
 
   SUBROUTINE histogram1d_mask (opt_norm,opt_cumul,traj,bins,min,max,delta,dim_sel,traj_mask,select_mask,offset,&
        & frames_mask,num_sel_mask,frames,parts,dims)

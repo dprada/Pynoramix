@@ -8,6 +8,8 @@ except:
     wpylab=0
 
 
+pyn_f90units=[100]    # always > 100.
+
 def build_ranges(traj):
 
     dims=traj.shape[2]
@@ -24,8 +26,6 @@ def build_ranges(traj):
             if (posmax>ranges[jj,1]): ranges[jj,1]=posmax
 
     return ranges
-
-
 
 def standard_ranges(ranges):
 
@@ -105,6 +105,11 @@ def average(a):
 
 def parameters_bins(traj=None,bins=None,segment=None,delta=None):
 
+    if traj==None:
+        if segment==None:
+            print '# Not implemented yet.'
+            return
+
     if segment==None:
         opt_range=0
         mmx=traj.max()
@@ -124,10 +129,8 @@ def parameters_bins(traj=None,bins=None,segment=None,delta=None):
 
     return bins,mmx,mmn,delta
 
-def histogram(traj,bins=20,segment=None,delta=None,select_dim=0,norm=False,cumul=False):
+def histogram(traj,bins=20,segment=None,delta=None,select_dim=0,norm=False,cumul=False,in_file=False,by_frame=False):
     
-    traj=standard_traj(traj)
-
     opt_norm=0
     if norm:
         opt_norm=1
@@ -136,16 +139,44 @@ def histogram(traj,bins=20,segment=None,delta=None,select_dim=0,norm=False,cumul
     if cumul:
         opt_cumul=1
 
-    bins,mmx,mmn,delta=parameters_bins(traj,bins,segment,delta)
-    select_dim+=1
-    fort_math.histogram1d(opt_norm,opt_cumul,traj,bins,mmn,mmx,delta,select_dim,\
-                                traj.shape[0],traj.shape[1],traj.shape[2])
+    if by_frame:
+        print '# Not implemented yet.'
+        return
 
-    h_x=copy.deepcopy(fort_math.histo_x)
-    h_y=copy.deepcopy(fort_math.histo_y)
-    fort_math.free_mem()
+    else:
 
-    return h_x,h_y
+        if in_file:
+            infile.unit=len(pyn_f90units)+1
+            pyn_f90units.append(infile.unit)
+            select_dim+=1
+            bins,mmx,mmn,delta=parameters_bins(False,bins,segment,delta)
+            fort_math.histogram1d_infile(infile.name,infile.binary,infile.unit,opt_norm,opt_cumul,bins,mmn,mmx,delta,select_dim,\
+                                      in_file.frames,in_file.particles,in_file.dimensions)
+
+            h_x=copy.deepcopy(fort_math.histo_x)
+            h_y=copy.deepcopy(fort_math.histo_y)
+            fort_math.free_mem()
+
+            pyn_f90units.remove(infile.unit)
+            infile.unit=None
+            return h_x,h_y
+
+        else:
+            
+            traj=standard_traj(traj)
+            
+            bins,mmx,mmn,delta=parameters_bins(traj,bins,segment,delta)
+            select_dim+=1
+            fort_math.histogram1d(opt_norm,opt_cumul,traj,bins,mmn,mmx,delta,select_dim,\
+                                      traj.shape[0],traj.shape[1],traj.shape[2])
+            
+            h_x=copy.deepcopy(fort_math.histo_x)
+            h_y=copy.deepcopy(fort_math.histo_y)
+            fort_math.free_mem()
+            
+            return h_x,h_y
+
+    
 
 
 def histogram_mask(traj,bins=20,segment=None,delta=None,select_dim=0,traj_mask=None,select_mask=None,offset_mask=None,norm=False,cumul=False):

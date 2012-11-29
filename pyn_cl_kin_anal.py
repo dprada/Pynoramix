@@ -6,6 +6,51 @@ import copy
 
 ## traj: frame,num_part,dim
 
+class pyn_file():
+
+    def __init__ (self,name=None,frames=None,particles=None,dimensions=None,opt='r'):
+
+        self.name=name
+        self.opt=opt
+        self.file=None
+        self.binary=False
+        self.unit=None
+        self.io=False
+        self.ioerr=False
+        self.ioend=False
+        self.iopos=None
+        self.columns=None
+        self.frames=frames
+        self.particles=particles
+        self.dimensions=dimensions
+
+        if self.name.endswith('.bin'):
+            self.binary=True
+
+
+    def info(self):
+        print '# File name:',self.name
+        print '# Options:', self.opt
+        print '# Binary:', self.binary
+        print '# Opened:',self.io
+        print '# Position:',self.iopos
+        print '# End:',self.ioend
+        print '# Frames:',self.frames
+        print '# Particles:',self.particles
+        print '# Dimensions:',self.dimensions
+
+    def open(self):
+
+        self.file=open(self.name,self.opt)
+        self.io=True
+        self.ioend=False
+
+    def close(self):
+
+        self.file.close()
+        self.io=False
+        self.ioend=False
+
 class kinetic_analysis():
 
     def __init__ (self,traject=None,columns=None,frames=None,particles=None,dimensions=None,\
@@ -13,12 +58,11 @@ class kinetic_analysis():
 
         self.dimensions=dimensions
         self.particles=particles
-        self.frames=0
+        self.frames=frames
 
-        self.file_traj=''
-        self.file_nodes=''
-        self.file_clusters=''
-        self.file_traj_columns=None
+        self.file_traj=None
+        self.file_nodes=None
+        self.file_clusters=None
 
         self.traj=None
         self.traj_nodes=None
@@ -43,6 +87,8 @@ class kinetic_analysis():
         self.__type_clusters__=None
         self.__offset__=0
 
+        if in_file: in_ram=False
+
         if traject_type in ['TRAJ','Traj','traj']:
             self.__tr_mode_in_ram__   = in_ram
             self.__tr_mode_in_file__  = in_file
@@ -57,19 +103,19 @@ class kinetic_analysis():
             self.__cl_mode_by_frame__ = by_frame
 
         if traject==None:
-            if frames!=None:
-                self.frames=frames
-                if dimensions==None:
+            if self.frames!=None:
+                if self.dimensions==None:
                     self.dimensions=1
-                else:
-                    self.dimensions=dimensions
-                if particles==None:
+                if self.particles==None:
                     self.particles=1
-                else:
-                    self.particles=particles
 
-            return
-        
+                if traject_type in ['TRAJ','Traj','traj']:
+                    self.traj=numpy.zeros((self.frames,self.particles,self.dimensions),dtype=float,order='F')
+                elif traject_type in ['NODES','Nodes','nodes']:
+                    self.traj_nodes=numpy.zeros((self.frames,self.particles,self.dimensions),dtype=float,order='F')
+                elif traject_type in ['CLUSTERS','Clusters','clusters']:
+                    self.traj_clusters=numpy.zeros((self.frames,self.particles,self.dimensions),dtype=float,order='F')
+
         if type(traject) in [str]:
 
             if type(columns) in [int]:
@@ -114,37 +160,45 @@ class kinetic_analysis():
                     self.dimensions=1
                     self.particles=1
 
-            self.file_traj=traject
-            self.file_column=columns
+            if self.__tr_mode_in_ram__ and not self.__tr_mode_by_frame__:
 
-            self.frames = 0
-            for line in open(traject): self.frames += 1
+                self.file_traj=pyn_file(name=traject,opt='r')
+                self.frames = 0
 
-            self.traj=numpy.empty((self.frames,self.particles,self.dimensions),dtype=float,order='F')
+                self.file_traj.open()
+                for line in self.file_traj.file: self.frames += 1
+                self.file_traj.close()
 
-            fff=open(traject,'r')
+                self.traj=numpy.empty((self.frames,self.particles,self.dimensions),dtype=float,order='F')
 
-            gg=-1
-            for line in fff:
-                line=line.split()
-                gg+=1
-                for kk in range(len(columns)):
-                    self.traj[gg,0,kk]=float(line[columns[kk]])
+                self.file_traj.open()
+
+                gg=-1
+                for line in self.file_traj.file:
+                    line=line.split()
+                    gg+=1
+                    for kk in range(len(columns)):
+                        self.traj[gg,0,kk]=float(line[columns[kk]])
  
-            fff.close()
+                self.file_traj.close()
 
-            self.traj=pyn_math.standard_traj(self.traj,self.particles,self.dimensions)
+                self.traj=pyn_math.standard_traj(self.traj,self.particles,self.dimensions)
 
+            if self.__tr_mode_in_file__:
 
+                self.file_traj=pyn_file(name=traject,frames=0,particles=particles,dimensions=dimensions)
 
+                if self.dimensions==None or self.particles==None:
+                    print '# Error: Input variables "dimensions" and "particles" needed.'
+                    return
 
         if type(traject) in [list,tuple,numpy.ndarray]:
             
             self.traj=pyn_math.standard_traj(traject,particles=self.particles,dimensions=self.dimensions)
 
-        self.frames=self.traj.shape[0]
-        self.particles=self.traj.shape[1]
-        self.dimensions=self.traj.shape[2]
+            self.frames=self.traj.shape[0]
+            self.particles=self.traj.shape[1]
+            self.dimensions=self.traj.shape[2]
 
         if verbose:
             self.info()
@@ -156,21 +210,24 @@ class kinetic_analysis():
     def histogram(self,dimension=None,node=None,cluster=None,bins=20,segment=None,delta=None,select_dim=0,norm=False,cumul=False):
 
         if cluster==None and node==None:
-            return pyn_math.histogram(self.traj,bins=bins,segment=segment,delta=delta,select_dim=select_dim,norm=norm,cumul=cumul)
+            if self.__tr_mode_in_file__:
+                return pyn_math.histogram(self.traj,bins=bins,segment=segment,delta=delta,select_dim=select_dim,norm=norm,cumul=cumul,\
+                                          in_file=self.file_traj,by_frame=self.__tr_mode_by_frame__)
+            else:
+                return pyn_math.histogram(self.traj,bins=bins,segment=segment,delta=delta,select_dim=select_dim,norm=norm,cumul=cumul,\
+                                          in_file=False,by_frame=self.__tr_mode_by_frame__)
 
         if cluster!=None:
 
-            xx,yy=pyn_math.histogram_mask(self.traj,bins=bins,segment=segment,delta=delta,select_dim=select_dim,\
+            return pyn_math.histogram_mask(self.traj,bins=bins,segment=segment,delta=delta,select_dim=select_dim,\
                                               traj_mask=self.traj_clusters,select_mask=cluster,offset_mask=self.__offset__,\
                                               norm=norm,cumul=cumul)
-            return xx,yy
 
         if node!=None:
 
-            xx,yy=pyn_math.histogram_mask(self.traj,bins=bins,segment=segment,delta=delta,select_dim=select_dim,\
+            return pyn_math.histogram_mask(self.traj,bins=bins,segment=segment,delta=delta,select_dim=select_dim,\
                                               traj_mask=self.traj_nodes,select_mask=node,offset_mask=self.__offset__,\
                                               norm=norm,cumul=cumul)
-            return xx,yy
 
 
     def life_time(self,traj=None,state=None,segment=None,mean=False,norm=False,verbose=False):
@@ -182,28 +239,35 @@ class kinetic_analysis():
         if (norm):
             opt_norm=1
 
-        if traj == None:
-            traj_inp=self.traj
-            aux_dims=self.dimensions
-        elif traj in ['CLUSTERS','Clusters','clusters']:
-            traj_inp=self.traj_clusters
-            aux_dims=1
-        elif traj in ['NODES','Nodes','nodes']:
-            traj_inp=self.traj_nodes
-            aux_dims=1
-        else:
-            print '# A readable traj is needed'
-            return
-
-        traj_inp=pyn_math.standard_traj(traj_inp,particles=self.particles,dimensions=aux_dims)
-
         if type(state) in [int,float]:
             num_states=1
             state=[state]
         elif type(state) in [list,tuple]:
             num_states=len(state)
 
-        lt_mean=f_kin_anal.life_time_dist(opt_norm,traj_inp,state,traj_inp.shape[0],traj_inp.shape[1],traj_inp.shape[2],num_states)
+        if traj == None:
+            if self.__tr_mode_in_file__:
+                infile=self.file_traj
+                infile.unit=len(pyn_f90units)+1
+                pyn_f90units.append(infile.unit)
+                lt_mean=f_kin_anal.life_time_dist_infile(infile.name,infile.binary,infile.unit,opt_norm,state,,num_states)
+                pyn_f90units.remove(infile.unit)
+                infile.unit=None
+
+            else:
+                traj_inp=pyn_math.standard_traj(self.traj,particles=self.particles,dimensions=self.dimensions)
+                lt_mean=f_kin_anal.life_time_dist(opt_norm,traj_inp,state,traj_inp.shape[0],traj_inp.shape[1],traj_inp.shape[2],num_states)
+
+        elif traj in ['CLUSTERS','Clusters','clusters']:
+            traj_inp=pyn_math.standard_traj(self.traj_clusters,particles=self.particles,dimensions=1)
+            lt_mean=f_kin_anal.life_time_dist(opt_norm,traj_inp,state,traj_inp.shape[0],traj_inp.shape[1],traj_inp.shape[2],num_states)
+        elif traj in ['NODES','Nodes','nodes']:
+            traj_inp=pyn_math.standard_traj(self.traj_nodes,particles=self.particles,dimensions=1)
+            lt_mean=f_kin_anal.life_time_dist(opt_norm,traj_inp,state,traj_inp.shape[0],traj_inp.shape[1],traj_inp.shape[2],num_states)
+        else:
+            print '# A readable traj is needed'
+            return
+
 
         lt_dist=copy.deepcopy(f_kin_anal.distrib)
         lt_x=copy.deepcopy(f_kin_anal.distrib_x)
