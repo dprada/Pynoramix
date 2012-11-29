@@ -162,7 +162,7 @@ io_formats/libxdrfile.so: xdrfile-1.1.1.tar.gz
 	cp xdrfiles/lib/$(lxdrlib) io_formats/libxdrfile.so; rm -r xdrfiles; fi
 
 f90_libraries: pyn_fort_general.so pyn_water.so pyn_fort_enm.so pyn_fort_net.so pyn_fort_math.so pyn_fort_anal_trajs.so \
-	io_formats/libdcdfile.so io_formats/libbinfile.so io_formats/libcell2box.so
+	pyn_fort_kin_anal.so io_formats/libdcdfile.so io_formats/libbinfile.so io_formats/libcell2box.so
 
 pyn_fort_general.so: pyn_fort_general.f90
 	@ echo '>>>>>> Compiling' $@ >> INSTALL.log
@@ -197,6 +197,12 @@ pyn_fort_math.so: pyn_fort_math.f90
 pyn_fort_anal_trajs.so: pyn_fort_anal_trajs.f90
 	@ echo '>>>>>> Compiling' $@ >> INSTALL.log
 	@ $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) --fcompiler=$(FTYPE) -c -m pyn_fort_anal_trajs pyn_fort_anal_trajs.f90 $(LAPACK_LIBS) $(SOUT)
+	@ if [ ! -e $@ ]; then echo '> Error compiling' $@ ': check the file INSTALL.log'; fi
+	@ if [ -e $@ ]; then echo '>' $@ '...   OK'; fi
+
+pyn_fort_kin_anal.so: pyn_fort_kin_anal.f90
+	@ echo '>>>>>> Compiling' $@ >> INSTALL.log
+	@ $(F2PY) --opt=$(FOPTS) --f90flags=$(FFLAGS) --fcompiler=$(FTYPE) -c -m pyn_fort_kin_anal pyn_fort_kin_anal.f90 $(LAPACK_LIBS) $(SOUT)
 	@ if [ ! -e $@ ]; then echo '> Error compiling' $@ ': check the file INSTALL.log'; fi
 	@ if [ -e $@ ]; then echo '>' $@ '...   OK'; fi
 

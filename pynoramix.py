@@ -24,6 +24,7 @@ from pyn_cl_set import *
 from pyn_cl_coors import *
 import pyn_fort_general as f
 from pyn_cl_anal_trajs import *
+from pyn_cl_kin_anal import *
 
 # Water:
 from pyn_cl_water import *
