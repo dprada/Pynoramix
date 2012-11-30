@@ -230,28 +230,49 @@ class kinetic_analysis():
                                               norm=norm,cumul=cumul)
 
 
-    def life_time(self,traj=None,state=None,segment=None,mean=False,norm=False,verbose=False):
+    def life_time(self,traj=None,state=None,segment=None,sel_dim=0,mean=False,norm=False,verbose=False):
 
         opt_mean=0
         opt_norm=0
+        opt_segm=0
         if (mean):
             opt_mean=1
         if (norm):
             opt_norm=1
+        if (segment):
+            opt_segm=1
 
-        if type(state) in [int,float]:
+        if type(sel_dim) in [int,float]:
+            sel_dim=[sel_dim]
+            num_sel_dim=1
+        elif type(sel_dim) in [list,tuple]:
+            num_sel_dim=len(sel_dim)
+
+        segments=numpy.zeros((self.dimensions,2),dtype=float,order='F')
+        if (opt_segm):
+            segment=numpy.array(segment)
+            if len(segment.shape)==1:
+                segment.resize(1,segment.shape[0])
+            for ii in range(num_sel_dim):
+                segments[sel_dim[ii],0]=segment[ii,0]
+                segments[sel_dim[ii],1]=segment[ii,1]
             num_states=1
-            state=[state]
-        elif type(state) in [list,tuple]:
-            num_states=len(state)
+            state=[0]
+        else:
+            if type(state) in [int,float]:
+                num_states=1
+                state=[state]
+            elif type(state) in [list,tuple]:
+                num_states=len(state)
 
         if traj == None:
             if self.__tr_mode_in_file__:
                 infile=self.file_traj
-                infile.unit=len(pyn_f90units)+1
-                pyn_f90units.append(infile.unit)
-                lt_mean=f_kin_anal.life_time_dist_infile(infile.name,infile.binary,infile.unit,opt_norm,state,,num_states)
-                pyn_f90units.remove(infile.unit)
+                infile.unit=len(pyn_math.pyn_f90units)+1
+                pyn_math.pyn_f90units.append(infile.unit)
+                lt_mean=f_kin_anal.life_time_dist_infile(infile.name,infile.binary,infile.unit,opt_norm,opt_segm,state,segments,\
+                                                             sel_dim,self.particles,self.dimensions,num_states,num_sel_dim)
+                pyn_math.pyn_f90units.remove(infile.unit)
                 infile.unit=None
 
             else:
@@ -631,6 +652,56 @@ class kinetic_analysis():
                 ranges=pyn_math.standard_ranges(ranges)
             self.network_nodes,self.traj_nodes=kinetic_network(self.traj,ranges=ranges,traj_out=True,verbose=verbose)                
             return
+
+    def prada1_largo(self,window=None,granularity=1.2,bins=20,ybins=10,segment=None,delta=None,extra_min=False,extra_max=False,\
+                         ram=4,increment=1,clusters=True,verbose=False):
+
+        if self.dimensions!=1:
+            print '# Method not implemented yet for more than 1D.'
+            return
+
+        bins,mmx,mmn,delta=pyn_math.parameters_bins(False,bins,segment,delta)
+
+        rv_min=0
+        rv_max=0
+
+        if extra_min:
+            rv_min=1
+            bins+=1
+        if extra_max:
+            rv_max=1
+            bins+=1
+
+        if verbose:
+            if rv_min:
+                print '# Extra node for x <', mmn
+            if rv_max:
+                print '# Extra node for x >', mmx
+
+        mmram=ram*1024*1024*1024
+        period=int(mmram/(num_parts*bins*8))
+
+        first_period=1
+        b_frame=window
+        e_frame=period
+
+        if not self.__tr_mode_in_file__:
+            '# Error: the trajectory must be in a file'
+            return
+
+        infile=self.file_traj
+        infile.unit=len(pyn_math.pyn_f90units)+1
+        pyn_math.pyn_f90units.append(infile.unit)
+        lt_mean=f_kin_anal.life_time_dist_infile(infile.name,infile.binary,infile.unit,opt_norm,opt_segm,state,segments,\
+                                                     sel_dim,self.particles,self.dimensions,num_states,num_sel_dim)
+        pyn_math.pyn_f90units.remove(infile.unit)
+        infile.unit=None
+
+        traj_aux=f_kin_anal.prada1_infile(ybins,bins,segment[0],delta,rv_min,rv_max,self.traj,window,self.particles,self.frames)
+
+        
+
+
 
     def prada1(self,window=None,granularity=1.2,bins=20,ybins=10,segment=None,delta=None,clusters=True,verbose=False):
 

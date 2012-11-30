@@ -8,6 +8,9 @@ MODULE GLOB
   
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::distrib,distrib_x
   
+  INTEGER,DIMENSION(:),ALLOCATABLE::contador_part
+  LOGICAL,DIMENSION(:),ALLOCATABLE::inside_old_part
+
   
   TYPE array_pointer
      INTEGER,DIMENSION(:),POINTER::p1
@@ -539,7 +542,85 @@ CONTAINS
     
     
   END SUBROUTINE prada1
+
+  subroutine prada1_infile (ybins,bins,min,delta_x,rv_min,rv_max,traj,tw,num_parts,len_traj,traj_out)
+    
+    IMPLICIT NONE
+    INTEGER,INTENT(IN)::ybins,bins,tw,len_traj,num_parts,rv_min,rv_max
+    DOUBLE PRECISION,INTENT(IN)::delta_x,min,max
+    DOUBLE PRECISION,DIMENSION(len_traj,num_parts,1),INTENT(IN)::traj
+    INTEGER,DIMENSION(len_traj-2*tw,num_parts,bins),INTENT(OUT)::traj_out
+    
+    INTEGER::Ltw,Ltw1
+    INTEGER::nn,ii,tt,kk,gg
+    DOUBLE PRECISION::delta_y
+    LOGICAL::filt_min,filt_max
+    
+    traj_out=0
+    Ltw=(2*tw+1)
+    Ltw1=Ltw-1
+    delta_y=(1.0d0*ybins)/(1.0d0*Ltw)
+    
+    filt_min=.FALSE.
+    filt_max=.FALSE.
+    
+    IF (rv_min==1) THEN
+       filt_min=.TRUE.
+    END IF
+    IF (rv_max==1) THEN
+       filt_max=.TRUE.
+    END IF
+
+    IF ((filt_min.eqv..TRUE.).OR.(filt_max.eqv..TRUE.)) THEN
+       DO nn=1,num_parts
+          DO ii=1,len_traj
+             tt=INT((traj(ii,nn,1)-min)/delta_x)+1
+             IF (filt_min.eqv..TRUE.) THEN
+                IF (tt<1) THEN
+                   tt=1
+                ELSE
+                   tt=tt+1
+                END IF
+             END IF
+             IF (tt>bins) tt=bins
+             DO kk=ii-tw,ii+tw
+                gg=kk-tw
+                IF ((gg>0).and.(gg<=(len_traj-Ltw1))) THEN
+                   traj_out(gg,nn,tt)=traj_out(gg,nn,tt)+1
+                END IF
+             END DO
+          END DO
+       END DO
+    ELSE
+       DO nn=1,num_parts
+          DO ii=1,len_traj
+             tt=INT((traj(ii,nn,1)-min)/delta_x)+1
+             IF (tt>bins) THEN
+                tt=bins
+             END IF
+             DO kk=ii-tw,ii+tw
+                gg=kk-tw
+                IF ((gg>0).and.(gg<=(len_traj-Ltw1))) THEN
+                   traj_out(gg,nn,tt)=traj_out(gg,nn,tt)+1
+                END IF
+             END DO
+          END DO
+       END DO
+    END IF
+    
+    DO nn=1,num_parts
+       DO ii=1,len_traj-Ltw1
+          DO kk=1,bins
+             tt=CEILING(delta_y*traj_out(ii,nn,kk))
+             traj_out(ii,nn,kk)=tt
+          END DO
+       END DO
+    END DO
+    
+    
+  END SUBROUTINE prada1_infile
   
+
 
   subroutine prada11 (ybins,bins,min,max,delta_x,rv_min,rv_max,traj,tw,num_parts,len_traj,traj_out)
     
@@ -960,7 +1041,139 @@ CONTAINS
     DEALLOCATE(distrib_aux)
     
   end subroutine life_time_dist
+
   
+  subroutine life_time_dist_infile (fname,fbinary,funit,opt_norm,opt_segm,state,segment,sel_dim,&
+    & num_parts,dims,num_states,num_sel_dim,mean)
+    
+    IMPLICIT NONE
+    CHARACTER*80,INTENT(IN)::fname
+    INTEGER,INTENT(IN)::funit,fbinary
+    INTEGER,INTENT(IN):: opt_norm,opt_segm,num_parts,dims,num_states,num_sel_dim
+    INTEGER,DIMENSION(num_sel_dim),INTENT(IN)::sel_dim
+    DOUBLE PRECISION,DIMENSION(dims,2),INTENT(IN):: segment
+    DOUBLE PRECISION,DIMENSION(num_states),INTENT(IN):: state
+    DOUBLE PRECISION,INTENT(OUT):: mean
+    
+    DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE:: traj
+    INTEGER:: ii,jj,kk,ll,gg,kkk,lll
+    LOGICAL::inside
+    INTEGER:: contador_total
+    DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::distrib_aux
+    INTEGER,DIMENSION(:),ALLOCATABLE::isel_dim
+
+    ALLOCATE(traj(num_parts,dims))
+    IF (ALLOCATED(distrib)) DEALLOCATE(distrib)
+    IF (ALLOCATED(distrib_x)) DEALLOCATE(distrib_x)
+    IF (ALLOCATED(contador_part)) DEALLOCATE(contador_part)
+    IF (ALLOCATED(inside_old_part)) DEALLOCATE(inside_old_part)
+    
+    gg=100
+    ALLOCATE(contador_part(num_parts),inside_old_part(num_parts))
+    ALLOCATE(distrib(gg),isel_dim(num_sel_dim))
+    isel_dim(:)=sel_dim(:)+1
+    contador_part=0
+    contador_total=0
+    mean=0.0d0
+    distrib=0.0d0
+    
+    IF (fbinary==1) THEN
+       OPEN(unit=funit,FILE=TRIM(fname),STATUS='old',action='READ',form='unformatted',access='stream')
+    ELSE
+       OPEN(unit=funit,FILE=TRIM(fname),STATUS='old',action='READ')
+    END IF
+
+    contador_part=0
+    inside_old_part=.false.
+    
+    DO
+       IF (fbinary==1) THEN
+          READ(funit,end=600) traj(:,:)
+       ELSE
+          READ(funit,*,end=600) traj(:,:)
+       END IF
+       
+       DO kkk=1,num_parts
+          inside=.false.
+          IF (opt_segm==0) THEN
+             DO lll=1,num_sel_dim
+                ll=sel_dim(lll)
+                DO jj=1,num_states
+                   IF (traj(kkk,ll)==state(jj)) THEN
+                      inside=.true.
+                      contador_part(kkk)=contador_part(kkk)+1
+                      EXIT
+                   END IF
+                END DO
+                IF (inside==.TRUE.) EXIT
+             END DO
+          ELSE
+             DO lll=1,num_sel_dim
+                ll=isel_dim(lll)
+                IF ((segment(ll,1)<=traj(kkk,ll)).and.(traj(kkk,ll)<segment(ll,2))) THEN
+                   inside=.true.
+                   contador_part(kkk)=contador_part(kkk)+1
+                   EXIT
+                END IF
+             END DO
+          END IF
+          
+          IF ((inside_old_part(kkk).eqv..true.).and.(inside.eqv..false.)) THEN
+             IF (contador_part(kkk)>gg) THEN
+                ALLOCATE(distrib_aux(gg))
+                distrib_aux(:)=distrib(:)
+                DEALLOCATE(distrib)
+                ALLOCATE(distrib(contador_part(kkk)))
+                distrib(:gg)=distrib_aux(:)
+                distrib((gg+1):)=0.0d0
+                gg=contador_part(kkk)
+                DEALLOCATE(distrib_aux)
+             END IF
+             distrib(contador_part(kkk))=distrib(contador_part(kkk))+1.0d0
+             contador_total=contador_total+contador_part(kkk)
+             mean=mean+1.0d0
+             contador_part(kkk)=0
+          END IF
+          
+          inside_old_part(kkk)=inside
+          
+       END DO
+    END DO
+    
+600 CLOSE(funit)
+
+    mean=(contador_total*1.0d0)/mean
+    
+    IF (opt_norm==1) THEN
+       distrib(:)=distrib(:)/(contador_total*1.0d0)
+    END IF
+    
+    jj=0
+    DO ii=1,gg
+       IF (distrib(ii)>0.0d0) THEN
+          jj=jj+1
+       END IF
+    END DO
+    
+    ALLOCATE(distrib_aux(jj),distrib_x(jj))
+    jj=0
+    DO ii=1,gg
+       IF (distrib(ii)>0.0d0) THEN
+          jj=jj+1
+          distrib_aux(jj)=distrib(ii)
+          distrib_x(jj)=ii
+       END IF
+    END DO
+    DEALLOCATE(distrib)
+    ALLOCATE(distrib(jj))
+    distrib=distrib_aux
+    DEALLOCATE(distrib_aux)
+    DEALLOCATE(contador_part,inside_old_part,isel_dim,traj)
+
+  end subroutine life_time_dist_infile
+  
+
+
   subroutine fpt_dist (opt_norm,opt_from_state,opt_from_segment,opt_to_state,opt_to_segment, &
        from_state,from_segment,to_state,to_segment,traj,num_frames,num_parts,dims,from_num_states,to_num_states,mean)
     

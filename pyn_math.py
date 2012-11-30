@@ -131,6 +131,7 @@ def parameters_bins(traj=None,bins=None,segment=None,delta=None):
 
 def histogram(traj,bins=20,segment=None,delta=None,select_dim=0,norm=False,cumul=False,in_file=False,by_frame=False):
     
+    infile=in_file
     opt_norm=0
     if norm:
         opt_norm=1
@@ -145,7 +146,7 @@ def histogram(traj,bins=20,segment=None,delta=None,select_dim=0,norm=False,cumul
 
     else:
 
-        if in_file:
+        if infile:
             infile.unit=len(pyn_f90units)+1
             pyn_f90units.append(infile.unit)
             select_dim+=1
