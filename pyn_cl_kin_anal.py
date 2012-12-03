@@ -1,4 +1,5 @@
 from pyn_fort_kin_anal import glob as f_kin_anal
+from pyn_fort_kin_anal import bindata as libbin
 from pyn_cl_net import *
 import pyn_math as pyn_math
 import numpy
@@ -23,6 +24,7 @@ class pyn_file():
         self.frames=frames
         self.particles=particles
         self.dimensions=dimensions
+        self.coor_int=False
 
         if self.name.endswith('.bin'):
             self.binary=True
@@ -35,21 +37,51 @@ class pyn_file():
         print '# Opened:',self.io
         print '# Position:',self.iopos
         print '# End:',self.ioend
-        print '# Frames:',self.frames
+        if self.frames==None:
+            print '# Frames: Needed!!!'
+        else:
+            print '# Frames:',self.frames
         print '# Particles:',self.particles
         print '# Dimensions:',self.dimensions
 
     def open(self):
 
-        self.file=open(self.name,self.opt)
+        if self.binary:
+            self.unit=len(pyn_math.pyn_f90units)+1
+            pyn_math.pyn_f90units.append(self.unit)
+            libbin.fopen_read(self.unit,self.name)
+        else:
+            self.file=open(self.name,self.opt)
+
         self.io=True
         self.ioend=False
 
     def close(self):
 
-        self.file.close()
+        if self.binary:
+            libbin.fclose(self.unit)
+            pyn_math.pyn_f90units.remove(infile.unit)
+            self.unit=None
+        else:
+            self.file.close()
+
         self.io=False
         self.ioend=False
+
+    def read_frame(self,frame=0):
+
+        if self.coor_int:
+            return libbin.read_int_frame(self.unit,frame,self.particles,self.dimensions)
+        else:
+            return libbin.read_float_frame(self.unit,frame,self.particles,self.dimensions)
+
+    def read_coor(self,frame=0,particle=0,dimension=0):
+
+        if self.coor_int:
+            return libbin.read_int_coor(self.unit,frame,particle,dimension,self.particles,self.dimensions)
+        else:
+            return libbin.read_float_coor(self.unit,frame,particle,dimension,self.particles,self.dimensions)
+
 
 class kinetic_analysis():
 
@@ -186,7 +218,7 @@ class kinetic_analysis():
 
             if self.__tr_mode_in_file__:
 
-                self.file_traj=pyn_file(name=traject,frames=0,particles=particles,dimensions=dimensions)
+                self.file_traj=pyn_file(name=traject,frames=frames,particles=particles,dimensions=dimensions)
 
                 if self.dimensions==None or self.particles==None:
                     print '# Error: Input variables "dimensions" and "particles" needed.'
@@ -678,29 +710,60 @@ class kinetic_analysis():
             if rv_max:
                 print '# Extra node for x >', mmx
 
-        mmram=ram*1024*1024*1024
-        period=int(mmram/(num_parts*bins*8))
-
-        first_period=1
-        b_frame=window
-        e_frame=period
 
         if not self.__tr_mode_in_file__:
             '# Error: the trajectory must be in a file'
             return
 
-        infile=self.file_traj
-        infile.unit=len(pyn_math.pyn_f90units)+1
-        pyn_math.pyn_f90units.append(infile.unit)
-        lt_mean=f_kin_anal.life_time_dist_infile(infile.name,infile.binary,infile.unit,opt_norm,opt_segm,state,segments,\
-                                                     sel_dim,self.particles,self.dimensions,num_states,num_sel_dim)
+        self.network=kinetic_network()
+
+        mmram=ram*1024*1024*1024
+        iterations=int(mmram/(num_parts*bins*8))
+        
+        b_frame=window*increment
+        e_frame=infile.frames-window*increment
+
+        first_period=1
+        salida=1
+
+        while (b_frame<e_frame):
+            
+            traj_aux,salida=f_kin_anal.prada1_infile(infile.unit,ybins,bins,segment[0],delta,rv_min,rv_max,\
+                                                  first_period,b_frame,iterations,increment,window,self.particles,self.dimensions)
+            first_period=0
+            ranges=pyn_math.build_ranges(traj_aux)
+            network_per=kinetic_network(traj_aux,ranges=ranges,traj_out=False,verbose=False)
+            self.network.merge_net(network_per,verbose=False)
+            del(traj_aux)
+            del(network_per)
+
+            b_frame+=iterations*increment
+            if (b_frame+iterations*increment)>e_frame:
+                iterations=((e_frame-b_frame)/increment)
+                
+        # cerrar unidad
         pyn_math.pyn_f90units.remove(infile.unit)
         infile.unit=None
 
-        traj_aux=f_kin_anal.prada1_infile(ybins,bins,segment[0],delta,rv_min,rv_max,self.traj,window,self.particles,self.frames)
+        self.__offset__=window
 
-        
-
+        if clusters:
+         
+            self.network.symmetrize(new=False,verbose=verbose)
+         
+            self.network.mcl(granularity=granularity,pruning=True,verbose=verbose)
+         
+            num_nodes=self.network.num_nodes
+            aux_list=numpy.empty(num_nodes,dtype=int,order='F')
+            for ii in range(num_nodes):
+                aux_list[ii]=self.network.node[ii].cluster
+         
+            new_num_frames=self.traj_nodes.shape[0]
+            self.traj_clusters=f_kin_anal.trajnodes2trajclusters(aux_list,self.traj_nodes,num_nodes,new_num_frames,self.particles)
+            
+            del(num_nodes,new_num_frames,aux_list)
+         
+            self.__type_clusters__='prada1'
 
 
     def prada1(self,window=None,granularity=1.2,bins=20,ybins=10,segment=None,delta=None,clusters=True,verbose=False):
