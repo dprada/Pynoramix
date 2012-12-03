@@ -60,7 +60,7 @@ class pyn_file():
 
         if self.binary:
             libbin.fclose(self.unit)
-            pyn_math.pyn_f90units.remove(infile.unit)
+            pyn_math.pyn_f90units.remove(self.unit)
             self.unit=None
         else:
             self.file.close()
@@ -81,6 +81,13 @@ class pyn_file():
             return libbin.read_int_coor(self.unit,frame,particle,dimension,self.particles,self.dimensions)
         else:
             return libbin.read_float_coor(self.unit,frame,particle,dimension,self.particles,self.dimensions)
+
+    def check_length (self):
+
+        if self.coor_int:
+            return libbin.check_int_length(self.unit,self.particles,self.dimensions)
+        else:
+            return libbin.check_float_length(self.unit,self.particles,self.dimensions)
 
 
 class kinetic_analysis():
@@ -237,7 +244,10 @@ class kinetic_analysis():
 
     def info(self):
 
-        print '# ',self.frames,'frames,',self.particles,'particles,',self.dimensions,'dimensions.'
+        if self.__tr_mode_in_file__:
+            print '# In file', self.file_traj.name,':'
+
+        print '#',self.frames,'frames,',self.particles,'particles,',self.dimensions,'dimensions.'
 
     def histogram(self,dimension=None,node=None,cluster=None,bins=20,segment=None,delta=None,select_dim=0,norm=False,cumul=False):
 
@@ -710,30 +720,34 @@ class kinetic_analysis():
             if rv_max:
                 print '# Extra node for x >', mmx
 
-
         if not self.__tr_mode_in_file__:
             '# Error: the trajectory must be in a file'
             return
 
-        self.network=kinetic_network()
+        self.network=network(kinetic=True,verbose=False)
+
+        self.file_traj.open()
 
         mmram=ram*1024*1024*1024
-        iterations=int(mmram/(num_parts*bins*8))
+        iterations=int(mmram/(self.particles*bins*8))
         
         b_frame=window*increment
-        e_frame=infile.frames-window*increment
+        e_frame=self.file_traj.frames-window*increment
 
         first_period=1
         salida=1
 
-        while (b_frame<e_frame):
-            
-            traj_aux,salida=f_kin_anal.prada1_infile(infile.unit,ybins,bins,segment[0],delta,rv_min,rv_max,\
-                                                  first_period,b_frame,iterations,increment,window,self.particles,self.dimensions)
-            first_period=0
+        if (b_frame+iterations*increment)>e_frame:
+            iterations=((e_frame-b_frame)/increment)
+
+        while (iterations>0):
+
+            print b_frame+iterations*increment
+            traj_aux=f_kin_anal.prada1_infile(self.file_traj.unit,ybins,bins,segment[0],delta,rv_min,rv_max,\
+                                                  b_frame,iterations,increment,window,self.particles,self.dimensions)
             ranges=pyn_math.build_ranges(traj_aux)
             network_per=kinetic_network(traj_aux,ranges=ranges,traj_out=False,verbose=False)
-            self.network.merge_net(network_per,verbose=False)
+            self.network.merge_net(network_per,verbose=True)
             del(traj_aux)
             del(network_per)
 
@@ -742,12 +756,13 @@ class kinetic_analysis():
                 iterations=((e_frame-b_frame)/increment)
                 
         # cerrar unidad
-        pyn_math.pyn_f90units.remove(infile.unit)
-        infile.unit=None
+        self.file_traj.close()
 
         self.__offset__=window
 
         if clusters:
+
+            print '# Entra a clusters'
          
             self.network.symmetrize(new=False,verbose=verbose)
          

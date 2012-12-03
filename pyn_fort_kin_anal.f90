@@ -69,6 +69,60 @@ MODULE BINDATA
     
   END SUBROUTINE read_int_coor
 
+  SUBROUTINE check_int_length(funit,num_parts,dimensions,length)
+
+    INTEGER,INTENT(IN)::funit,num_parts,dimensions
+    INTEGER,INTENT(OUT)::length
+
+    INTEGER,DIMENSION(:,:),ALLOCATABLE::coors
+
+    ALLOCATE(coors(num_parts,dimensions))
+
+    length=0
+
+    rewind(funit)
+
+    DO
+
+       READ(funit,end=700) coors(:,:)
+       length=length+1
+
+    END DO
+
+700 rewind(funit)
+
+    DEALLOCATE(coors)
+
+  END SUBROUTINE check_int_length
+
+  SUBROUTINE check_float_length(funit,num_parts,dimensions,length)
+
+    INTEGER,INTENT(IN)::funit,num_parts,dimensions
+    INTEGER,INTENT(OUT)::length
+
+    DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::coors
+
+    ALLOCATE(coors(num_parts,dimensions))
+
+    length=0
+
+    rewind(funit)
+
+    DO
+
+       READ(funit,end=701) coors(:,:)
+       length=length+1
+
+    END DO
+
+701 rewind(funit)
+
+    DEALLOCATE(coors)
+
+  END SUBROUTINE check_float_length
+
+
+
 END MODULE BINDATA
 
 MODULE GLOB
@@ -619,90 +673,127 @@ CONTAINS
     
   END SUBROUTINE prada1
 
-!  subroutine prada1_infile (fname,funit,ybins,bins,min,delta_x,rv_min,rv_max,fperiod,bframe,iterations,increment,tw,num_parts,traj_out,salida)
-!    
-!    IMPLICIT NONE
-!    CHARACTER*80,INTENT(IN)::fname
-!    INTEGER,INTENT(IN)::funit,fperiod,bframe,iterations,increment
-!    INTEGER,INTENT(IN)::ybins,bins,tw,len_traj,num_parts,rv_min,rv_max
-!    DOUBLE PRECISION,INTENT(IN)::delta_x,min,max
-!    INTEGER,DIMENSION(iterations,num_parts,bins),INTENT(OUT)::traj_out
-!    INTEGER,INTENT(OUT)::salida
-!    
-!    DOUBLE PRECISION,DIMENSION(len_traj,num_parts,1),INTENT(IN)::traj
-! 
-!    INTEGER::Ltw,Ltw1
-!    INTEGER::nn,ii,tt,kk,gg
-!    DOUBLE PRECISION::delta_y
-!    LOGICAL::filt_min,filt_max
-!    
-!    IF (fperiod==1) THEN
-!       OPEN(unit=funit,FILE=TRIM(fname),STATUS='old',action='READ',form='unformatted',access='stream')
-!    END IF
-! 
-!    traj_out=0
-!    Ltw=(2*tw+1)
-!    Ltw1=Ltw-1
-!    delta_y=(1.0d0*ybins)/(1.0d0*Ltw)
-!    
-!    filt_min=.FALSE.
-!    filt_max=.FALSE.
-!    
-!    IF (rv_min==1) THEN
-!       filt_min=.TRUE.
-!    END IF
-!    IF (rv_max==1) THEN
-!       filt_max=.TRUE.
-!    END IF
-! 
-!    IF ((filt_min.eqv..TRUE.).OR.(filt_max.eqv..TRUE.)) THEN
-!       DO nn=1,num_parts
-!          DO ii=1,len_traj
-!             tt=INT((traj(ii,nn,1)-min)/delta_x)+1
-!             IF (filt_min.eqv..TRUE.) THEN
-!                IF (tt<1) THEN
-!                   tt=1
-!                ELSE
-!                   tt=tt+1
-!                END IF
-!             END IF
-!             IF (tt>bins) tt=bins
-!             DO kk=ii-tw,ii+tw
-!                gg=kk-tw
-!                IF ((gg>0).and.(gg<=(len_traj-Ltw1))) THEN
-!                   traj_out(gg,nn,tt)=traj_out(gg,nn,tt)+1
-!                END IF
-!             END DO
-!          END DO
-!       END DO
-!    ELSE
-!       DO nn=1,num_parts
-!          DO ii=1,len_traj
-!             tt=INT((traj(ii,nn,1)-min)/delta_x)+1
-!             IF (tt>bins) THEN
-!                tt=bins
-!             END IF
-!             DO kk=ii-tw,ii+tw
-!                gg=kk-tw
-!                IF ((gg>0).and.(gg<=(len_traj-Ltw1))) THEN
-!                   traj_out(gg,nn,tt)=traj_out(gg,nn,tt)+1
-!                END IF
-!             END DO
-!          END DO
-!       END DO
-!    END IF
-!    
-!    DO nn=1,num_parts
-!       DO ii=1,len_traj-Ltw1
-!          DO kk=1,bins
-!             tt=CEILING(delta_y*traj_out(ii,nn,kk))
-!             traj_out(ii,nn,kk)=tt
-!          END DO
-!       END DO
+  subroutine prada1_infile (funit,ybins,bins,min,delta_x,rv_min,rv_max,bframe,iterations,increment,tw,num_parts,dimensions,traj_out)
+    
+    IMPLICIT NONE
+    INTEGER,INTENT(IN)::funit,bframe,iterations,increment
+    INTEGER,INTENT(IN)::ybins,bins,tw,num_parts,dimensions,rv_min,rv_max
+    DOUBLE PRECISION,INTENT(IN)::delta_x,min
+    INTEGER,DIMENSION(iterations+1,num_parts,bins),INTENT(OUT)::traj_out
+    
+    DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::coors
+    INTEGER,DIMENSION(:,:),ALLOCATABLE::prov_hist
+    INTEGER,DIMENSION(:),ALLOCATABLE::deantes
+
+    INTEGER::corre
+    INTEGER::Ltw,Ltw1
+    INTEGER::nn,ii,jj,tt,kk,gg
+    DOUBLE PRECISION::delta_y
+    LOGICAL::filt_min,filt_max
+    
+    ALLOCATE(coors(num_parts,dimensions))
+    ALLOCATE(prov_hist(num_parts,bins))
+
+    prov_hist=0
+
+    traj_out=0
+    Ltw=(2*tw+1)
+    Ltw1=Ltw-1
+    delta_y=(1.0d0*ybins)/(1.0d0*Ltw)
+    
+    filt_min=.FALSE.
+    filt_max=.FALSE.
+    
+    IF (rv_min==1) THEN
+       filt_min=.TRUE.
+    END IF
+    IF (rv_max==1) THEN
+       filt_max=.TRUE.
+    END IF
+
+    corre=1
+
+    ii=bframe
+    DO jj=ii-tw*increment,ii+tw*increment,increment
+       CALL read_float_frame(funit,jj,num_parts,dimensions,coors)
+       DO nn=1,num_parts
+          tt=INT((coors(nn,1)-min)/delta_x)+1
+          IF (filt_min.eqv..TRUE.) THEN
+             IF (tt<1) THEN
+                tt=1
+             ELSE
+                tt=tt+1
+             END IF
+          END IF
+          IF (filt_max.eqv..TRUE.) THEN
+             IF (tt>bins) tt=bins
+          END IF
+          prov_hist(nn,tt)=prov_hist(nn,tt)+1
+       END DO
+    END DO
+
+    traj_out(corre,:,:)=prov_hist(:,:)
+
+!    print*,'####',iterations
+
+!    print*,ii-tw*increment,ii,ii+tw*increment
+
+    DO jj=1,iterations
+       corre=corre+1
+       ! Quito el de antes
+       CALL read_float_frame(funit,ii-tw*increment,num_parts,dimensions,coors)
+       DO nn=1,num_parts
+          tt=INT((coors(nn,1)-min)/delta_x)+1
+          IF (filt_min.eqv..TRUE.) THEN
+             IF (tt<1) THEN
+                tt=1
+             ELSE
+                tt=tt+1
+             END IF
+          END IF
+          IF (filt_max.eqv..TRUE.) THEN
+             IF (tt>bins) tt=bins
+          END IF
+          prov_hist(nn,tt)=prov_hist(nn,tt)-1
+       END DO
+       ii=ii+increment
+       CALL read_float_frame(funit,ii+tw*increment,num_parts,dimensions,coors)
+       DO nn=1,num_parts
+          tt=INT((coors(nn,1)-min)/delta_x)+1
+          IF (filt_min.eqv..TRUE.) THEN
+             IF (tt<1) THEN
+                tt=1
+             ELSE
+                tt=tt+1
+             END IF
+          END IF
+          IF (filt_max.eqv..TRUE.) THEN
+             IF (tt>bins) tt=bins
+          END IF
+          prov_hist(nn,tt)=prov_hist(nn,tt)+1
+       END DO
+       traj_out(corre,:,:)=prov_hist(:,:)
+    END DO
+
+!    DO jj=1,iterations
+!       ii=ii+increment
+!       print*,ii-tw*increment,ii,ii+tw*increment
 !    END DO
-!    
-!    
-!  END SUBROUTINE prada1_infile
+
+!    print*,bframe,
+
+
+    DO nn=1,num_parts
+       DO ii=1,iterations+1
+          DO kk=1,bins
+             tt=CEILING(delta_y*traj_out(ii,nn,kk))
+             traj_out(ii,nn,kk)=tt
+          END DO
+       END DO
+    END DO
+    
+    
+  END SUBROUTINE prada1_infile
   
 
 
