@@ -1061,7 +1061,7 @@ class network():
             pass
 
 
-    def mcl(self,granularity=1.5,eps=0.005,iterations=0,pruning=True,alt_links=False,verbose=True):
+    def mcl(self,granularity=1.5,eps=0.005,iterations=0,pruning=True,alt_links=False,verbose=True,ss=True):
 
         ## I have to reset previous clusters
 
@@ -1074,11 +1074,19 @@ class network():
         else:
             if pruning:
 
-                fff=open('.input_mcl','w')
-                for ii in range(self.num_nodes):
-                    for jj,kk in self.node[ii].link.iteritems():
-                        print >> fff, ii,jj,kk
-                fff.close()
+                if ss:
+                    fff=open('.input_mcl','w')
+                    for ii in range(self.num_nodes):
+                        for jj,kk in self.node[ii].link.iteritems():
+                            if not jj<ii:
+                                print >> fff, ii,jj,kk
+                    fff.close()
+                else:
+                    fff=open('.input_mcl','w')
+                    for ii in range(self.num_nodes):
+                        for jj,kk in self.node[ii].link.iteritems():
+                            print >> fff, ii,jj,kk
+                    fff.close()
 
                 comando='mcl .input_mcl --abc -I '+str(granularity)+' -o .output_mcl > /dev/null 2>&1'
                 salida=system(comando)

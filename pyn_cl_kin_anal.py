@@ -68,6 +68,17 @@ class pyn_file():
         self.io=False
         self.ioend=False
 
+    def extract(self):
+
+        if self.binary:
+            if self.coor_int:
+                dd=numpy.empty((self.frames,self.particles,self.dimensions),dtype=int,order='F')
+            else:
+                dd=numpy.empty((self.frames,self.particles,self.dimensions),dtype=float,order='F')
+            for ii in range(self.frames):
+                dd[ii,:,:]=self.read_frame(frame=ii)
+            return dd
+
     def read_frame(self,frame=0):
 
         if self.coor_int:
@@ -201,24 +212,31 @@ class kinetic_analysis():
 
             if self.__tr_mode_in_ram__ and not self.__tr_mode_by_frame__:
 
-                self.file_traj=pyn_file(name=traject,opt='r')
-                self.frames = 0
+                if traject.endswith('.bin'):
+                    self.file_traj=pyn_file(name=traject,frames=frames,particles=particles,dimensions=dimensions,opt='r')
+                    self.file_traj.open()
+                    self.traj=self.file_traj.extract()
 
-                self.file_traj.open()
-                for line in self.file_traj.file: self.frames += 1
-                self.file_traj.close()
+                else:
 
-                self.traj=numpy.empty((self.frames,self.particles,self.dimensions),dtype=float,order='F')
-
-                self.file_traj.open()
-
-                gg=-1
-                for line in self.file_traj.file:
-                    line=line.split()
-                    gg+=1
-                    for kk in range(len(columns)):
-                        self.traj[gg,0,kk]=float(line[columns[kk]])
- 
+                    self.file_traj=pyn_file(name=traject,opt='r')
+                    self.frames = 0
+                    
+                    self.file_traj.open()
+                    for line in self.file_traj.file: self.frames += 1
+                    self.file_traj.close()
+                    
+                    self.traj=numpy.empty((self.frames,self.particles,self.dimensions),dtype=float,order='F')
+                    
+                    self.file_traj.open()
+                    
+                    gg=-1
+                    for line in self.file_traj.file:
+                        line=line.split()
+                        gg+=1
+                        for kk in range(len(columns)):
+                            self.traj[gg,0,kk]=float(line[columns[kk]])
+                            
                 self.file_traj.close()
 
                 self.traj=pyn_math.standard_traj(self.traj,self.particles,self.dimensions)
@@ -732,7 +750,7 @@ class kinetic_analysis():
         iterations=int(mmram/(self.particles*bins*8))
         
         b_frame=window*increment
-        e_frame=self.file_traj.frames-window*increment
+        e_frame=self.file_traj.frames-1-window*increment
 
         first_period=1
         salida=1
@@ -768,15 +786,15 @@ class kinetic_analysis():
          
             self.network.mcl(granularity=granularity,pruning=True,verbose=verbose)
          
-            num_nodes=self.network.num_nodes
-            aux_list=numpy.empty(num_nodes,dtype=int,order='F')
-            for ii in range(num_nodes):
-                aux_list[ii]=self.network.node[ii].cluster
-         
-            new_num_frames=self.traj_nodes.shape[0]
-            self.traj_clusters=f_kin_anal.trajnodes2trajclusters(aux_list,self.traj_nodes,num_nodes,new_num_frames,self.particles)
-            
-            del(num_nodes,new_num_frames,aux_list)
+            #num_nodes=self.network.num_nodes
+            #aux_list=numpy.empty(num_nodes,dtype=int,order='F')
+            #for ii in range(num_nodes):
+            #    aux_list[ii]=self.network.node[ii].cluster
+            # 
+            #new_num_frames=self.traj_nodes.shape[0]
+            #self.traj_clusters=f_kin_anal.trajnodes2trajclusters(aux_list,self.traj_nodes,num_nodes,new_num_frames,self.particles)
+            # 
+            #del(num_nodes,new_num_frames,aux_list)
          
             self.__type_clusters__='prada1'
 
@@ -809,7 +827,7 @@ class kinetic_analysis():
 
         ranges=pyn_math.build_ranges(traj_aux)
 
-        self.network,self.traj_nodes=kinetic_network(traj_aux,ranges=ranges,traj_out=True,verbose=False)
+        self.network,self.traj_nodes=kinetic_network(traj_aux,ranges=ranges,traj_out=True,verbose=verbose)
          
         del(traj_aux)
          
