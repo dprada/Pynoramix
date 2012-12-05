@@ -48,6 +48,8 @@ acceptors=[
 'atNE2' ,   # N for HIS (presence of H determines if donor-acceptor) (Not in GLN)
 'atO'   ,   # O for the main chain
 'atOY'   ,   # O for the main chain (In ACEMD terminal)
+'atOT1'   ,   # O for terminals
+'atOT2'   ,   # O for terminals
 'atOD1' ,   # O for ASN and ASP
 'atOD2' ,   # O for ASP
 'atOE1' ,   # O for GLN and GLU
