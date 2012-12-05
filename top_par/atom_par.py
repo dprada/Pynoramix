@@ -17,6 +17,7 @@ charge={
 
 donors=[
 'atN'   ,   # N for the main chain
+'atNT'  ,   # N for the main chain (in ACEMD terminal)
 'atNE'  ,   # N for ARG
 'atNH1' ,   # N for ARG
 'atNH2' ,   # N for ARG
@@ -46,6 +47,7 @@ acceptors=[
 'atND1' ,   # N for HIS (presence of H determines if donor-acceptor)
 'atNE2' ,   # N for HIS (presence of H determines if donor-acceptor) (Not in GLN)
 'atO'   ,   # O for the main chain
+'atOY'   ,   # O for the main chain (In ACEMD terminal)
 'atOD1' ,   # O for ASN and ASP
 'atOD2' ,   # O for ASP
 'atOE1' ,   # O for GLN and GLU

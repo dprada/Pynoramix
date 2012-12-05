@@ -81,6 +81,7 @@ atom={
 'HH32' : 'atHH32' ,    # opls.gro
 '3HH3' : 'atHH33' ,
 'HH33' : 'atHH33' ,    # opls.gro
+'HNT'  : 'atHT'    ,    # ACEMD (NME Terminal)
 'HY1'  : 'atHY1' ,    # ACEMD (ACE Terminal)
 'HY2'  : 'atHY2' ,    # ACEMD (ACE Terminal)
 'HY3'  : 'atHY3' ,    # ACEMD (ACE Terminal)
@@ -97,6 +98,7 @@ atom={
 'C'    : 'atC'    ,
 'CA'   : 'atCA'   ,
 'CAY'  : 'atCAY'  ,    # ACEMD (ACE Terminal)
+'CAT'  : 'atCAT'  ,    # ACEMD (NME Terminal)
 'CB'   : 'atCB'   ,
 'CD'   : 'atCD'   ,
 'CD1'  : 'atCD'   ,
@@ -210,6 +212,7 @@ atom_type={
 'atHH31': 'H'   , 
 'atHH32': 'H'   , 
 'atHH33': 'H'   ,
+'atHT'  : 'H'   , 
 'atHT1' : 'H'   , 
 'atHT2' : 'H'   , 
 'atHT3' : 'H'   ,
@@ -222,6 +225,7 @@ atom_type={
 'atHZ3' : 'H'   , 
 'atC'   : 'C'   , 
 'atCA'  : 'C'   ,
+'atCAT' : 'C'   ,
 'atCAY' : 'C'   ,
 'atCB'  : 'C'   , 
 'atCD'  : 'C'   , 
