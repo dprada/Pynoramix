@@ -27,8 +27,9 @@ MODULE BINDATA
     DOUBLE PRECISION,DIMENSION(num_parts,dimensions),INTENT(OUT)::coors
     
     INTEGER(KIND=8)::needle
-    
-    needle=frame*num_parts*dimensions*8+1
+
+    needle=frame
+    needle=needle*num_parts*dimensions*8+1
     READ(funit,pos=needle) coors(:,:)
     
   END SUBROUTINE read_float_frame
@@ -39,8 +40,9 @@ MODULE BINDATA
     DOUBLE PRECISION,INTENT(OUT)::coor
     
     INTEGER(KIND=8)::needle
-    
-    needle=frame*num_parts*dimensions*8+particle*dimensions*8+dim*8
+
+    needle=frame
+    needle=needle*num_parts*dimensions*8+particle*dimensions*8+dim*8+1
     READ(funit,pos=needle) coor
     
   END SUBROUTINE read_float_coor
@@ -52,7 +54,8 @@ MODULE BINDATA
     
     INTEGER(KIND=8)::needle
     
-    needle=frame*bits_frame
+    needle=frame
+    needle=needle*num_parts*dimensions*8+1
     READ(funit,pos=needle) coors(:,:)
     
   END SUBROUTINE read_int_frame
@@ -64,7 +67,8 @@ MODULE BINDATA
     
     INTEGER(KIND=8)::needle
     
-    needle=frame*num_parts*dimensions*8+particle*dimensions*8+dim*8
+    needle=frame
+    needle=needle*num_parts*dimensions*8+particle*dimensions*8+dim*8+1
     READ(funit,pos=needle) coor
     
   END SUBROUTINE read_int_coor

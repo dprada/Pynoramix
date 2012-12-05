@@ -47,7 +47,7 @@ class pyn_file():
     def open(self):
 
         if self.binary:
-            self.unit=len(pyn_math.pyn_f90units)+1
+            self.unit=len(pyn_math.pyn_f90units)+100
             pyn_math.pyn_f90units.append(self.unit)
             libbin.fopen_read(self.unit,self.name)
         else:
