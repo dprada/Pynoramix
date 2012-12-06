@@ -318,6 +318,303 @@ CONTAINS
     
   end subroutine traj2net
   
+  SUBROUTINE trajbinning2net(len_str,traj_full,ranges,bins,num_frames,num_parts,dimensions,tray)
+    
+    IMPLICIT NONE
+    INTEGER,INTENT(IN)::len_str,num_parts,num_frames,dimensions
+    DOUBLE PRECISION,DIMENSION(num_frames,num_parts,dimensions),INTENT(IN)::traj_full
+    DOUBLE PRECISION,DIMENSION(dimensions,2),INTENT(IN)::ranges
+    INTEGER,DIMENSION(dimensions),INTENT(IN)::bins
+    INTEGER,DIMENSION(num_frames,num_parts),INTENT(OUT)::tray
+    
+    DOUBLE PRECISION,DIMENSION(dimensions)::delta_l
+
+    INTEGER::N_nodes,Ktot
+    INTEGER::index
+    INTEGER::ii,jj,gg,kk,ll,hh,hhh,aa,bb
+    INTEGER::llevamos,cajon,contador
+    INTEGER::x,x2
+    
+    INTEGER,DIMENSION(:,:),ALLOCATABLE::indice
+    LOGICAL,DIMENSION(:,:),ALLOCATABLE::ocupado
+    INTEGER,DIMENSION(:),ALLOCATABLE::deantes,aux
+    CHARACTER*40::f1,f2,f3
+    
+    INTEGER,DIMENSION(:),ALLOCATABLE::SL,W,K_out
+    TYPE(array_pointer),DIMENSION(:),POINTER::C,WK_out
+    INTEGER::Kmax
+    INTEGER,DIMENSION(:),POINTER::aux_puntero,aux_puntero2
+    LOGICAL::switch
+    
+    delta_l=0.0d0
+    DO ii=1,dimensions
+       delta_l(ii)=(ranges(ii,2)-ranges(ii,1))/(1.0d0*bins(ii))
+    END DO
+
+    CALL free_memory_ts ()
+    
+    
+    IF ((dimensions>999999).or.(len_str>999999)) THEN
+       print*, 'ERROR in fortran traj2net'
+       stop
+    END IF
+    
+    
+    DO cajon=1,dimensions
+       
+       IF (cajon==1) THEN
+          llevamos=1
+          tray=1
+       ELSE
+          CALL SYSTEM ('mv trad_aux.aux trad_aux_old.aux')
+       END IF
+       
+       ALLOCATE(ocupado(llevamos,bins(cajon)),indice(llevamos,bins(cajon)))
+       ocupado=.false.
+       
+       DO ii=1,num_parts
+          DO jj=1,num_frames
+             bb=tray(jj,ii)
+             aa=traj_full(jj,ii,cajon)
+             ocupado(bb,aa)=.true.
+          END DO
+       END DO
+       
+       contador=0
+       
+       WRITE(f1,'(I6)') cajon
+       WRITE(f2,'(I6)') len_str
+       f3="(I,"//TRIM(ADJUSTL(f1))//"I"//TRIM(ADJUSTL(f2))//")"
+       
+       OPEN(21,FILE="trad_aux.aux",status="REPLACE",ACTION="WRITE")
+       IF (cajon==1) THEN
+          DO ii=1,llevamos
+             DO jj=ranges(1,1),ranges(1,2)
+                IF (ocupado(ii,jj).eqv..true.) THEN
+                   contador=contador+1
+                   indice(ii,jj)=contador
+                   WRITE(21,f3) contador,jj
+                END IF
+             END DO
+          END DO
+       ELSE
+          OPEN(61,FILE="trad_aux_old.aux",status="OLD",ACTION="READ")
+          ALLOCATE(deantes(cajon-1))         
+          DO ii=1,llevamos
+             READ(61,*) aa,deantes(:)
+             DO jj=ranges(cajon,1),ranges(cajon,2)
+                IF (ocupado(ii,jj).eqv..true.) THEN
+                   contador=contador+1
+                   WRITE(21,f3) contador,deantes(:),jj
+                   indice(ii,jj)=contador
+                END IF
+             END DO
+          END DO
+          DEALLOCATE(deantes)
+          CLOSE(61)
+       END IF
+       
+       CLOSE(21)
+       
+       DEALLOCATE(ocupado)
+       
+       DO ii=1,num_parts
+          DO jj=1,num_frames
+             bb=tray(jj,ii)
+             aa=traj_full(jj,ii,cajon)
+             tray(jj,ii)=indice(bb,aa)
+          END DO
+       END DO
+       
+       DEALLOCATE(indice)
+       llevamos=contador
+       
+       IF (cajon/=1) CALL SYSTEM('rm trad_aux_old.aux')
+       
+       !print*,'>>',cajon,llevamos
+    END DO
+    
+    N_nodes=llevamos  
+    ALLOCATE(labels(N_nodes,dimensions),deantes(dimensions))
+    OPEN(21,FILE="trad_aux.aux",status="OLD",ACTION="READ")
+    DO ii=1,N_nodes
+       READ(21,*) llevamos,deantes(:)
+       labels(ii,:)=deantes(:)
+    END DO
+    CLOSE(21)
+    DEALLOCATE(deantes)
+    CALL SYSTEM('rm trad_aux.aux')
+    ALLOCATE(C(N_nodes),K_out(N_nodes))
+    ALLOCATE(WK_out(N_nodes),SL(N_nodes),W(N_nodes))
+    ALLOCATE(aux_puntero(25000),aux_puntero2(25000))
+    
+    DO ii=1,N_nodes
+       ALLOCATE(C(ii)%p1(1),WK_out(ii)%p1(1))
+       C(ii)%p1(:)=0
+       WK_out(ii)%p1(:)=0
+    END DO
+    
+    SL=0
+    W=0
+    K_out=0
+    kk=0
+    x=0
+    x2=0
+    aux_puntero(:)=0
+    aux_puntero2(:)=0
+    contador=0
+    
+    DO index=1,num_parts
+       
+       x=tray(1,index)
+       contador=contador+1
+       x2=tray(2,index)
+       contador=contador+1
+       
+       DO ii=3,num_frames
+          
+          W(x)=W(x)+1
+          
+          switch=.true.
+          DO gg=1,K_out(x)
+             IF(C(x)%p1(gg)==x2) THEN
+                WK_out(x)%p1(gg)=WK_out(x)%p1(gg)+1
+                switch=.false.
+                EXIT
+             END IF
+          END DO
+          
+          IF (switch.eqv..true.) THEN
+             IF (K_out(x)>0) THEN
+                gg=K_out(x)
+                IF (gg>25000) THEN
+                   print*,'tenemos un problema'
+                   stop
+                END IF
+                aux_puntero(1:gg)=C(x)%p1(:)
+                aux_puntero2(1:gg)=WK_out(x)%p1(:)
+                DEALLOCATE(C(x)%p1,WK_out(x)%p1)
+                ALLOCATE(C(x)%p1(gg+1),WK_out(x)%p1(gg+1))
+                C(x)%p1(1:gg)=aux_puntero(:)
+                WK_out(x)%p1(1:gg)=aux_puntero2(:)
+                C(x)%p1(gg+1)=x2
+                WK_out(x)%p1(gg+1)=1
+                K_out(x)=K_out(x)+1
+             ELSE
+                WK_out(x)%p1(1)=1
+                C(x)%p1(1)=x2
+                K_out(x)=1
+             END IF
+          END IF
+          
+          x=x2  !!bin
+          
+          x2=tray(ii,index)
+          contador=contador+1
+          
+       END DO
+       
+       W(x)=W(x)+1
+       
+       switch=.true.
+       
+       DO gg=1,K_out(x)
+          IF(C(x)%p1(gg)==x2) THEN
+             WK_out(x)%p1(gg)=WK_out(x)%p1(gg)+1
+             switch=.false.
+             EXIT
+          END IF
+       END DO
+       
+       IF (switch.eqv..true.) THEN
+          IF (K_out(x)>0) THEN
+             gg=K_out(x)
+             IF (gg>25000) THEN
+                print*,'tenemos un problema'
+                stop
+             END IF
+             aux_puntero(1:gg)=C(x)%p1(:)
+             aux_puntero2(1:gg)=WK_out(x)%p1(:)
+             DEALLOCATE(C(x)%p1,WK_out(x)%p1)
+             ALLOCATE(C(x)%p1(gg+1),WK_out(x)%p1(gg+1))
+             C(x)%p1(1:gg)=aux_puntero(:)
+             WK_out(x)%p1(1:gg)=aux_puntero2(:)
+             C(x)%p1(gg+1)=x2
+             WK_out(x)%p1(gg+1)=1
+             K_out(x)=K_out(x)+1
+          ELSE
+             WK_out(x)%p1(1)=1
+             C(x)%p1(1)=x2
+             K_out(x)=1
+          END IF
+       END IF
+       
+       x=x2
+       contador=contador+1
+       
+       W(x)=W(x)+1
+       
+    END DO
+    
+    Kmax=maxval(K_out(:))
+    Ktot=sum(K_out(:))
+    
+    
+    ALLOCATE(T_start(N_nodes+1),T_ind(Ktot),T_tau(Ktot))
+    T_start=0
+    T_ind=0
+    T_tau=0
+    
+    ll=0
+    DO ii=1,N_nodes
+       
+       hh=0
+       switch=.false.
+       DO gg=1,K_out(ii)
+          IF (C(ii)%p1(gg)==ii) THEN
+             switch=.true.
+             exit
+          END IF
+       END DO
+       
+       T_start(ii)=ll
+       IF (switch.eqv..true.) THEN
+          ll=ll+1
+          T_ind(ll)=ii
+          hhh=WK_out(ii)%p1(gg)
+          T_tau(ll)=hhh
+          hh=hh+hhh
+          DO jj=1,K_out(ii)
+             IF (jj/=gg) THEN
+                ll=ll+1
+                T_ind(ll)=C(ii)%p1(jj)
+                hhh=WK_out(ii)%p1(jj)
+                T_tau(ll)=hhh
+                hh=hh+hhh
+             END IF
+          END DO
+       ELSE
+          DO jj=1,K_out(ii)
+             ll=ll+1
+             T_ind(ll)=C(ii)%p1(jj)
+             hhh=WK_out(ii)%p1(jj)
+             hh=hh+hhh
+             T_tau(ll)=hhh
+          END DO
+       END IF
+       
+    END DO
+    
+    T_start(N_nodes+1)=ll
+    
+    tray=tray-1
+    DEALLOCATE(C,K_out)
+    DEALLOCATE(WK_out,SL,W)
+    DEALLOCATE(aux_puntero,aux_puntero2)
+    
+  end subroutine traj2net
+  
+
   SUBROUTINE trajnodes2trajclusters (aux_list,trajnodes,num_nodes,frames,particles,trajout)
     
     IMPLICIT NONE

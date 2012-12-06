@@ -1267,7 +1267,7 @@ class network():
 #        pass
 
 
-def kinetic_network(traj=None,ranges=None,traj_out=False,verbose=True):
+def kinetic_network(traj=None,ranges=None,bins=None,traj_out=False,verbose=True):
 
     prov_net=network(directed=True,kinetic=True,verbose=False)
 
@@ -1288,8 +1288,15 @@ def kinetic_network(traj=None,ranges=None,traj_out=False,verbose=True):
                 
     len_str=len_str+1
 
+    if bins!=None:
+        if len(bins)!=dimensions:
+            print '# The length of bins must be equal to the length of ranges'
+            return
+        bins=numpy.array(bins,dtype=int,order='F')
+        traj_net=f_trajs.trajbinning2net(len_str,traj,ranges,bins,num_frames,num_parts,dimensions)
+    else:
+        traj_net=f_trajs.traj2net(len_str,traj,ranges,num_frames,num_parts,dimensions)
 
-    traj_net=f_trajs.traj2net(len_str,traj,ranges,num_frames,num_parts,dimensions)
     traj_net=pyn_math.standard_traj(traj_net,particles=num_parts,dimensions=1)
 
     prov_net.Ts=True

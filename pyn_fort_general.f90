@@ -55,6 +55,36 @@ MODULE GLOB
 
 CONTAINS
 
+SUBROUTINE PERPENDICULAR_NORMED_VECT (vect1,vect2,vect_out)
+
+  DOUBLE PRECISION,DIMENSION(3),INTENT(IN)::vect1,vect2
+  DOUBLE PRECISION,DIMENSION(3),INTENT(OUT)::vect_out
+
+  CALL PRODUCT_VECT(vect1,vect2,vect_out)
+  CALL NORMALIZE_VECT(vect_out)
+
+END SUBROUTINE PERPENDICULAR_NORMED_VECT
+
+SUBROUTINE PRODUCT_VECT(a,b,normal)
+
+  DOUBLE PRECISION,DIMENSION(3),INTENT(IN)::a,b
+  DOUBLE PRECISION,DIMENSION(3),INTENT(OUT)::normal
+  
+  normal(1)=a(2)*b(3)-a(3)*b(2)
+  normal(2)=-a(1)*b(3)+a(3)*b(1)
+  normal(3)=a(1)*b(2)-a(2)*b(1)
+
+END SUBROUTINE PRODUCT_VECT
+
+SUBROUTINE NORMALIZE_VECT (a)
+
+  DOUBLE PRECISION,DIMENSION(3),INTENT(INOUT)::a
+  DOUBLE PRECISION::norm
+
+  norm=sqrt(dot_product(a,a))
+  a=a/norm
+
+END SUBROUTINE NORMALIZE_VECT
 
 
 SUBROUTINE PBC(vector,box,ortho)
@@ -1081,6 +1111,92 @@ DEALLOCATE(cdm,vect_aux,matrix,values)
 
 
 END SUBROUTINE PRINCIPAL_GEOMETRIC_AXIS
+
+
+SUBROUTINE DIHEDRAL_ANGLES (dih_angs,coors,box,ortho,list_angs,num_dih_angs,natom)
+
+integer,intent(in)::ortho,natom,num_dih_angs
+INTEGER,DIMENSION(num_dih_angs,4),INTENT(IN)::list_angs
+double precision,dimension(natom,3),intent(in)::coors
+double precision,DIMENSION(3,3),INTENT(IN)::box
+DOUBLE PRECISION,DIMENSION(num_dih_angs),INTENT(OUT)::dih_angs
+
+INTEGER::ii,jj
+DOUBLE PRECISION,DIMENSION(3)::vect1,vect2,vect3
+DOUBLE PRECISION::ang
+
+DO ii=1,num_dih_angs
+   vect1=coors(list_angs(ii,2)+1,:)-coors(list_angs(ii,1)+1,:)
+   vect2=coors(list_angs(ii,3)+1,:)-coors(list_angs(ii,2)+1,:)
+   vect3=coors(list_angs(ii,4)+1,:)-coors(list_angs(ii,3)+1,:)
+   CALL PBC (vect1,box,ortho)
+   CALL PBC (vect2,box,ortho)
+   CALL PBC (vect3,box,ortho)
+   CALL calculo_dihed (vect1,vect2,vect3,ang)
+   dih_angs(ii)=ang
+END DO
+
+END SUBROUTINE DIHEDRAL_ANGLES
+
+
+
+SUBROUTINE calculo_dihed (vec1,vec2,vec3,angulo)
+
+  IMPLICIT NONE
+  
+  DOUBLE PRECISION,intent(out)::angulo
+  DOUBLE PRECISION,dimension(3),intent(in)::vec1,vec2,vec3
+  DOUBLE PRECISION,dimension(3)::aux1,aux2,aux3
+  DOUBLE PRECISION::cosa
+  integer::signo
+  double precision::pi
+
+  cosa=0.0d0
+  signo=0
+  angulo=0.0d0
+  pi=3.14159265358979
+  
+  !vec1(:)=atom2(:)-atom1(:)
+  !vec2(:)=atom3(:)-atom2(:)
+  !vec3(:)=atom4(:)-atom3(:)
+  
+  aux1=0.0d0
+  aux2=0.0d0
+  
+  CALL PRODUCT_VECT(vec1,vec2,aux1)
+  CALL PRODUCT_VECT(vec2,vec3,aux2)
+  
+  cosa=(aux1(1)*aux2(1)+aux1(2)*aux2(2)+aux1(3)*aux2(3))/(sqrt(dot_product(aux1,aux1))*sqrt(dot_product(aux2,aux2)))
+
+  IF (cosa>=1.0d0) THEN 
+     cosa=1.0d0
+  END IF
+  IF (cosa<=-1.0d0) THEN 
+     cosa=-1.0d0
+  END IF
+
+
+  cosa=(acos(cosa))!*(180.0d0/pi)
+
+ ! IF (cosa>180.0d0) THEN
+ !    print*,'ERROR EN ANGULOS'
+ !    STOP
+ ! END IF
+  
+  aux3=0.0d0
+  
+  CALL PRODUCT_VECT(aux1,aux2,aux3)
+  
+  IF ( dot_product(aux3,vec2) <= 0.0d0 ) THEN
+     signo=-1
+  ELSE
+     signo=+1
+  END IF
+
+  angulo=cosa*signo
+
+END SUBROUTINE calculo_dihed
+
 
 
 SUBROUTINE neighbs_ranking (diff_syst,diff_set,pbc_opt,limit,list1,coors1,box1,ortho1,list2,coors2,&
@@ -2773,37 +2889,6 @@ END SUBROUTINE GET_HBONDS_ROO_ANG_NS_LIST
 
 
 
-SUBROUTINE PERPENDICULAR_NORMED_VECT (vect1,vect2,vect_out)
-
-  DOUBLE PRECISION,DIMENSION(3),INTENT(IN)::vect1,vect2
-  DOUBLE PRECISION,DIMENSION(3),INTENT(OUT)::vect_out
-
-  CALL PRODUCT_VECT(vect1,vect2,vect_out)
-  CALL NORMALIZE_VECT(vect_out)
-
-END SUBROUTINE PERPENDICULAR_NORMED_VECT
-
-
-SUBROUTINE PRODUCT_VECT(a,b,normal)
-
-  DOUBLE PRECISION,DIMENSION(3),INTENT(IN)::a,b
-  DOUBLE PRECISION,DIMENSION(3),INTENT(OUT)::normal
-  
-  normal(1)=a(2)*b(3)-a(3)*b(2)
-  normal(2)=-a(1)*b(3)+a(3)*b(1)
-  normal(3)=a(1)*b(2)-a(2)*b(1)
-
-END SUBROUTINE PRODUCT_VECT
-
-SUBROUTINE NORMALIZE_VECT (a)
-
-  DOUBLE PRECISION,DIMENSION(3),INTENT(INOUT)::a
-  DOUBLE PRECISION::norm
-
-  norm=sqrt(dot_product(a,a))
-  a=a/norm
-
-END SUBROUTINE NORMALIZE_VECT
 
 
 END MODULE HBONDS

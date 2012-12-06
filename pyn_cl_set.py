@@ -896,30 +896,70 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             return pgaxis
 
 
-    def dihedral_angles(self,select='protein',phi=True,psi=True,omega=True,xis=False,traj=0,frame='ALL'):
+    def dihedral_angles(self,select='protein',phi=True,psi=True,omega=True,xis=False,traj=0,frame='ALL',begin=0,end=None,legend=False,verbose=False):
  
-        setA,nlist_A,nsys_A==__read_set_opt__(self,select)
+        setA,nlist_A,nsys_A=__read_set_opt__(self,select)
 
         list_omega=[]
         list_phi=[]
         list_psi=[]
- 
+        list_angs=[]
+        key_legend=[]
+
         if omega:
             list_omega=select_covalent_chain(system=self,select=setA,chain=[['CA','CH3'],'C','N',['CA','CH3']])
- 
+            for ii in list_omega:
+                list_angs.append(ii)
+                if legend:
+                    key_legend.append(['Omega '+str(self.atom[ii[2]].resid.pdb_index),ii])
+            
         if phi:
             list_phi=select_covalent_chain(system=self,select=setA,chain=['C','N','CA','C'])
-
+            for ii in list_phi:
+                list_angs.append(ii)
+                if legend:
+                    key_legend.append(['Phi '+str(self.atom[ii[2]].resid.pdb_index),ii])
         if psi:
             list_psi=select_covalent_chain(system=self,select=setA,chain=['N','CA','C','N'])
-                                        
+            for ii in list_psi:
+                list_angs.append(ii)
+                if legend:
+                    key_legend.append(['Psi '+str(self.atom[ii[1]].resid.pdb_index),ii])
         if xis:
-
             print '# Option not implemented yet: xis=True'
             return
 
-        #num_frames=__length_frame_opt__(self,traj,frame)
-        #pgaxis=numpy.empty(shape=(num_frames,3,3),dtype=float,order='Fortran')
+        list_angs=numpy.array(list_angs,dtype=int,order='F')
+        num_dih_angs=list_angs.shape[0]
+
+        if not end:
+            num_frames=__length_frame_opt__(self,traj,frame)
+            dih_angs=numpy.empty(shape=(num_frames,num_dih_angs),dtype=float,order='Fortran')
+        
+            for iframe in __read_frame_opt__(self,traj,frame):
+                dih_angs[num_frames,:]=faux.glob.dihedral_angles(iframe.coors,iframe.box,iframe.orthogonal,list_angs,num_dih_angs,nsys_A)
+
+        if end:
+            num_frames=end-begin+1
+            dih_angs=numpy.empty(shape=(num_frames,num_dih_angs),dtype=float,order='Fortran')
+            for ii in range(end):
+                self.traj[traj].reload_frame(frame=ii)
+                iframe=self.traj[traj].frame[0]
+                dih_angs[ii,:]=faux.glob.dihedral_angles(iframe.coors,iframe.box,iframe.orthogonal,list_angs,num_dih_angs,nsys_A)
+
+         
+         
+        #legend=0
+        if num_frames==1:
+            if legend:
+                return key_legend,dih_angs[0,:]
+            else:
+                return dih_angs[0,:]
+        else:
+            if legend:
+                return key_legend,dih_angs
+            else:
+                return dih_angs
 
 
 #def min_distance(system,set_a,set_b=None,pbc=True,type_b='atoms'):
@@ -1040,7 +1080,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         
 
 
-    def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.5,angooh_param=30.0,optimize=True,pbc=True,verbose=False):
+    def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.50,angooh_param=30.0,optimize=True,pbc=True,verbose=False):
 
         opt_effic=0
         opt_diff_syst=0
