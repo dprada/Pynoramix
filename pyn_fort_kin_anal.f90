@@ -1130,6 +1130,40 @@ CONTAINS
     if (ALLOCATED(distrib_x)) DEALLOCATE(distrib_x)
     
   end subroutine free_distrib
+
+  subroutine flux_cut (traj,cut,num_frames,num_parts,dims,flux)
+
+    IMPLICIT NONE
+    INTEGER,INTENT(IN):: num_parts,dims,num_frames
+    DOUBLE PRECISION::cut
+    DOUBLE PRECISION,DIMENSION(num_frames,num_parts,dims),INTENT(IN)::traj
+    INTEGER,INTENT(OUT)::flux
+
+    INTEGER::ii,jj
+    LOGICAL::from,to
+
+    flux=0
+
+    DO jj=1,num_parts
+       IF (traj(1,jj,1)<=cut) THEN
+          from=.TRUE.
+       ELSE
+          from=.FALSE.
+       END IF
+       DO ii=2,num_frames
+          IF (traj(ii,jj,1)<=cut) THEN
+             to=.TRUE.
+          ELSE
+             to=.FALSE.
+          END IF
+          IF (from.neqv.to) THEN
+             flux=flux+1
+          END IF
+          from=to
+       END DO
+    END DO
+
+  END subroutine flux_cut
   
   subroutine life_time_dist (opt_norm,traj,state,num_frames,num_parts,dims,num_states,mean)
     

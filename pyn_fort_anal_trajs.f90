@@ -612,7 +612,7 @@ CONTAINS
     DEALLOCATE(WK_out,SL,W)
     DEALLOCATE(aux_puntero,aux_puntero2)
     
-  end subroutine traj2net
+  end subroutine trajbinning2net
   
 
   SUBROUTINE trajnodes2trajclusters (aux_list,trajnodes,num_nodes,frames,particles,trajout)

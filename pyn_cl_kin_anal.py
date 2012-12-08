@@ -290,6 +290,21 @@ class kinetic_analysis():
                                               norm=norm,cumul=cumul)
 
 
+    def flux_cut(self,traj=None,cut=None,verbose=False):
+
+        if cut==None:
+            print "# Cut value needed."
+            return
+
+        if self.dimensions>1:
+            print "# Not implemented yet"
+            return
+
+        if traj == None:
+
+            traj_inp=pyn_math.standard_traj(self.traj,particles=self.particles,dimensions=self.dimensions)
+            return f_kin_anal.flux_cut(traj_inp,cut,traj_inp.shape[0],traj_inp.shape[1],traj_inp.shape[2])
+
     def life_time(self,traj=None,state=None,segment=None,sel_dim=0,mean=False,norm=False,verbose=False):
 
         opt_mean=0
