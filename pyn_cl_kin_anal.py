@@ -704,7 +704,7 @@ class kinetic_analysis():
             return ctt_x, ctt_dist
 
 
-    def kinetic_network(self,traj=None,ranges=None,verbose=False):
+    def kinetic_network(self,traj=None,ranges=None,bins=None,labels=True,verbose=False):
 
         if traj in ['CLUSTERS','Clusters','clusters']:
             if type(self.traj_clusters) not in [numpy.ndarray]:
@@ -725,7 +725,7 @@ class kinetic_analysis():
                 ranges=pyn_math.build_ranges(self.traj)
             else:
                 ranges=pyn_math.standard_ranges(ranges)
-            self.network_nodes,self.traj_nodes=kinetic_network(self.traj,ranges=ranges,traj_out=True,verbose=verbose)                
+            self.network_nodes,self.traj_nodes=kinetic_network(self.traj,ranges=ranges,bins=bins,traj_out=True,labels=labels,verbose=verbose)                
             return
 
     def prada1_largo(self,window=None,granularity=1.2,bins=20,ybins=10,segment=None,delta=None,extra_min=False,extra_max=False,\

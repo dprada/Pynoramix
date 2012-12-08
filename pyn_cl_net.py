@@ -1,4 +1,5 @@
 from pyn_fort_net import glob as f_net
+from pyn_fort_kin_anal import glob as f_kin_anal
 from pyn_fort_anal_trajs import glob as f_trajs
 import pyn_math as pyn_math
 import numpy
@@ -1267,7 +1268,7 @@ class network():
 #        pass
 
 
-def kinetic_network(traj=None,ranges=None,bins=None,traj_out=False,verbose=True):
+def kinetic_network(traj=None,ranges=None,bins=None,traj_out=False,labels=True,verbose=True):
 
     prov_net=network(directed=True,kinetic=True,verbose=False)
 
@@ -1277,40 +1278,42 @@ def kinetic_network(traj=None,ranges=None,bins=None,traj_out=False,verbose=True)
     num_frames=traj.shape[0]
     num_parts=traj.shape[1]
 
-    len_str=0
-    for aa in ranges:
-        bb=len(str(aa[0]))
-        if (bb>len_str):
-            len_str=bb
-        bb=len(str(aa[1]))
-        if (bb>len_str):
-            len_str=bb
-                
-    len_str=len_str+1
+    opt_labels=0
+    if labels:
+        opt_labels=1
 
     if bins!=None:
+        if type(bins) in [int]:
+            bins=[bins]
         if len(bins)!=dimensions:
             print '# The length of bins must be equal to the length of ranges'
             return
         bins=numpy.array(bins,dtype=int,order='F')
-        traj_net=f_trajs.trajbinning2net(len_str,traj,ranges,bins,num_frames,num_parts,dimensions)
+        traj_net=f_kin_anal.trajbinning2net(opt_labels,traj,ranges,bins,num_frames,num_parts,dimensions)
     else:
-        traj_net=f_trajs.traj2net(len_str,traj,ranges,num_frames,num_parts,dimensions)
+        traj_net=f_kin_anal.traj2net(opt_labels,traj,ranges,num_frames,num_parts,dimensions)
 
     traj_net=pyn_math.standard_traj(traj_net,particles=num_parts,dimensions=1)
 
     prov_net.Ts=True
-    prov_net.T_ind=copy.deepcopy(f_trajs.t_ind)
-    prov_net.T_wl=copy.deepcopy(f_trajs.t_tau)
-    prov_net.T_start=copy.deepcopy(f_trajs.t_start)
+    prov_net.T_ind=copy.deepcopy(f_kin_anal.t_ind)
+    prov_net.T_wl=copy.deepcopy(f_kin_anal.t_tau)
+    prov_net.T_start=copy.deepcopy(f_kin_anal.t_start)
     prov_net.build_from_Ts()
-    for ii in range(prov_net.num_nodes):
-        label=str(f_trajs.labels[ii][:])
-        prov_net.node[ii].label=label
-        prov_net.labels[label]=ii
+    if opt_labels:
+        if bins==None:
+            for ii in range(prov_net.num_nodes):
+                label=str(f_kin_anal.labels[ii])
+                prov_net.node[ii].label=label
+                prov_net.labels[label]=ii
+        else:
+            for ii in range(prov_net.num_nodes):
+                label=str(f_kin_anal.labels_daux[ii])
+                prov_net.node[ii].label=label
+                prov_net.labels[label]=ii
 
 
-    f_trajs.free_memory_ts()
+    f_kin_anal.free_memory_ts()
     if verbose:
         prov_net.info(update=False,verbose=True)
         pass
@@ -1394,21 +1397,21 @@ def kinetic_network(traj=None,ranges=None,bins=None,traj_out=False,verbose=True)
 ##        #print num_parts,num_frames,dimensions
 ##        #print ranges
 ## 
-##        f_trajs.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
+##        f_kin_anal.traj2net(len_str,traj,ranges,num_parts,num_frames,dimensions)
 ##        
 ## 
 ##        self.Ts=True
-##        self.T_ind=copy.deepcopy(f_trajs.t_ind)
-##        self.T_wl=copy.deepcopy(f_trajs.t_tau)
-##        self.T_start=copy.deepcopy(f_trajs.t_start)
+##        self.T_ind=copy.deepcopy(f_kin_anal.t_ind)
+##        self.T_wl=copy.deepcopy(f_kin_anal.t_tau)
+##        self.T_start=copy.deepcopy(f_kin_anal.t_start)
 ##        self.build_from_Ts()
 ##        for ii in range(self.num_nodes):
-##            label=str(f_trajs.labels[ii][:])
+##            label=str(f_kin_anal.labels[ii][:])
 ##            self.node[ii].label=label
 ##            self.labels[label]=ii
 ## 
 ## 
-##        f_trajs.free_memory_ts()
+##        f_kin_anal.free_memory_ts()
 ##        if verbose:
 ##            self.info(update=False,verbose=True)
 ##            pass
