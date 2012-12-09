@@ -118,7 +118,7 @@ class kinetic_analysis():
         self.traj_nodes=None
         self.traj_clusters=None
 
-        self.network_nodes=None
+        self.network=None
         self.network_clusters=None
 
         self.__tr_mode_in_ram__   = False
@@ -352,7 +352,7 @@ class kinetic_analysis():
 
             else:
                 traj_inp=pyn_math.standard_traj(self.traj,particles=self.particles,dimensions=self.dimensions)
-                lt_mean=f_kin_anal.life_time_dist(opt_norm,traj_inp,state,traj_inp.shape[0],traj_inp.shape[1],traj_inp.shape[2],num_states)
+                lt_mean=f_kin_anal.life_time_dist(opt_norm,opt_segm,traj_inp,state,segments,traj_inp.shape[0],traj_inp.shape[1],traj_inp.shape[2],num_states)
 
         elif traj in ['CLUSTERS','Clusters','clusters']:
             traj_inp=pyn_math.standard_traj(self.traj_clusters,particles=self.particles,dimensions=1)
@@ -716,7 +716,7 @@ class kinetic_analysis():
         elif traj in ['NODES','Nodes','nodes']:
             if type(self.traj_nodes) not in [numpy.ndarray]:
                 self.traj_nodes=numpy.array(self.traj_nodes,order="Fortran")
-            self.network_nodes=kinetic_network(self.traj_nodes,ranges=[self.traj_nodes.min(),self.traj_nodes.max()],verbose=verbose)
+            self.network=kinetic_network(self.traj_nodes,ranges=[self.traj_nodes.min(),self.traj_nodes.max()],verbose=verbose)
             return
 
         else:
@@ -725,7 +725,7 @@ class kinetic_analysis():
                 ranges=pyn_math.build_ranges(self.traj)
             else:
                 ranges=pyn_math.standard_ranges(ranges)
-            self.network_nodes,self.traj_nodes=kinetic_network(self.traj,ranges=ranges,bins=bins,traj_out=True,labels=labels,verbose=verbose)                
+            self.network,self.traj_nodes=kinetic_network(self.traj,ranges=ranges,bins=bins,traj_out=True,labels=labels,verbose=verbose)                
             return
 
     def prada1_largo(self,window=None,granularity=1.2,bins=20,ybins=10,segment=None,delta=None,extra_min=False,extra_max=False,\

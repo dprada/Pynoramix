@@ -516,7 +516,6 @@ CONTAINS
        stop
     END IF
     
-    
     DO cajon=1,dimensions
        
        IF (cajon==1) THEN
@@ -534,7 +533,6 @@ CONTAINS
              bb=tray(jj,ii)
              aa=INT((traj_full(jj,ii,cajon)-ranges(cajon,1))/delta_l(cajon))
              IF (aa==bins(cajon)) THEN
-                PRINT*,'BINGO'
                 aa=aa-1
              END IF
              aa=aa+1
@@ -585,7 +583,6 @@ CONTAINS
              bb=tray(jj,ii)
              aa=INT((traj_full(jj,ii,cajon)-ranges(cajon,1))/delta_l(cajon))
              IF (aa==bins(cajon)) THEN
-                PRINT*,'BINGO'
                 aa=aa-1
              END IF
              aa=aa+1
@@ -1498,12 +1495,13 @@ CONTAINS
 
   END subroutine flux_cut
   
-  subroutine life_time_dist (opt_norm,traj,state,num_frames,num_parts,dims,num_states,mean)
+  subroutine life_time_dist (opt_norm,opt_segment,traj,state,segment,num_frames,num_parts,dims,num_states,mean)
     
     IMPLICIT NONE
-    INTEGER,INTENT(IN):: opt_norm,num_parts,dims,num_frames,num_states
+    INTEGER,INTENT(IN):: opt_norm,num_parts,dims,num_frames,num_states,opt_segment
     DOUBLE PRECISION,DIMENSION(num_frames,num_parts,dims),INTENT(IN):: traj
     DOUBLE PRECISION,DIMENSION(num_states),INTENT(IN):: state
+    DOUBLE PRECISION,DIMENSION(dims,2),INTENT(IN):: segment
     DOUBLE PRECISION,INTENT(OUT):: mean
     
     INTEGER:: ii,jj,kk,ll,gg,contador,kkk,lll
@@ -1528,14 +1526,21 @@ CONTAINS
           inside_old=.false.
           DO ii=1,num_frames
              inside=.false.
-             DO jj=1,num_states
-                IF (traj(ii,kkk,lll)==state(jj)) THEN
+             IF (opt_segment==0) THEN
+                DO jj=1,num_states
+                   IF (traj(ii,kkk,lll)==state(jj)) THEN
+                      inside=.true.
+                      contador=contador+1
+                      EXIT
+                   END IF
+                END DO
+             ELSE
+                IF ((segment(lll,1)<=traj(ii,kkk,lll)).and.(traj(ii,kkk,lll)<segment(lll,2))) THEN
                    inside=.true.
                    contador=contador+1
-                   EXIT
                 END IF
-             END DO
-             
+             END IF
+
              IF ((inside_old.eqv..true.).and.(inside.eqv..false.)) THEN
                 IF (contador>gg) THEN
                    ALLOCATE(distrib_aux(gg))

@@ -13,6 +13,10 @@ FOPTS=
 # additional fortran flags
 FFLAGS=
 
+ifneq ($(fopt),)
+FOPTS=$(fopt)
+endif
+
 
 # Detecting platform (Linux,Mac,Cygwin)
 PLATF_TYPE=$(shell uname -s)

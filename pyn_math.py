@@ -14,7 +14,8 @@ def build_ranges(traj):
 
     dims=traj.shape[2]
     num_parts=traj.shape[1]
-    ranges=numpy.zeros((dims,2),dtype=int,order='Fortran')
+
+    ranges=numpy.zeros((dims,2),dtype=traj.dtype,order='Fortran')
     for jj in range(dims):
         ranges[jj,0]=traj[:,0,jj].min()
         ranges[jj,1]=traj[:,0,jj].max()
