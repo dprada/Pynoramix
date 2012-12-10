@@ -710,8 +710,8 @@ SUBROUTINE EXTRACT_NS_LIST_SETS(diff_sets,list1,list2,n1,n2,numat_glob)
 
      ALLOCATE(filter(numat_glob))
      filter=.FALSE.
-     DO ii=1,n1
-        filter(list1(ii)+1)=.TRUE.
+     DO ii=1,n2
+        filter(list2(ii)+1)=.TRUE.
      END DO
 
      DO ii=1,n1
@@ -2838,7 +2838,7 @@ SUBROUTINE GET_HBONDS_ROO_ANG_NS_LIST (diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                  hbs_out(gg,1)=don_A(ii)
                  hbs_out(gg,2)=don_H_A(hh)
                  hbs_out(gg,3)=hbs_a_ind(hh)%i1(jj)
-                 hbs_vals_out(gg)=hbs_a_val(hh)%d1(jj)
+                 hbs_vals_out(gg)=sqrt(hbs_a_val(hh)%d1(jj))
               END DO
               DEALLOCATE(hbs_a_ind(hh)%i1,hbs_a_val(hh)%d1)
            END IF
@@ -2852,7 +2852,7 @@ SUBROUTINE GET_HBONDS_ROO_ANG_NS_LIST (diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                  hbs_out(gg,1)=don_B(ii)
                  hbs_out(gg,2)=don_H_B(hh)
                  hbs_out(gg,3)=hbs_b_ind(hh)%i1(jj)
-                 hbs_vals_out(gg)=hbs_b_val(hh)%d1(jj)
+                 hbs_vals_out(gg)=sqrt(hbs_b_val(hh)%d1(jj))
               END DO
               DEALLOCATE(hbs_b_ind(hh)%i1,hbs_b_val(hh)%d1)
            END IF
@@ -2870,7 +2870,7 @@ SUBROUTINE GET_HBONDS_ROO_ANG_NS_LIST (diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                  hbs_out(gg,1)=don_A(ii)
                  hbs_out(gg,2)=don_H_A(hh)
                  hbs_out(gg,3)=hbs_a_ind(hh)%i1(jj)
-                 hbs_vals_out(gg)=hbs_a_val(hh)%d1(jj)
+                 hbs_vals_out(gg)=sqrt(hbs_a_val(hh)%d1(jj))
               END DO
               DEALLOCATE(hbs_a_ind(hh)%i1,hbs_a_val(hh)%d1)
            END IF
