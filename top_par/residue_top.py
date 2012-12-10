@@ -953,12 +953,12 @@ terminal_bonds['none']['atOY']   = 'atCY'
 terminal_bonds['none']['atCY']   = 'atN'
 
 #### NME for ACEMD
-#terminal_bonds['none']['atNT']   = 'atC'      
-#terminal_bonds['none']['atHT1']  = 'atCAT'
-#terminal_bonds['none']['atHT2']  = 'atCAT'
-#terminal_bonds['none']['atHT3']  = 'atCAT'
-#terminal_bonds['none']['atCAT']  = 'atNT'
-#terminal_bonds['none']['atHT']  = 'atNT'
+terminal_bonds['none']['atNT']   = 'atC'      # 
+terminal_bonds['none']['atHT1']  = 'atCAT'    # 
+terminal_bonds['none']['atHT2']  = 'atCAT'    # 
+terminal_bonds['none']['atHT3']  = 'atCAT'    # 
+terminal_bonds['none']['atCAT']  = 'atNT'     # 
+terminal_bonds['none']['atHT']  = 'atNT'      # 
 
 
 

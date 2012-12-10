@@ -814,6 +814,93 @@ class kinetic_analysis():
             self.__type_clusters__='prada1'
 
 
+
+    def prada1_shell(self,window=None,granularity=1.2,bins=20,ybins=10,segment=None,delta=None,extra_min=False,extra_max=False,\
+                         ram=4,increment=1,clusters=True,verbose=False):
+
+        if self.dimensions!=1:
+            print '# Method not implemented yet for more than 1D.'
+            return
+
+        bins,mmx,mmn,delta=pyn_math.parameters_bins(False,bins,segment,delta)
+
+        rv_min=0
+        rv_max=0
+
+        if extra_min:
+            rv_min=1
+            bins+=1
+        if extra_max:
+            rv_max=1
+            bins+=1
+
+        if verbose:
+            if rv_min:
+                print '# Extra node for x <', mmn
+            if rv_max:
+                print '# Extra node for x >', mmx
+
+        if not self.__tr_mode_in_file__:
+            '# Error: the trajectory must be in a file'
+            return
+
+        self.network=network(kinetic=True,verbose=False)
+
+        self.file_traj.open()
+
+        mmram=ram*1024*1024*1024
+        iterations=int(mmram/(self.particles*bins*8))
+        
+        b_frame=window*increment
+        e_frame=self.file_traj.frames-1-window*increment
+
+        first_period=1
+        salida=1
+
+        if (b_frame+iterations*increment)>e_frame:
+            iterations=((e_frame-b_frame)/increment)
+
+        while (iterations>0):
+
+            print b_frame+iterations*increment
+            traj_aux=f_kin_anal.prada1_infile(self.file_traj.unit,ybins,bins,segment[0],delta,rv_min,rv_max,\
+                                                  b_frame,iterations,increment,window,self.particles,self.dimensions)
+            ranges=pyn_math.build_ranges(traj_aux)
+            network_per=kinetic_network(traj_aux,ranges=ranges,traj_out=False,verbose=False)
+            self.network.merge_net(network_per,verbose=True)
+            del(traj_aux)
+            del(network_per)
+
+            b_frame+=iterations*increment
+            if (b_frame+iterations*increment)>e_frame:
+                iterations=((e_frame-b_frame)/increment)
+                
+        # cerrar unidad
+        self.file_traj.close()
+
+        self.__offset__=window
+
+        if clusters:
+
+            print '# Entra a clusters'
+         
+            self.network.symmetrize(new=False,verbose=verbose)
+         
+            self.network.mcl(granularity=granularity,pruning=True,verbose=verbose)
+         
+            #num_nodes=self.network.num_nodes
+            #aux_list=numpy.empty(num_nodes,dtype=int,order='F')
+            #for ii in range(num_nodes):
+            #    aux_list[ii]=self.network.node[ii].cluster
+            # 
+            #new_num_frames=self.traj_nodes.shape[0]
+            #self.traj_clusters=f_kin_anal.trajnodes2trajclusters(aux_list,self.traj_nodes,num_nodes,new_num_frames,self.particles)
+            # 
+            #del(num_nodes,new_num_frames,aux_list)
+         
+            self.__type_clusters__='prada1'
+
+
     def prada1(self,window=None,granularity=1.2,bins=20,ybins=10,segment=None,delta=None,clusters=True,verbose=False):
 
         if self.dimensions!=1:

@@ -1080,7 +1080,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         
 
 
-    def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.50,angooh_param=30.0,optimize=True,pbc=True,verbose=False):
+    def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.50,angooh_param=30.0,optimize=False,pbc=True,verbose=False):
 
         opt_effic=0
         opt_diff_syst=0
@@ -1164,8 +1164,18 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                     hbout.append([faux.glob.hbs_out,faux.glob.hbs_vals_out])
                     gg+=1
             else:
-                print '# Error: Not implemented yet.'
-                return
+                hbout=[]
+                gg=0
+                for iframe in __read_frame_opt__(self,traj,frame):
+                    faux.hbonds.get_hbonds_roo_ang( opt_diff_set, opt_pbc, \
+                                                        acc_don_A[0],acc_don_A[1],acc_don_A[2],acc_don_A[3],acc_don_A[4],acc_don_A[5], \
+                                                        iframe.coors,iframe.box,iframe.orthogonal, \
+                                                        acc_don_B[0],acc_don_B[1],acc_don_B[2],acc_don_B[3],acc_don_B[4],acc_don_B[5], \
+                                                        nA_acc,nA_acc_sH,nA_acc_H,nA_don,nA_don_sH,nA_don_H, \
+                                                        nB_acc,nB_acc_sH,nB_acc_H,nB_don,nB_don_sH,nB_don_H, \
+                                                        self.num_atoms)
+                    hbout.append([faux.glob.hbs_out,faux.glob.hbs_vals_out])
+                    gg+=1
 
             if gg==1:
                 return hbout[0]
