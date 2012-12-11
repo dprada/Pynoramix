@@ -73,21 +73,21 @@ class cl_traj():
         if self.io_err: print '# Error closing the file'; return
         self.io_opened=0
 
-    #def delete_frame(self,frame='ALL',begin=None,end=None,increment=1,units=None):
-    # 
-    #    if frame in ['all','All','ALL']:
-    #        del(self.frame)
-    #        self.frame=[]
-    #        self.num_frames=0
-    #        return
-    # 
-    #    elif type(frame) in [list,tuple]:
-    #        for ii in frame:
-    #            self.frame.__delitem__(ii)
-    #            self.num_frames-=1
-    #        return
-    # 
-    #    pass
+    def delete_frame(self,frame='ALL',begin=None,end=None,increment=1,units=None):
+     
+        if frame in ['all','All','ALL']:
+            del(self.frame)
+            self.frame=[]
+            self.num_frames=0
+            return
+     
+        elif type(frame) in [list,tuple]:
+            for ii in frame:
+                self.frame.__delitem__(ii)
+                self.num_frames-=1
+            return
+     
+        pass
 
     def reload_frame(self,frame='next',old=0):
 

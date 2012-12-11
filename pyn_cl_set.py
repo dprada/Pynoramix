@@ -1081,7 +1081,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         
 
 
-    def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.50,angooh_param=30.0,optimize=False,pbc=True,verbose=False):
+    def hbonds (self,definition=None,set_A=None,set_B=None,acc_don_A=None,acc_don_B=None,traj=0,frame=0,sk_param=0.00850,roh_param=2.3000,roo_param=3.50,angooh_param=30.0,optimize=False,pbc=True,infile=False,verbose=False):
 
         opt_effic=0
         opt_diff_syst=0
@@ -1145,16 +1145,24 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         elif faux.hbonds.definition == 3 : # ROO_ANG
             faux.hbonds.roo2_param, faux.hbonds.cos_angooh_param= roo_param**2, numpy.cos(numpy.radians(angooh_param))
 
-            if optimize:
-                gg=0
-                hbout=[]
-                for iframe in __read_frame_opt__(self,traj,frame):
-                    if (gg==0): 
-                        self.verlet_list_grid_ns(r1=roo_param,r2=roo_param,rcell=roo_param,iframe=iframe)
-                    else:
-                        self.verlet_list_grid_ns(r1=roo_param,r2=roo_param,rcell=roo_param,iframe=iframe,update=True)
+            if infile:
 
-                    faux.hbonds.get_hbonds_roo_ang_ns_list( opt_diff_set, opt_pbc, \
+                if type(frame) not in [list,tuple]:
+                    print '# "frame" must be a list'
+                    return
+
+                if optimize:
+                    gg=0
+                    hbout=[]
+                    for aa in frame:
+                        self.traj[0].reload_frame(frame=aa)
+                        iframe=self.traj[0].frame[0]
+                        if (gg==0): 
+                            self.verlet_list_grid_ns(r1=roo_param,r2=roo_param,rcell=roo_param,iframe=iframe)
+                        else:
+                            self.verlet_list_grid_ns(r1=roo_param,r2=roo_param,rcell=roo_param,iframe=iframe,update=True)
+
+                        faux.hbonds.get_hbonds_roo_ang_ns_list( opt_diff_set, opt_pbc, \
                                            acc_don_A[0],acc_don_A[1],acc_don_A[2],acc_don_A[3],acc_don_A[4],acc_don_A[5], \
                                            iframe.coors,iframe.box,iframe.orthogonal, \
                                            acc_don_B[0],acc_don_B[1],acc_don_B[2],acc_don_B[3],acc_don_B[4],acc_don_B[5], \
@@ -1162,21 +1170,58 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                                            nB_acc,nB_acc_sH,nB_acc_H,nB_don,nB_don_sH,nB_don_H, \
                                            self.num_atoms)
 
-                    hbout.append([faux.glob.hbs_out,faux.glob.hbs_vals_out])
-                    gg+=1
-            else:
-                hbout=[]
-                gg=0
-                for iframe in __read_frame_opt__(self,traj,frame):
-                    faux.hbonds.get_hbonds_roo_ang( opt_diff_set, opt_pbc, \
+                        hbout.append([ccopy.deepcopy(faux.glob.hbs_out),ccopy.deepcopy(faux.glob.hbs_vals_out)])
+                        gg+=1
+                else:
+                    hbout=[]
+                    gg=0
+                    for aa in frame:
+                        self.traj[0].reload_frame(frame=aa)
+                        iframe=self.traj[0].frame[0]
+                        faux.hbonds.get_hbonds_roo_ang( opt_diff_set, opt_pbc, \
                                                         acc_don_A[0],acc_don_A[1],acc_don_A[2],acc_don_A[3],acc_don_A[4],acc_don_A[5], \
                                                         iframe.coors,iframe.box,iframe.orthogonal, \
                                                         acc_don_B[0],acc_don_B[1],acc_don_B[2],acc_don_B[3],acc_don_B[4],acc_don_B[5], \
                                                         nA_acc,nA_acc_sH,nA_acc_H,nA_don,nA_don_sH,nA_don_H, \
                                                         nB_acc,nB_acc_sH,nB_acc_H,nB_don,nB_don_sH,nB_don_H, \
                                                         self.num_atoms)
-                    hbout.append([faux.glob.hbs_out,faux.glob.hbs_vals_out])
-                    gg+=1
+                        hbout.append([ccopy.deepcopy(faux.glob.hbs_out),ccopy.deepcopy(faux.glob.hbs_vals_out)])
+                        gg+=1
+
+            else:
+
+                if optimize:
+                    gg=0
+                    hbout=[]
+                    for iframe in __read_frame_opt__(self,traj,frame):
+                        if (gg==0): 
+                            self.verlet_list_grid_ns(r1=roo_param,r2=roo_param,rcell=roo_param,iframe=iframe)
+                        else:
+                            self.verlet_list_grid_ns(r1=roo_param,r2=roo_param,rcell=roo_param,iframe=iframe,update=True)
+
+                        faux.hbonds.get_hbonds_roo_ang_ns_list( opt_diff_set, opt_pbc, \
+                                           acc_don_A[0],acc_don_A[1],acc_don_A[2],acc_don_A[3],acc_don_A[4],acc_don_A[5], \
+                                           iframe.coors,iframe.box,iframe.orthogonal, \
+                                           acc_don_B[0],acc_don_B[1],acc_don_B[2],acc_don_B[3],acc_don_B[4],acc_don_B[5], \
+                                           nA_acc,nA_acc_sH,nA_acc_H,nA_don,nA_don_sH,nA_don_H, \
+                                           nB_acc,nB_acc_sH,nB_acc_H,nB_don,nB_don_sH,nB_don_H, \
+                                           self.num_atoms)
+
+                        hbout.append([ccopy.deepcopy(faux.glob.hbs_out),ccopy.deepcopy(faux.glob.hbs_vals_out)])
+                        gg+=1
+                else:
+                    hbout=[]
+                    gg=0
+                    for iframe in __read_frame_opt__(self,traj,frame):
+                        faux.hbonds.get_hbonds_roo_ang( opt_diff_set, opt_pbc, \
+                                                        acc_don_A[0],acc_don_A[1],acc_don_A[2],acc_don_A[3],acc_don_A[4],acc_don_A[5], \
+                                                        iframe.coors,iframe.box,iframe.orthogonal, \
+                                                        acc_don_B[0],acc_don_B[1],acc_don_B[2],acc_don_B[3],acc_don_B[4],acc_don_B[5], \
+                                                        nA_acc,nA_acc_sH,nA_acc_H,nA_don,nA_don_sH,nA_don_H, \
+                                                        nB_acc,nB_acc_sH,nB_acc_H,nB_don,nB_don_sH,nB_don_H, \
+                                                        self.num_atoms)
+                        hbout.append([ccopy.deepcopy(faux.glob.hbs_out),ccopy.deepcopy(faux.glob.hbs_vals_out)])
+                        gg+=1
 
             if gg==1:
                 return hbout[0]
@@ -1221,8 +1266,6 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
         if definition==1:
 
-            num_hbs=hbonds[0].shape[0]
-
             aux=numpy.zeros((self.num_atoms,3),dtype=int,order='F')
 
             for ii in range(len(self.water)):
@@ -1241,14 +1284,25 @@ class molecule(labels_set):               # The suptra-estructure: System (water
             #    print hbs[1]
             #print hbonds[0].shape,hbonds[1].shape
             aux=numpy.array(aux,dtype=int,order='F')
-            aa=hbonds[0]
-            bb=hbonds[1]
-            mss=mss_funcs.ind_wat_limit_4_nosim(aux,hbonds[0],hbonds[1],self.num_waters,self.num_atoms,num_hbs)
 
-            mss_funcs.remove_index_mol(mss,self.num_waters)
-            mss_funcs.remove_permutations_limit_4_nosim(mss,self.num_waters)
+            if type(hbonds[0][0][0]) in [numpy.ndarray]:
+                mss_tot=numpy.empty((len(hbonds),self.num_waters,17),dtype=int,order='F')
+                for jj in range(len(hbonds)):
+                    num_hbs=hbonds[jj][0].shape[0]
+                    mss=mss_funcs.ind_wat_limit_4_nosim(aux,hbonds[jj][0],hbonds[jj][1],self.num_waters,self.num_atoms,num_hbs)
+                    mss_funcs.remove_index_mol(mss,self.num_waters)
+                    mss_funcs.remove_permutations_limit_4_nosim(mss,self.num_waters)
+                    mss_tot[jj,:,:]=mss[:,:]
+                return mss_tot
 
-            return mss
+            else:
+
+                num_hbs=hbonds[0].shape[0]
+                mss=mss_funcs.ind_wat_limit_4_nosim(aux,hbonds[0],hbonds[1],self.num_waters,self.num_atoms,num_hbs)
+                mss_funcs.remove_index_mol(mss,self.num_waters)
+                mss_funcs.remove_permutations_limit_4_nosim(mss,self.num_waters)
+
+                return mss
 
         
 
