@@ -1223,7 +1223,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
             num_hbs=hbonds[0].shape[0]
 
-            aux=numpy.zeros((self.num_atoms,2),dtype=int,order='F')
+            aux=numpy.zeros((self.num_atoms,3),dtype=int,order='F')
 
             for ii in range(len(self.water)):
                 jo=self.water[ii].O.index
@@ -1236,10 +1236,19 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 aux[jh2,0]=ii
                 aux[jh2,1]=2
 
-            for hbs in hbonds:
-                mss=mss_funcs.ind_wat_limit_4_nosim(aux,hbonds[0],hbonds[1],num_hbs,self.num_waters,self.num_atoms)
 
-            return
+            #for hbs in hbonds:
+            #    print hbs[1]
+            #print hbonds[0].shape,hbonds[1].shape
+            aux=numpy.array(aux,dtype=int,order='F')
+            aa=hbonds[0]
+            bb=hbonds[1]
+            mss=mss_funcs.ind_wat_limit_4_nosim(aux,hbonds[0],hbonds[1],self.num_waters,self.num_atoms,num_hbs)
+
+            mss_funcs.remove_index_mol(mss,self.num_waters)
+            mss_funcs.remove_permutations_limit_4_nosim(mss,self.num_waters)
+
+            return mss
 
         
 
