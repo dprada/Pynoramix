@@ -179,11 +179,12 @@ SUBROUTINE ind_wat_limit_4_nosim (mss,aux,hbs,hbdists,num_wats,num_atoms,num_hbs
 
 END SUBROUTINE ind_wat_limit_4_nosim
 
-SUBROUTINE remove_index_mol(mss,num_mss)
+SUBROUTINE remove_index_mol(mss_ind,num_mss,mss)
 
   IMPLICIT NONE
   INTEGER,INTENT(IN)::num_mss
-  INTEGER,DIMENSION(num_mss,17),INTENT(INOUT)::mss
+  INTEGER,DIMENSION(num_mss,17),INTENT(IN)::mss_ind
+  INTEGER,DIMENSION(num_mss,17),INTENT(OUT)::mss
 
   INTEGER::ii,jj,gg,ll,bb
   INTEGER,DIMENSION(17)::aux_mss,aux_mss2
@@ -192,7 +193,7 @@ SUBROUTINE remove_index_mol(mss,num_mss)
 
   DO jj=1,num_mss
      filtro=.true.
-     aux_mss2=mss(jj,:)
+     aux_mss2=mss_ind(jj,:)
      aux_mss=aux_mss2
 
      DO ii=1,17
@@ -223,15 +224,15 @@ SUBROUTINE remove_index_mol(mss,num_mss)
 
 END SUBROUTINE remove_index_mol
 
-SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
+SUBROUTINE remove_permutations_limit_4_nosim(mss,mss_ind,num_mss)
 
   IMPLICIT NONE
 
   INTEGER,INTENT(IN)::num_mss
-  INTEGER,DIMENSION(num_mss,17),INTENT(INOUT)::mss
+  INTEGER,DIMENSION(num_mss,17),INTENT(INOUT)::mss,mss_ind
 
   INTEGER::i,j,g,h,ii,kk,vigilo
-  INTEGER,DIMENSION(17)::microstate,ms_short2,bb !*!,key,key_aux
+  INTEGER,DIMENSION(17)::microstate,ms_short2,bb,key,key_aux
   LOGICAL,DIMENSION(17)::filtro
   INTEGER,DIMENSION(4,2)::aux_permut
   LOGICAL::interruptor
@@ -242,8 +243,8 @@ SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
 
   DO kk=1,num_mss
 
-     !*!key=mss_ind_wat
-     !*!key_aux=mss_ind_wat
+     key=mss_ind(kk,:)
+     key_aux=key
      ms_short2=mss(kk,:)
      microstate=ms_short2
      aux_permut(1,1)=6
@@ -262,8 +263,8 @@ SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
            IF (ms_short2(i)>ms_short2(j)) THEN
               microstate(i)=ms_short2(j)
               microstate(j)=ms_short2(i)
-              !*!key_aux(i)=key(j)
-              !*!key_aux(j)=key(i)
+              key_aux(i)=key(j)
+              key_aux(j)=key(i)
               filtro=.true.
               DO g=1,17
                  IF ((microstate(g)==i).and.(filtro(g)==.true.)) THEN
@@ -278,11 +279,11 @@ SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
                  END IF
               END DO
               ms_short2=microstate
-              !*!key=key_aux
+              key=key_aux
            END IF
         END IF
      END DO
-     !*!key=key_aux
+     key=key_aux
      ms_short2=microstate
      
      
@@ -357,7 +358,7 @@ SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
            IF (x_core==1) THEN
               IF (x_core5==1) THEN
                  CALL DOY_VUELTA(ms_short2)
-                 !*!CALL DOY_VUELTA_KEY (key,key_aux)
+                 CALL DOY_VUELTA_KEY (key,key_aux)
                  microstate=ms_short2
                  interruptor=.true.
               END IF
@@ -373,34 +374,34 @@ SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
         IF (ceros4/=ceros5) interruptor=.true.
         IF (ceros5<ceros4) THEN
            CALL DOY_VUELTA(ms_short2)
-           !*!CALL DOY_VUELTA_KEY (key,key_aux)
+           CALL DOY_VUELTA_KEY (key,key_aux)
         END IF
      END IF
      IF (interruptor==.false.) THEN
         IF (x_primera4/=x_primera5) interruptor=.true.
         IF (x_primera5<x_primera4) THEN
            CALL DOY_VUELTA(ms_short2)
-           !*!CALL DOY_VUELTA_KEY (key,key_aux)
+           CALL DOY_VUELTA_KEY (key,key_aux)
         END IF
      END IF
      IF (interruptor==.false.) THEN
         IF (x_segunda4/=x_segunda5) interruptor=.true.
         IF (x_segunda5<x_segunda4) THEN
            CALL DOY_VUELTA(ms_short2)
-           !*!CALL DOY_VUELTA_KEY (key,key_aux)
+           CALL DOY_VUELTA_KEY (key,key_aux)
         END IF
      END IF
      
      !!
      microstate=ms_short2
-     !*!key_aux=key
+     key_aux=key
      DO h=3,4
         i=aux_permut(h,1)
         j=aux_permut(h,2)
         IF (ms_short2(i)/=0) THEN
            IF (ms_short2(i)>ms_short2(j)) THEN
-              !*!key_aux(i)=key(j)
-              !*!key_aux(j)=key(i)
+              key_aux(i)=key(j)
+              key_aux(j)=key(i)
               microstate(i)=ms_short2(j)
               microstate(j)=ms_short2(i)
               filtro=.true.
@@ -417,12 +418,12 @@ SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
                  END IF
               END DO
               ms_short2=microstate
-              !*!key=key_aux
+              key=key_aux
            END IF
         END IF
      END DO
      ms_short2=microstate
-     !*!key=key_aux
+     key=key_aux
      !!
      
      
@@ -435,7 +436,7 @@ SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
            ELSE
               IF ((ms_short2(12)/=0).and.(ms_short2(15)==0)) THEN
                  CALL DOY_VUELTA(ms_short2)
-                 !*!CALL DOY_VUELTA_KEY (key,key_aux)
+                 CALL DOY_VUELTA_KEY (key,key_aux)
                  interruptor=.true.
               END IF
            END IF
@@ -445,7 +446,7 @@ SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
               ELSE
                  IF ((ms_short2(13)/=0).and.(ms_short2(16)==0)) THEN
                     CALL DOY_VUELTA(ms_short2)
-                    !*!CALL DOY_VUELTA_KEY (key,key_aux)
+                    CALL DOY_VUELTA_KEY (key,key_aux)
                     interruptor=.true.
                  END IF
               END IF
@@ -456,7 +457,7 @@ SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
               ELSE
                  IF ((ms_short2(14)/=0).and.(ms_short2(17)==0)) THEN
                     CALL DOY_VUELTA(ms_short2)
-                    !*!CALL DOY_VUELTA_KEY (key,key_aux)
+                    CALL DOY_VUELTA_KEY (key,key_aux)
                     interruptor=.true.
                  END IF
               END IF
@@ -471,7 +472,7 @@ SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
         ELSE
            IF ((ms_short2(12)/=12).and.(ms_short2(15)==15)) THEN
               CALL DOY_VUELTA(ms_short2)
-              !*!CALL DOY_VUELTA_KEY (key,key_aux)
+              CALL DOY_VUELTA_KEY (key,key_aux)
               interruptor=.true.
            END IF
         END IF
@@ -481,7 +482,7 @@ SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
            ELSE
               IF ((ms_short2(13)/=13).and.(ms_short2(16)==16)) THEN
                  CALL DOY_VUELTA(ms_short2)
-                 !*!CALL DOY_VUELTA_KEY (key,key_aux)
+                 CALL DOY_VUELTA_KEY (key,key_aux)
                  interruptor=.true.
               END IF
            END IF
@@ -492,14 +493,14 @@ SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
            ELSE
               IF ((ms_short2(14)/=14).and.(ms_short2(17)==17)) THEN
                  CALL DOY_VUELTA(ms_short2)
-                 !*!CALL DOY_VUELTA_KEY (key,key_aux)
+                 CALL DOY_VUELTA_KEY (key,key_aux)
                  interruptor=.true.
               END IF
            END IF
         END IF
      END IF
      microstate=ms_short2
-     !*!key_aux=key
+     key_aux=key
      
      !bb=0
      !! Cruces entre ellos:
@@ -523,14 +524,14 @@ SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
      
      IF (ms_short2(16)==12) THEN
         CALL DOY_VUELTA(ms_short2)
-        !*!CALL DOY_VUELTA_KEY (key,key_aux)
+        CALL DOY_VUELTA_KEY (key,key_aux)
      END IF
      microstate=ms_short2
-     !*!key_aux=key
+     key_aux=key
      IF (ms_short2(15)==13) THEN
-        !*!key(13)=key_aux(14)
-        !*!key(14)=key_aux(13)
-        !*!key_aux(13:14)=key(13:14)
+        key(13)=key_aux(14)
+        key(14)=key_aux(13)
+        key_aux(13:14)=key(13:14)
         ms_short2(13)=microstate(14)
         ms_short2(14)=microstate(13)
         microstate(13:14)=ms_short2(13:14)   !!! Esto lo acabo de cambiar del de Roman
@@ -550,21 +551,20 @@ SUBROUTINE remove_permutations_limit_4_nosim(mss,num_mss)
         END DO
      END IF
      microstate=ms_short2
-     !*!key_aux=key
+     key_aux=key
      
      
      IF (interruptor==.false.) THEN
         IF ((ms_short2(13)==3).and.(ms_short2(16)==2)) THEN
            CALL DOY_VUELTA(ms_short2)
-           
-           !*!CALL DOY_VUELTA_KEY (key,key_aux)
+           CALL DOY_VUELTA_KEY (key,key_aux)
            microstate=ms_short2
-           !*!key_aux=key
+           key_aux=key
         END IF
      END IF
      
      
-     !*!mss_ind_wat=key
+     mss_ind(kk,:)=key(:)
      mss(kk,:)=microstate(:)
 
   END DO
