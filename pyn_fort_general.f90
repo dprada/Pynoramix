@@ -3222,8 +3222,8 @@ SUBROUTINE GET_HBONDS_SKINNER (diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,don_A,don
                  aux_cos=dot_product(vect_perp(jj,:),vect_h_acc(:))/dist_h_acc
                  if (aux_cos>=1.0d0) aux_cos=1.0d0
                  if (aux_cos<=-1.0d0) aux_cos=-1.0d0
-                 aux_cos=acos(aux_cos)
-                 aux_cos=aux_cos*(90.0d0/pi)
+                 aux_cos=acos(abs(aux_cos))
+                 aux_cos=aux_cos*(180.0d0/pi)
                  IF (aux_cos>90.0d0) THEN
                     print*,'aquiii error 3.14',aux_cos
                     STOP
@@ -3301,8 +3301,8 @@ SUBROUTINE GET_HBONDS_SKINNER (diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,don_A,don
                  aux_cos=dot_product(vect_perp(jj,:),vect_h_acc(:))/dist_h_acc
                  if (aux_cos>=1.0d0) aux_cos=1.0d0
                  if (aux_cos<=-1.0d0) aux_cos=-1.0d0
-                 aux_cos=acos(aux_cos)
-                 aux_cos=aux_cos*(90.0d0/pi)
+                 aux_cos=acos(abs(aux_cos))
+                 aux_cos=aux_cos*(180.0d0/pi)
                  IF (aux_cos>90.0d0) THEN
                     print*,'aquiii error 3.14',aux_cos
                     STOP
@@ -3458,6 +3458,7 @@ SUBROUTINE GET_HBONDS_SKINNER_NS_LIST (diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
 
   INTEGER::acc_H1,acc_H2
   DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::vect_perp
+  INTEGER,DIMENSION(:),ALLOCATABLE::inds_perp
 
   INTEGER,DIMENSION(:),ALLOCATABLE::aux_box_ind,aux2_box_ind
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::aux_box_val,aux2_box_val
@@ -3484,9 +3485,10 @@ SUBROUTINE GET_HBONDS_SKINNER_NS_LIST (diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
 
   CALL EXTRACT_NS_LIST_SETS(diff_set,don_H_A,acc_B,nA_don_H,nB_acc,numat_glob)
 
-  ALLOCATE(vect_perp(nB_acc,3))
+  ALLOCATE(vect_perp(nB_acc,3),inds_perp(numat_glob))
   DO ii=1,nB_acc
      acc=acc_B(ii)+1
+     inds_perp(acc)=ii
      jj=acc_sH_B(ii)+1
      acc_H1=acc_H_B(jj)+1
      acc_H2=acc_H_B(jj+1)+1
@@ -3515,11 +3517,11 @@ SUBROUTINE GET_HBONDS_SKINNER_NS_LIST (diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                  dist2_h_acc=dot_product(vect_h_acc,vect_h_acc)
                  IF (dist2_h_acc<cutdist2hacc) THEN
                     dist_h_acc=sqrt(dist2_h_acc)
-                    aux_cos=dot_product(vect_perp(jj,:),vect_h_acc(:))/dist_h_acc
+                    aux_cos=dot_product(vect_perp(inds_perp(acc),:),vect_h_acc(:))/dist_h_acc
                     if (aux_cos>=1.0d0) aux_cos=1.0d0
                     if (aux_cos<=-1.0d0) aux_cos=-1.0d0
-                    aux_cos=acos(aux_cos)
-                    aux_cos=aux_cos*(90.0d0/pi)
+                    aux_cos=acos(abs(aux_cos))
+                    aux_cos=aux_cos*(180.0d0/pi)
                     IF (aux_cos>90.0d0) THEN
                        print*,'aquiii error 3.14',aux_cos
                        STOP
@@ -3569,10 +3571,11 @@ SUBROUTINE GET_HBONDS_SKINNER_NS_LIST (diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
 
      CALL EXTRACT_NS_LIST_SETS(diff_set,don_H_B,acc_A,nB_don_H,nA_acc,numat_glob)
 
-     DEALLOCATE(vect_perp)
-     ALLOCATE(vect_perp(nA_acc,3))
+     DEALLOCATE(vect_perp,inds_perp)
+     ALLOCATE(vect_perp(nA_acc,3),inds_perp(numat_glob))
      DO ii=1,nA_acc
         acc=acc_A(ii)+1
+        inds_perp(acc)=ii
         jj=acc_sH_A(ii)+1
         acc_H1=acc_H_A(jj)+1
         acc_H2=acc_H_A(jj+1)+1
@@ -3598,11 +3601,11 @@ SUBROUTINE GET_HBONDS_SKINNER_NS_LIST (diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
                  dist2_h_acc=dot_product(vect_h_acc,vect_h_acc)
                  IF (dist2_h_acc<cutdist2hacc) THEN
                     dist_h_acc=sqrt(dist2_h_acc)
-                    aux_cos=dot_product(vect_perp(jj,:),vect_h_acc(:))/dist_h_acc
+                    aux_cos=dot_product(vect_perp(inds_perp(acc),:),vect_h_acc(:))/dist_h_acc
                     if (aux_cos>=1.0d0) aux_cos=1.0d0
                     if (aux_cos<=-1.0d0) aux_cos=-1.0d0
-                    aux_cos=acos(aux_cos)
-                    aux_cos=aux_cos*(90.0d0/pi)
+                    aux_cos=acos(abs(aux_cos))
+                    aux_cos=aux_cos*(180.0d0/pi)
                     IF (aux_cos>90.0d0) THEN
                        print*,'aquiii error 3.14',aux_cos
                        STOP
@@ -3704,6 +3707,7 @@ SUBROUTINE GET_HBONDS_SKINNER_NS_LIST (diff_set,pbc_opt,acc_A,acc_sH_A,acc_H_A,d
      END DO
   END IF
 
+  DEALLOCATE(vect_perp,inds_perp)
   DEALLOCATE(aux_box_ind,aux_box_val,filtro)
   DEALLOCATE(hbs_a_ind,hbs_a_val)
   DEALLOCATE(hbs_b_ind,hbs_b_val)

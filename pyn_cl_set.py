@@ -202,7 +202,9 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         # > Info PDB
         self.pdb_header=[]              # PDB Header (HEAD + TITLE)
         self.pdb_ss=[]                  # PDB Secondary structure
-        
+
+        # > Internal info for internal procedures
+
 
         ##################################
 
@@ -1127,6 +1129,8 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         num_frames=__length_frame_opt__(self,traj,frame)
 
         faux.hbonds.definition=hbonds_type(definition,verbose=False)
+        
+
         if faux.hbonds.definition == 0 : 
             return
         
@@ -1344,6 +1348,8 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
     def mss_hbonds_wat(self,definition=1,hbonds=None,bonds=None,verbose=True):
         
+        mss_funcs.definition_hbs=faux.hbonds.definition
+
         if hbonds==None:
             print '# hbonds needed.'
             return
