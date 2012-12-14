@@ -22,6 +22,10 @@ respectively.
 See: http://www.mail-archive.com/gmx-users@gromacs.org/msg28019.html
 See also: SUBROUTINE TRICLINIC (cell,box) in libdcdfile.f90 
 
+Pynoramix sets the box always in the positive cuadrant. This way any
+atom is always in {[0,Lx),[0,Ly),[0,Lz)}. It implies that molecules
+can be split if they are over the cell edges.
+
 ----------------------
 
 

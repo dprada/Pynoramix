@@ -64,7 +64,7 @@
 <li><a class="reference internal" href="#loading-pynoramix">Loading Pynoramix</a></li>
 <li><a class="reference internal" href="#loading-a-trajectory">Loading a trajectory</a></li>
 <li><a class="reference internal" href="#analysis">Analysis</a><ul>
-<li><a class="reference internal" href="#kinetic-model">Kinetic Model</a></li>
+<li><a class="reference internal" href="#kinetic-model-and-flux-between-clusters">Kinetic Model and Flux between clusters</a></li>
 <li><a class="reference internal" href="#kinetic-observables">Kinetic observables</a></li>
 </ul>
 </li>
@@ -105,7 +105,7 @@
 <h1>Berezovska2012<a class="headerlink" href="#berezovska2012" title="Permalink to this headline">¶</a></h1>
 <p>The set of python libraries <strong>Pynoramix</strong> allows us to analyse 1-D
 trajectories as it has been propossed by G. Berezovska et al. in
-[<a class="reference external" href="http://arxiv.org/abs/1208.3584">Accepted in JChemPhys</a>]. This method unveils the conformational macrostates kinetically
+<a class="reference external" href="http://dx.doi.org/10.1063/1.4764868">J. Chem. Phys. 137, 194101 (2012)</a>. This method unveils the conformational macrostates kinetically
 &#8220;well defined&#8221; (see <a class="reference internal" href="tutorial_kinetic_analysis.html#accurate-kin-dec"><em>Accurate kinetic decomposition</em></a>) and the underlying accurate first
 order kinetic model.</p>
 <p>The following tutorial shows how this analysis can be easily done with
@@ -140,35 +140,31 @@ begin with the proper command to load Pynoramix:</p>
 <p>Given a file with a 1D trajectory in its second column,
 <a class="reference download internal" href="_downloads/traj.oup.gz"><tt class="xref download docutils literal"><span class="pre">traj.oup</span></tt></a>,
 the class <em>kinetic_1D_analysis</em> can be initialized:</p>
-<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [2]: </span><span class="n">test</span><span class="o">=</span><span class="n">kinetic_1D_analysis</span><span class="p">(</span><span class="s">&#39;traj.oup&#39;</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="c"># Trajectory loaded: 999901 time steps</span>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [2]: </span><span class="n">test</span><span class="o">=</span><span class="n">kinetic_analysis</span><span class="p">(</span><span class="s">&#39;traj.oup&#39;</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="c"># 999901 frames, 1 particles, 1 dimensions.</span>
 </pre></div>
 </div>
 <p>Now, the trajectory is stored in the object <em>test</em>:</p>
-<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [3]: </span><span class="k">print</span> <span class="s">&#39;Column&#39;</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">file_column</span><span class="p">,</span> <span class="s">&#39;in file&#39;</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">file_name</span>
-<span class="go">Column 1 in file traj.oup</span>
-
-<span class="gp">In [4]: </span><span class="k">print</span> <span class="n">test</span><span class="o">.</span><span class="n">num_particles</span><span class="p">,</span> <span class="s">&#39;particles  with&#39;</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">dimensions</span><span class="p">,</span> <span class="s">&#39;dimension&#39;</span><span class="p">,</span> <span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">num_frames</span><span class="p">,</span> <span class="s">&#39;time steps.&#39;</span>
-<span class="go">1 particles with 1 dimension: 999901 time steps.</span>
-
-<span class="gp">In [5]: </span><span class="k">print</span> <span class="n">test</span><span class="o">.</span><span class="n">traj</span><span class="p">[:]</span>
-<span class="go">[-0.91936072  0.74886578 -1.07525923 ..., -9.09667346 -8.40884264 -8.83918787]</span>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [3]: </span><span class="k">print</span> <span class="n">test</span><span class="o">.</span><span class="n">traj</span><span class="p">[:,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">array([-0.91936072,  0.74886578, -1.07525923, ..., -9.09667346, -8.40884264, -8.83918787])</span>
 </pre></div>
 </div>
-<p>Since this trajectory is a numpy.ndarray, we can take adventage of its intrinsic numpy attributes and functions:</p>
+<p>Notice that the test.traj is a numpy array of dimensions:
+[test.frames,test.particles,test.dimensions]. This way we can take
+advantage of its intrinsic numpy attributes and functions:</p>
 <div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [6]: </span><span class="k">print</span> <span class="s">&#39;Min.:&#39;</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">traj</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span><span class="s">&#39;   Mean:&#39;</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">traj</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="p">,</span><span class="s">&#39;   Max.:&#39;</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">traj</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
 <span class="go">Min.: -11.4344662381    Mean: -3.40808122446    Max.: 2.78106514618</span>
 </pre></div>
 </div>
 <p>Our object <em>test</em> has the attributes and methods of a
-<em>kinetic_1D_analysis</em> class. For instance, the histogram can be built as:</p>
-<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [7]: </span><span class="n">hx</span><span class="p">,</span><span class="n">hy</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">delta_x</span><span class="o">=</span><span class="mf">0.20</span><span class="p">,</span><span class="n">segment</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">12.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">],</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<em>kinetic_analysis</em> class. For instance, the histogram can be built as:</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [7]: </span><span class="n">hx</span><span class="p">,</span><span class="n">hy</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">delta</span><span class="o">=</span><span class="mf">0.20</span><span class="p">,</span><span class="n">segment</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">12.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">],</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>And plotted with pylab as:</p>
-<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [8]: </span><span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pylab</span>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [8]: </span><span class="kn">import</span> <span class="nn">pylab</span>
 
-<span class="gp">In [9]: </span><span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">hxx</span><span class="p">,</span><span class="n">hyy</span><span class="p">,</span><span class="s">&#39;b-&#39;</span><span class="p">)</span>
+<span class="gp">In [9]: </span><span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">hx</span><span class="p">,</span><span class="n">hy</span><span class="p">,</span><span class="s">&#39;b-&#39;</span><span class="p">)</span>
 
 <span class="gp">In [11]: </span><span class="n">pylab</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -186,20 +182,20 @@ three parameters:</p>
 step t will be studied in the segment [t-window,t+window].</li>
 <li>bins: The former cumulative distribution has to be built up in a discrete way.</li>
 <li>granularity: The kinetic model obtained will have a degree of
-resolution up to the granularity parameter used by the Markov Clustering Algorithm.</li>
+resolution up to the granularity parameter used by the Markov Clustering Algorithm (MCL).</li>
 </ul>
 <div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [3]: </span><span class="n">test</span><span class="o">.</span><span class="n">berezovska2012</span><span class="p">(</span><span class="n">window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">granularity</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span><span class="n">bins</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="c"># Network:</span>
-<span class="c"># 1247 nodes</span>
-<span class="c"># 66143 links out</span>
-<span class="c"># 1999760.0 total weight nodes</span>
+<span class="c"># 97 nodes</span>
+<span class="c"># 1057 links out</span>
+<span class="c"># 999880.0 total weight nodes</span>
 <span class="c"># Number of clusters:  3</span>
 </pre></div>
 </div>
 <p>The algorithm decomposes this trajectory into 3 macro-states or
 clusters. This way, we can find a clusters trajectory according to
 this decomposition.</p>
-<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [4]: </span><span class="k">print</span> <span class="n">test</span><span class="o">.</span><span class="n">traj_clusters</span>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [4]: </span><span class="k">print</span> <span class="n">test</span><span class="o">.</span><span class="n">traj_clusters</span><span class="p">[:,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
 <span class="go">[0 0 0 ..., 1 1 1]</span>
 </pre></div>
 </div>
@@ -211,16 +207,16 @@ test.traj[10].</p>
 </pre></div>
 </div>
 <p>We can now have a look to the histograms of these 3 macro-states.</p>
-<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [6]: </span><span class="n">hx_c0</span><span class="p">,</span><span class="n">hy_c0</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">delta_x</span><span class="o">=</span><span class="mf">0.20</span><span class="p">,</span><span class="n">segment</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">12.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">],</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="gp">In [7]: </span><span class="n">hx_c1</span><span class="p">,</span><span class="n">hy_c1</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">delta_x</span><span class="o">=</span><span class="mf">0.20</span><span class="p">,</span><span class="n">segment</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">12.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">],</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="gp">In [8]: </span><span class="n">hx_c2</span><span class="p">,</span><span class="n">hy_c2</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delta_x</span><span class="o">=</span><span class="mf">0.20</span><span class="p">,</span><span class="n">segment</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">12.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">],</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [6]: </span><span class="n">hx_c0</span><span class="p">,</span><span class="n">hy_c0</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">delta</span><span class="o">=</span><span class="mf">0.20</span><span class="p">,</span><span class="n">segment</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">12.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">],</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="gp">In [7]: </span><span class="n">hx_c1</span><span class="p">,</span><span class="n">hy_c1</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">delta</span><span class="o">=</span><span class="mf">0.20</span><span class="p">,</span><span class="n">segment</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">12.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">],</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="gp">In [8]: </span><span class="n">hx_c2</span><span class="p">,</span><span class="n">hy_c2</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">delta</span><span class="o">=</span><span class="mf">0.20</span><span class="p">,</span><span class="n">segment</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">12.0</span><span class="p">,</span><span class="mf">4.0</span><span class="p">],</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="figure align-center">
 <a class="reference internal image-reference" href="_images/histo_color_ganna.png"><img alt="_images/histo_color_ganna.png" src="_images/histo_color_ganna.png" style="width: 568.4px; height: 428.4px;" /></a>
 </div>
-<div class="section" id="kinetic-model">
-<h3>Kinetic Model<a class="headerlink" href="#kinetic-model" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="kinetic-model-and-flux-between-clusters">
+<h3>Kinetic Model and Flux between clusters<a class="headerlink" href="#kinetic-model-and-flux-between-clusters" title="Permalink to this headline">¶</a></h3>
 <p>A first order kinetic model can be computed with these three
 macro-states. The model should be written as a master equation where the
 transition probabilities, or rates, between macro-states interplay to
@@ -234,7 +230,7 @@ number of transitions among them.</p>
 <div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [9]: </span><span class="n">test</span><span class="o">.</span><span class="n">kinetic_network</span><span class="p">(</span><span class="n">traj</span><span class="o">=</span><span class="s">&#39;clusters&#39;</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="c"># Network:</span>
 <span class="c"># 3 nodes</span>
-<span class="c"># 8 links out</span>
+<span class="c"># 7 links out</span>
 <span class="c"># 999880.0 total weight nodes</span>
 </pre></div>
 </div>
@@ -244,31 +240,36 @@ impossed symmetrising the network.</p>
 <div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [10]: </span><span class="n">test</span><span class="o">.</span><span class="n">network_clusters</span><span class="o">.</span><span class="n">symmetrize</span><span class="p">(</span><span class="n">new</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Now, the transition probabilities can be computed as:</p>
-<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [11]: </span><span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
-<span class="go">   ....:         ww=test.network_clusters.node[ii].weight</span>
-<span class="go">   ....:     for jj in range(3):</span>
-<span class="go">   ....:             if ii!=jj :</span>
-<span class="go">   ....:                 print &#39;P&#39;+str(jj)+str(ii)+&#39;=&#39;, test.network_clusters.node[ii].link[jj]/ww</span>
-<span class="go">   ....:</span>
-<span class="go">P10= 0.00050770805942</span>
-<span class="go">P20= 7.88308262315e-05</span>
-<span class="go">P01= 0.000952855660861</span>
-<span class="go">P21= 7.04514351838e-06</span>
-<span class="go">P02= 0.000229245128541</span>
-<span class="go">P12= 1.09164346924e-05</span>
+<p>The flux, number of transitions along the trajectory, is stored as the
+weight of a given link. This way, the flux from cluster 0 to cluster 1:</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [28]: </span><span class="n">test</span><span class="o">.</span><span class="n">network_clusters</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">link</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="go">264.5</span>
 </pre></div>
 </div>
-<p>Since detailed balance condition is fulfilled by construction,
-stationary solution of the model is given by the occupation probabilities
-(<img src="_images/mathmpl/math-f6f3152566.png" style="position: relative; bottom: -8px"/>,:math:<cite>P^{s}_{1}</cite>,:math:<cite>P^{s}_{2}</cite>):</p>
+<p>Notice that the number is not an integer due to the symmetrization of the network.</p>
+<p>Now, the transition probabilities can be computed normalizing the flux:</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [11]: </span><span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+<span class="go">   ....:         ww=test.network_clusters.node[ii].weight</span>
+<span class="go">   ....:     for jj,kk in test.network_clusters.node[ii].link.iteritems():</span>
+<span class="go">   ....:             if ii!=jj :</span>
+<span class="go">   ....:                 print &#39;P&#39;+str(jj)+str(ii)+&#39;=&#39;, kk/ww</span>
+<span class="go">   ....:</span>
+<span class="go">P10= 0.000494643543406</span>
+<span class="go">P20= 7.29342086685e-05</span>
+<span class="go">P01= 0.000937845154496</span>
+<span class="go">P02= 0.00021297277225</span>
+</pre></div>
+</div>
+<p>Since detailed balance condition is fulfilled by construction, the
+stationary solution of the model is given by the occupation
+probabilities (<img src="_images/mathmpl/math-f6f3152566.png" style="position: relative; bottom: -8px"/>, <img src="_images/mathmpl/math-fe719855fd.png" style="position: relative; bottom: -8px"/>, <img src="_images/mathmpl/math-6eeeb85885.png" style="position: relative; bottom: -8px"/>):</p>
 <div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [12]: </span><span class="n">ww</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">network_clusters</span><span class="o">.</span><span class="n">weight</span>
 <span class="gp">In [13]: </span><span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
 <span class="go">   ....:     print &#39;P&#39;+str(ii)+&#39;^s =&#39;, test.network_clusters.node[ii].weight/ww</span>
 <span class="go">   ....:</span>
-<span class="go">P0^s = 0.532850442053</span>
-<span class="go">P1^s = 0.283917570108</span>
-<span class="go">P2^s = 0.183231987839</span>
+<span class="go">P0^s = 0.534792675121</span>
+<span class="go">P1^s = 0.282063347602</span>
+<span class="go">P2^s = 0.183143977277</span>
 </pre></div>
 </div>
 </div>
@@ -281,13 +282,13 @@ forward from the 1-D trajectory to be compared with the kinetic model.</p>
 the <em>First Passage Time</em> distribution from any cluster to it can be
 extracted from the trajectory:</p>
 <div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [14]: </span><span class="n">fpt_0_x</span><span class="p">,</span><span class="n">fpt_0_y</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">first_passage_time</span><span class="p">(</span><span class="n">traj</span><span class="o">=</span><span class="s">&#39;clusters&#39;</span><span class="p">,</span><span class="n">to_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="c"># Mean first passage time: 2339.58694091 frames.</span>
+<span class="c"># Mean first passage time: 2344.27167283 frames.</span>
 
 <span class="gp">In [15]: </span><span class="n">fpt_10_x</span><span class="p">,</span><span class="n">fpt_10_y</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">first_passage_time</span><span class="p">(</span><span class="n">traj</span><span class="o">=</span><span class="s">&#39;clusters&#39;</span><span class="p">,</span><span class="n">from_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">to_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="c"># Mean first passage time: 1092.56044147 frames.</span>
+<span class="c"># Mean first passage time: 1092.77053998 frames.</span>
 
 <span class="gp">In [16]: </span><span class="n">fpt_20_x</span><span class="p">,</span><span class="n">fpt_20_y</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">first_passage_time</span><span class="p">(</span><span class="n">traj</span><span class="o">=</span><span class="s">&#39;clusters&#39;</span><span class="p">,</span><span class="n">from_state</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">to_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="c"># Mean first passage time: 4258.1876808 frames.</span>
+<span class="c"># Mean first passage time: 4258.04559256 frames.</span>
 </pre></div>
 </div>
 <div class="figure align-center">
@@ -301,33 +302,33 @@ walker following the transition probabilities of the model is obtained:</p>
 </pre></div>
 </div>
 <p>Now as we did with the original trajectory:</p>
-<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [18]: </span><span class="n">bw</span><span class="o">=</span><span class="n">kinetic_1D_analysis</span><span class="p">(</span><span class="n">bw_traj</span><span class="p">)</span>
-<span class="c"># Trajectory loaded: 999881 time steps</span>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [18]: </span><span class="n">bw</span><span class="o">=</span><span class="n">kinetic_analysis</span><span class="p">(</span><span class="n">bw_traj</span><span class="p">)</span>
+<span class="c"># 999881 frames, 1 particles, 1 dimensions.</span>
 
 <span class="gp">In [19]: </span><span class="n">fpt_0_x</span><span class="p">,</span><span class="n">fpt_0_y</span>   <span class="o">=</span> <span class="n">bw</span><span class="o">.</span><span class="n">first_passage_time</span><span class="p">(</span><span class="n">to_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="c"># Mean first passage time: 2133.16498425 frames.</span>
+<span class="c"># Mean first passage time: 2310.47971147 frames.</span>
 
 <span class="gp">In [20]: </span><span class="n">fpt_10_x</span><span class="p">,</span><span class="n">fpt_10_y</span> <span class="o">=</span> <span class="n">bw</span><span class="o">.</span><span class="n">first_passage_time</span><span class="p">(</span><span class="n">from_state</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">to_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="c"># Mean first passage time: 1086.4330475 frames.</span>
+<span class="c"># Mean first passage time: 1028.52939656 frames.</span>
 
 <span class="gp">In [21]: </span><span class="n">fpt_20_x</span><span class="p">,</span><span class="n">fpt_20_y</span> <span class="o">=</span> <span class="n">bw</span><span class="o">.</span><span class="n">first_passage_time</span><span class="p">(</span><span class="n">from_state</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">to_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">norm</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="c"># Mean first passage time: 4151.1302193 frames.</span>
+<span class="c"># Mean first passage time: 4692.91090041 frames.</span>
 </pre></div>
 </div>
 <div class="figure align-center">
 <a class="reference internal image-reference" href="_images/fpt_berez_model.png"><img alt="_images/fpt_berez_model.png" src="_images/fpt_berez_model.png" style="width: 568.4px; height: 428.4px;" /></a>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The figures were obtained with a trajectory x10 larger for a better statistics.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Please cite the following reference if the method is used for a scientific publication: <a class="reference external" href="http://dx.doi.org/10.1063/1.4764868">G. Berezovska, D. Prada-Gracia, S. Mostarda and F. Rao. J. Chem. Phys. 137, 194101 (2012)</a>.</p>
 </div>
 <div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last"><a class="reference internal" href="tutorial_kinetic_analysis.html#tutorial-kin-anal"><em>Tutorial Kinetic Analysis</em></a> for further details on attributes and methods related with this analysis.</p>
 </div>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">Please cite the following reference if the method is used for a scientific publication: XXXXXXX</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The figures were obtained with a trajectory x10 larger for a better statistics.</p>
 </div>
 </div>
 </div>

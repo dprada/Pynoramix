@@ -42,6 +42,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="molecular_systems.html" title="Molecular Systems"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -61,10 +64,9 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Getting Started</a><ul>
-<li><a class="reference internal" href="#last-developing-version">Last developing version</a></li>
 <li><a class="reference internal" href="#getting-pynoramix">Getting Pynoramix</a><ul>
-<li><a class="reference internal" href="#web"><em>Web</em></a></li>
-<li><a class="reference internal" href="#git-recommended"><em>Git (recommended)</em></a></li>
+<li><a class="reference internal" href="#the-testing-version">The testing version</a></li>
+<li><a class="reference internal" href="#the-last-developing-version">The last developing version</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#installing">Installing</a></li>
@@ -107,36 +109,35 @@
             
   <div class="section" id="getting-started">
 <span id="getting-started-pyn"></span><h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="last-developing-version">
-<h2>Last developing version<a class="headerlink" href="#last-developing-version" title="Permalink to this headline">¶</a></h2>
 <p>The whole project is public available at <a class="reference external" href="https://github.com/dprada/Pynoramix.git">https://github.com/dprada/Pynoramix.git</a> .
-There is not a stable version yet, for this reason the use of these libraries it is under your responsability.
-New functions or corrections are updated daily. Because of this, keeping an eye on the history of the project is highly recommended:
-<a class="reference external" href="https://github.com/dprada/Pynoramix/commits/devel">https://github.com/dprada/Pynoramix/commits/devel</a></p>
-</div>
+There is not stable version yet, for this reason the use of these libraries it is under your responsability.</p>
 <div class="section" id="getting-pynoramix">
 <h2>Getting Pynoramix<a class="headerlink" href="#getting-pynoramix" title="Permalink to this headline">¶</a></h2>
-<p>The last <strong>developing</strong> version can be obtained with any of the following procedures:</p>
-<div class="section" id="web">
-<h3><em>Web</em><a class="headerlink" href="#web" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="the-testing-version">
+<h3>The testing version<a class="headerlink" href="#the-testing-version" title="Permalink to this headline">¶</a></h3>
+<p>This version of pynoramix is the seed of the first stable version, and
+thereby the most robust configuration at the moment.
+All functions and attributes found on this documentation are available here.</p>
 <p>The source code can be downloaded in the web page <a class="reference external" href="https://github.com/dprada/Pynoramix.git">https://github.com/dprada/Pynoramix.git</a> as a zip or tar.gz file.
 Both options can be found with the options &#8220;zip&#8221; or &#8220;Downloads&#8221;:</p>
 <img alt="_images/screenshot_github.png" src="_images/screenshot_github.png" />
 </div>
-<div class="section" id="git-recommended">
-<h3><em>Git (recommended)</em><a class="headerlink" href="#git-recommended" title="Permalink to this headline">¶</a></h3>
-<p>The project can be cloned with git:</p>
-<div class="highlight-bash"><div class="highlight"><pre>git clone git://github.com/dprada/Pynoramix.git
+<div class="section" id="the-last-developing-version">
+<h3>The last developing version<a class="headerlink" href="#the-last-developing-version" title="Permalink to this headline">¶</a></h3>
+<p>In this version new functions or corrections are updated almost
+weekly. Because of this, keeping an eye on the history of the project
+is highly recommended:</p>
+<p><a class="reference external" href="https://github.com/dprada/Pynoramix/commits/master">https://github.com/dprada/Pynoramix/commits/master</a></p>
+<p>The last <strong>developing</strong> version of the project can be cloned with git:</p>
+<div class="highlight-bash"><div class="highlight"><pre>git clone -b master git://github.com/dprada/Pynoramix.git
 </pre></div>
 </div>
-<p>This former option is recommended. The libraries can be updated easily this way.</p>
+<p>The use of git is recommended since libraries can be easily updated.</p>
 <div class="admonition-todo admonition" id="index-0">
 <p class="first admonition-title">Todo</p>
-<p class="last">Adding the project in easy_install or setup.py (<a class="reference external" href="http://packages.python.org/an_example_pypi_project/setuptools.html#registering-your-project">http://packages.python.org/an_example_pypi_project/setuptools.html#registering-your-project</a>)</p>
-</div>
-<div class="admonition-todo admonition" id="index-1">
-<p class="first admonition-title">Todo</p>
-<p class="last">Links to raolab.com or GitHub from raolab.</p>
+<p class="last">In the future the project will be included in easy_install
+or setup.py
+(<a class="reference external" href="http://packages.python.org/an_example_pypi_project/setuptools.html#registering-your-project">http://packages.python.org/an_example_pypi_project/setuptools.html#registering-your-project</a>)</p>
 </div>
 </div>
 </div>
@@ -150,9 +151,16 @@ Both options can be found with the options &#8220;zip&#8221; or &#8220;Downloads
 <li>f2py</li>
 <li>python-dev (to fix the problem with file Python.h)</li>
 <li>liblapack and liblapack-dev (or similar: atlas, blas, mkl, ...)</li>
+<li>Pylab (recommended but not necessary)</li>
+</ul>
+<p>Mac users:</p>
+<ul class="simple">
+<li>Install gfortran via this link (<a class="reference external" href="http://gcc.gnu.org/wiki/GFortranBinaries#MacOS">http://gcc.gnu.org/wiki/GFortranBinaries#MacOS</a>)</li>
+<li>Install f2py via macports: sudo port install py-f2py</li>
+<li>Remember to use python2.7 instead of the stock python</li>
 </ul>
 <p>After solving the dependencies, the Makefile needs to be executed to compile the fortran core of Pynoramix.
-This installation script has some variables which can be fullfilled manually:</p>
+This installation script has some variables which can be optionally fullfilled manually:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">F2PY</span><span class="o">=</span>             <span class="c"># f2py command (f2py,f2py2,...)</span>
 <span class="nv">FCOMP</span><span class="o">=</span>            <span class="c"># fortran compiler command (gfortran, ifort,...)</span>
 <span class="nv">FTYPE</span><span class="o">=</span>            <span class="c"># fortran compiler for f2py (not manually given)</span>
@@ -169,20 +177,22 @@ At this point, and in the directory of Pynoramix, the following command needs to
 <p>If the installation run without troubles, Pynoramix is ready to be used.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">Do not forget to add Pynoramix to your python path:
-- export PYTHONPATH=$PYTHONPATH:/path/to/Pynoramix</p>
+<p class="last">Do not forget to add Pynoramix to your python path: export PYTHONPATH=$PYTHONPATH:/path/to/Pynoramix</p>
 </div>
 </div>
 <div class="section" id="being-updated">
 <h2>Being updated<a class="headerlink" href="#being-updated" title="Permalink to this headline">¶</a></h2>
-<p>The last modifications can be easily downloaded if you made a git clone.
-The command &#8216;git pull&#8217; can be executed over the Pynoramix directory to check and obtained the changes.</p>
+<p>The last modifications of the developing version can be easily downloaded with git.
+The command &#8216;git pull&#8217; executed over the Pynoramix directory checks and obtains the changes.
+Once this has been done, compiling the changed libraries is mandatory.
+Since the Makefile script detects the modified files, running it again is enough.</p>
 <div class="highlight-bash"><div class="highlight"><pre>git pull
+make
 </pre></div>
 </div>
-<p>Once this has been done, compiling the changed libraries is mandatory.
-Since the Makefile script detects the changes, running it again is enough:</p>
-<div class="highlight-bash"><div class="highlight"><pre>make
+<p>If at any moment the installation needs to be done from scratch, the
+following command removes the compiled files:</p>
+<div class="highlight-bash"><div class="highlight"><pre>make clean
 </pre></div>
 </div>
 </div>
@@ -200,6 +210,9 @@ Since the Makefile script detects the changes, running it again is enough:</p>
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="molecular_systems.html" title="Molecular Systems"
              >next</a> |</li>
