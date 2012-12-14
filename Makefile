@@ -13,8 +13,12 @@ FOPTS=
 # additional fortran flags
 FFLAGS=
 
-ifneq ($(fopt),)
-FOPTS=$(fopt)
+ifneq ($(comp),)
+FCOMP=$(comp)
+endif
+
+ifneq ($(opt),)
+FOPTS=$(opt)
 endif
 
 
@@ -165,8 +169,8 @@ io_formats/libxdrfile.so: xdrfile-1.1.1.tar.gz
 	@ if ! grep ': FAILED' INSTALL.log 1>/dev/null ; then echo '> io_formats/libxdrfile.so ...   OK';\
 	cp xdrfiles/lib/$(lxdrlib) io_formats/libxdrfile.so; rm -r xdrfiles; fi
 
-f90_libraries: pyn_fort_general.so pyn_water.so pyn_fort_enm.so pyn_fort_net.so pyn_fort_math.so pyn_fort_anal_trajs.so \
-	pyn_fort_kin_anal.so pyn_fort_mss.so io_formats/libdcdfile.so io_formats/libbinfile.so io_formats/libcell2box.so
+f90_libraries: pyn_fort_general.so pyn_fort_enm.so pyn_fort_net.so pyn_fort_math.so pyn_fort_anal_trajs.so \
+	pyn_fort_kin_anal.so io_formats/libdcdfile.so io_formats/libbinfile.so io_formats/libcell2box.so
 
 pyn_fort_general.so: pyn_fort_general.f90
 	@ echo '>>>>>> Compiling' $@ >> INSTALL.log

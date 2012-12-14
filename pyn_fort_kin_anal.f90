@@ -1778,7 +1778,7 @@ CONTAINS
                       EXIT
                    END IF
                 END DO
-                IF (inside==.TRUE.) EXIT
+                IF (inside.eqv..TRUE.) EXIT
              END DO
           ELSE
              DO lll=1,num_sel_dim
