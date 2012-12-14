@@ -509,6 +509,9 @@ SUBROUTINE SYMMETRIZE_NET(newKmax,TT_tau,TT_ind,TT_start,Pe,newKtot,T_ind,T_tau,
 
   DEALLOCATE(F_ind,flux,salidas,SL)
 
+  Pe=Pe/2.0d0
+  TT_tau=TT_tau/2.0d0
+
 
 END SUBROUTINE SYMMETRIZE_NET
 

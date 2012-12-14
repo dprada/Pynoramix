@@ -3,7 +3,7 @@ Berezovska2012
 
 The set of python libraries **Pynoramix** allows us to analyse 1-D
 trajectories as it has been propossed by G. Berezovska et al. in
-[`Accepted in JChemPhys <http://arxiv.org/abs/1208.3584>`_]. This method unveils the conformational macrostates kinetically
+`J. Chem. Phys. 137, 194101 (2012) <http://dx.doi.org/10.1063/1.4764868>`_. This method unveils the conformational macrostates kinetically
 "well defined" (see :ref:`accurate_kin_dec`) and the underlying accurate first
 order kinetic model.
 
@@ -51,23 +51,19 @@ the class *kinetic_1D_analysis* can be initialized:
 
 .. sourcecode:: ipython
 
-   In [2]: test=kinetic_1D_analysis('traj.oup',column=1)
-   # Trajectory loaded: 999901 time steps
+   In [2]: test=kinetic_analysis('traj.oup',columns=1)
+   # 999901 frames, 1 particles, 1 dimensions.
 
 Now, the trajectory is stored in the object *test*:
 
 .. sourcecode:: ipython
 
-   In [3]: print 'Column', test.file_column, 'in file', test.file_name
-   Column 1 in file traj.oup
+   In [3]: print test.traj[:,0,0]
+   array([-0.91936072,  0.74886578, -1.07525923, ..., -9.09667346, -8.40884264, -8.83918787])
 
-   In [4]: print test.num_particles, 'particles  with', test.dimensions, 'dimension', ':', test.num_frames, 'time steps.'
-   1 particles with 1 dimension: 999901 time steps.
-
-   In [5]: print test.traj[:]
-   [-0.91936072  0.74886578 -1.07525923 ..., -9.09667346 -8.40884264 -8.83918787]
-
-Since this trajectory is a numpy.ndarray, we can take adventage of its intrinsic numpy attributes and functions:
+Notice that the test.traj is a numpy array of dimensions:
+[test.frames,test.particles,test.dimensions]. This way we can take
+advantage of its intrinsic numpy attributes and functions:
 
 .. sourcecode:: ipython
 
@@ -75,17 +71,17 @@ Since this trajectory is a numpy.ndarray, we can take adventage of its intrinsic
    Min.: -11.4344662381    Mean: -3.40808122446    Max.: 2.78106514618
 
 Our object *test* has the attributes and methods of a
-*kinetic_1D_analysis* class. For instance, the histogram can be built as:
+*kinetic_analysis* class. For instance, the histogram can be built as:
 
 .. sourcecode:: ipython
 
-   In [7]: hx,hy=test.histogram(delta_x=0.20,segment=[-12.0,4.0],norm=False)
+   In [7]: hx,hy=test.histogram(delta=0.20,segment=[-12.0,4.0],norm=False)
 
 And plotted with pylab as:
 
 .. sourcecode:: ipython
 
-   In [8]: import pylab as pylab
+   In [8]: import pylab
 
    In [9]: pylab.plot(hx,hy,'b-')
 
@@ -108,18 +104,17 @@ three parameters:
 - bins: The former cumulative distribution has to be built up in a discrete way.
 
 - granularity: The kinetic model obtained will have a degree of
-  resolution up to the granularity parameter used by the Markov Clustering Algorithm.
+  resolution up to the granularity parameter used by the Markov Clustering Algorithm (MCL).
 
 
 .. sourcecode:: ipython
 
    In [3]: test.berezovska2012(window=10,granularity=1.2,bins=15,verbose=True)
    # Network:
-   # 1247 nodes
-   # 66143 links out
-   # 1999760.0 total weight nodes
+   # 97 nodes
+   # 1057 links out
+   # 999880.0 total weight nodes
    # Number of clusters:  3
-
 
 The algorithm decomposes this trajectory into 3 macro-states or
 clusters. This way, we can find a clusters trajectory according to
@@ -127,7 +122,7 @@ this decomposition.
 
 .. sourcecode:: ipython
 
-   In [4]: print test.traj_clusters
+   In [4]: print test.traj_clusters[:,0,0]
    [0 0 0 ..., 1 1 1]
 
 
@@ -145,17 +140,17 @@ We can now have a look to the histograms of these 3 macro-states.
 
 .. sourcecode:: ipython
 
-   In [6]: hx_c0,hy_c0 = test.histogram(cluster=0,delta_x=0.20,segment=[-12.0,4.0],norm=False)
-   In [7]: hx_c1,hy_c1 = test.histogram(cluster=1,delta_x=0.20,segment=[-12.0,4.0],norm=False)
-   In [8]: hx_c2,hy_c2 = test.histogram(cluster=2,delta_x=0.20,segment=[-12.0,4.0],norm=False)
+   In [6]: hx_c0,hy_c0 = test.histogram(cluster=0,delta=0.20,segment=[-12.0,4.0],norm=False)
+   In [7]: hx_c1,hy_c1 = test.histogram(cluster=1,delta=0.20,segment=[-12.0,4.0],norm=False)
+   In [8]: hx_c2,hy_c2 = test.histogram(cluster=2,delta=0.20,segment=[-12.0,4.0],norm=False)
 
 
 .. figure:: ../tutorials/kinetic_1D_analysis/histo_color_ganna.png
    :align: center
    :scale: 70 %
 
-Kinetic Model
-.............
+Kinetic Model and Flux between clusters
+.......................................
 
 A first order kinetic model can be computed with these three
 macro-states. The model should be written as a master equation where the
@@ -188,7 +183,7 @@ number of transitions among them.
    In [9]: test.kinetic_network(traj='clusters',verbose=True)
    # Network:
    # 3 nodes
-   # 8 links out
+   # 7 links out
    # 999880.0 total weight nodes
 
 Before getting the transision probabilities, or rates, detailed
@@ -199,26 +194,34 @@ impossed symmetrising the network.
 
    In [10]: test.network_clusters.symmetrize(new=False,verbose=False)
 
-Now, the transition probabilities can be computed as:
+The flux, number of transitions along the trajectory, is stored as the
+weight of a given link. This way, the flux from cluster 0 to cluster 1:
+
+.. sourcecode:: ipython
+
+   In [28]: test.network_clusters.node[0].link[1]
+   264.5
+
+Notice that the number is not an integer due to the symmetrization of the network.
+
+Now, the transition probabilities can be computed normalizing the flux:
 
 .. sourcecode:: ipython
 
    In [11]: for ii in range(3):
       ....:         ww=test.network_clusters.node[ii].weight
-      ....:     for jj in range(3):
+      ....:     for jj,kk in test.network_clusters.node[ii].link.iteritems():
       ....:             if ii!=jj :
-      ....:                 print 'P'+str(jj)+str(ii)+'=', test.network_clusters.node[ii].link[jj]/ww
+      ....:                 print 'P'+str(jj)+str(ii)+'=', kk/ww
       ....: 
-   P10= 0.00050770805942
-   P20= 7.88308262315e-05
-   P01= 0.000952855660861
-   P21= 7.04514351838e-06
-   P02= 0.000229245128541
-   P12= 1.09164346924e-05
+   P10= 0.000494643543406
+   P20= 7.29342086685e-05
+   P01= 0.000937845154496
+   P02= 0.00021297277225
 
-Since detailed balance condition is fulfilled by construction,
-stationary solution of the model is given by the occupation probabilities
-(:math:`P^{s}_{0}`,:math:`P^{s}_{1}`,:math:`P^{s}_{2}`):
+Since detailed balance condition is fulfilled by construction, the
+stationary solution of the model is given by the occupation
+probabilities (:math:`P^{s}_{0}`, :math:`P^{s}_{1}`, :math:`P^{s}_{2}`):
 
 .. sourcecode:: ipython
 
@@ -226,9 +229,9 @@ stationary solution of the model is given by the occupation probabilities
    In [13]: for ii in range(3):
       ....:     print 'P'+str(ii)+'^s =', test.network_clusters.node[ii].weight/ww
       ....: 
-   P0^s = 0.532850442053
-   P1^s = 0.283917570108
-   P2^s = 0.183231987839
+   P0^s = 0.534792675121
+   P1^s = 0.282063347602
+   P2^s = 0.183143977277
 
 
 Kinetic observables
@@ -245,13 +248,13 @@ extracted from the trajectory:
 .. sourcecode:: ipython
 
    In [14]: fpt_0_x,fpt_0_y = test.first_passage_time(traj='clusters',to_state=0,norm=False,verbose=True)
-   # Mean first passage time: 2339.58694091 frames.
+   # Mean first passage time: 2344.27167283 frames.
 
    In [15]: fpt_10_x,fpt_10_y = test.first_passage_time(traj='clusters',from_state=1,to_state=0,norm=False,verbose=True)
-   # Mean first passage time: 1092.56044147 frames.
+   # Mean first passage time: 1092.77053998 frames.
 
    In [16]: fpt_20_x,fpt_20_y = test.first_passage_time(traj='clusters',from_state=2,to_state=0,norm=False,verbose=True)
-   # Mean first passage time: 4258.1876808 frames.
+   # Mean first passage time: 4258.04559256 frames.
 
 
 .. figure:: ../tutorials/kinetic_1D_analysis/fpt_berez_traj.png
@@ -271,28 +274,29 @@ Now as we did with the original trajectory:
 
 .. sourcecode:: ipython
 
-   In [18]: bw=kinetic_1D_analysis(bw_traj)
-   # Trajectory loaded: 999881 time steps
+   In [18]: bw=kinetic_analysis(bw_traj)
+   # 999881 frames, 1 particles, 1 dimensions.
 
    In [19]: fpt_0_x,fpt_0_y   = bw.first_passage_time(to_state=0,norm=False,verbose=True)
-   # Mean first passage time: 2133.16498425 frames.
+   # Mean first passage time: 2310.47971147 frames.
 
    In [20]: fpt_10_x,fpt_10_y = bw.first_passage_time(from_state=1,to_state=0,norm=False,verbose=True)
-   # Mean first passage time: 1086.4330475 frames.
+   # Mean first passage time: 1028.52939656 frames.
 
    In [21]: fpt_20_x,fpt_20_y = bw.first_passage_time(from_state=2,to_state=0,norm=False,verbose=True)
-   # Mean first passage time: 4151.1302193 frames.
+   # Mean first passage time: 4692.91090041 frames.
 
 
 .. figure:: ../tutorials/kinetic_1D_analysis/fpt_berez_model.png
    :align: center
    :scale: 70 %
 
-.. note:: The figures were obtained with a trajectory x10 larger for a better statistics.
 
-.. seealso:: :ref:`tutorial_kin_anal` for further details on attributes and methods related with this analysis. 
 
 .. Warning::
 
-   Please cite the following reference if the method is used for a scientific publication: XXXXXXX
+   Please cite the following reference if the method is used for a scientific publication: `G. Berezovska, D. Prada-Gracia, S. Mostarda and F. Rao. J. Chem. Phys. 137, 194101 (2012) <http://dx.doi.org/10.1063/1.4764868>`_.
 
+.. seealso:: :ref:`tutorial_kin_anal` for further details on attributes and methods related with this analysis. 
+
+.. note:: The figures were obtained with a trajectory x10 larger for a better statistics.

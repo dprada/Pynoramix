@@ -4,24 +4,18 @@
 Getting Started
 ***************
 
-Last developing version
-=======================
-
 The whole project is public available at https://github.com/dprada/Pynoramix.git .
-There is not a stable version yet, for this reason the use of these libraries it is under your responsability.
-New functions or corrections are updated daily. Because of this, keeping an eye on the history of the project is highly recommended:
-https://github.com/dprada/Pynoramix/commits/devel
-
-
+There is not stable version yet, for this reason the use of these libraries it is under your responsability.
 
 Getting Pynoramix
 =================
 
-The last **developing** version can be obtained with any of the following procedures:
+The testing version
++++++++++++++++++++
 
-
-*Web*
-+++++
+This version of pynoramix is the seed of the first stable version, and
+thereby the most robust configuration at the moment.
+All functions and attributes found on this documentation are available here.
 
 The source code can be downloaded in the web page https://github.com/dprada/Pynoramix.git as a zip or tar.gz file.
 Both options can be found with the options "zip" or "Downloads":
@@ -29,21 +23,27 @@ Both options can be found with the options "zip" or "Downloads":
 .. image:: _static/screenshot_github.png
 
 
-*Git (recommended)*
-+++++++++++++++++++
+The last developing version
++++++++++++++++++++++++++++
 
-The project can be cloned with git:
+In this version new functions or corrections are updated almost
+weekly. Because of this, keeping an eye on the history of the project
+is highly recommended:
+
+https://github.com/dprada/Pynoramix/commits/master
+
+The last **developing** version of the project can be cloned with git:
 
 .. sourcecode:: bash
 
-   git clone git://github.com/dprada/Pynoramix.git
+   git clone -b master git://github.com/dprada/Pynoramix.git
 
-This former option is recommended. The libraries can be updated easily this way.
+The use of git is recommended since libraries can be easily updated.
 
-.. Todo::
-   Adding the project in easy_install or setup.py (http://packages.python.org/an_example_pypi_project/setuptools.html#registering-your-project)
-.. Todo::
-   Links to raolab.com or GitHub from raolab.
+.. Todo:: In the future the project will be included in easy_install
+   or setup.py
+   (http://packages.python.org/an_example_pypi_project/setuptools.html#registering-your-project)
+
 
 
 
@@ -58,10 +58,18 @@ Pynoramix depends on some packages:
 - f2py
 - python-dev (to fix the problem with file Python.h)
 - liblapack and liblapack-dev (or similar: atlas, blas, mkl, ...)
+- Pylab (recommended but not necessary)
+
+Mac users:
+
+- Install gfortran via this link (http://gcc.gnu.org/wiki/GFortranBinaries#MacOS)
+- Install f2py via macports: sudo port install py-f2py
+- Remember to use python2.7 instead of the stock python
+
 
 
 After solving the dependencies, the Makefile needs to be executed to compile the fortran core of Pynoramix.
-This installation script has some variables which can be fullfilled manually:
+This installation script has some variables which can be optionally fullfilled manually:
 
 .. sourcecode:: bash
 
@@ -81,24 +89,27 @@ At this point, and in the directory of Pynoramix, the following command needs to
 
 If the installation run without troubles, Pynoramix is ready to be used.
 
-.. warning:: Do not forget to add Pynoramix to your python path:
-   - export PYTHONPATH=$PYTHONPATH:/path/to/Pynoramix
+.. warning:: Do not forget to add Pynoramix to your python path: export PYTHONPATH=$PYTHONPATH:/path/to/Pynoramix
 
 
 Being updated
 =============
 
-The last modifications can be easily downloaded if you made a git clone.
-The command 'git pull' can be executed over the Pynoramix directory to check and obtained the changes.
+The last modifications of the developing version can be easily downloaded with git.
+The command 'git pull' executed over the Pynoramix directory checks and obtains the changes.
+Once this has been done, compiling the changed libraries is mandatory. 
+Since the Makefile script detects the modified files, running it again is enough.
 
 .. sourcecode:: bash
 
    git pull
+   make
 
-Once this has been done, compiling the changed libraries is mandatory. 
-Since the Makefile script detects the changes, running it again is enough:
+
+If at any moment the installation needs to be done from scratch, the
+following command removes the compiled files:
 
 .. sourcecode:: bash
 
-   make
+   make clean
 
