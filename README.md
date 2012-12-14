@@ -1,11 +1,10 @@
 
-# Editing the Documentations:
+# Editing the Documentation:
 
 
 Find the source files and further instructions in:
 
 > master@doc/
-
 > master@doc/README
 
 ------------------------------
@@ -20,8 +19,6 @@ Compile in the branch "master" the html pages:
 Update the branch "gh-pages":
 
 > master@.: git checkout gh-pages
-
 > gh-pages@.: ./update_html
-
 > gh-pages@.: git push
 
