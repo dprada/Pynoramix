@@ -48,7 +48,7 @@ SUBROUTINE ind_wat_limit_4_nosim (mss,aux,hbs,hbdists,num_wats,num_atoms,num_hbs
         END IF
         IF (bonds_o(ind_o)==0) THEN
            first_shell(ind_o,3)=ind_oh
-           dist_first_shell(ind_oh,3)=hbdists(ii)
+           dist_first_shell(ind_o,3)=hbdists(ii)
            bonds_o(ind_o)=1
         ELSE
            IF (bonds_o(ind_o)==1) THEN
@@ -80,7 +80,6 @@ SUBROUTINE ind_wat_limit_4_nosim (mss,aux,hbs,hbdists,num_wats,num_atoms,num_hbs
         END IF
      END DO
   ELSE IF (ANY((/1/)==definition_hbs)) THEN
-     print*,'ENTRA'
      DO ii=1,num_hbs
         ind_oh=aux(hbs(ii,1)+1,1)+1
         hi=aux(hbs(ii,2)+1,2)
@@ -96,7 +95,7 @@ SUBROUTINE ind_wat_limit_4_nosim (mss,aux,hbs,hbdists,num_wats,num_atoms,num_hbs
         END IF
         IF (bonds_o(ind_o)==0) THEN
            first_shell(ind_o,3)=ind_oh
-           dist_first_shell(ind_oh,3)=hbdists(ii)
+           dist_first_shell(ind_o,3)=hbdists(ii)
            bonds_o(ind_o)=1
         ELSE
            IF (bonds_o(ind_o)==1) THEN
@@ -128,14 +127,6 @@ SUBROUTINE ind_wat_limit_4_nosim (mss,aux,hbs,hbdists,num_wats,num_atoms,num_hbs
         END IF
      END DO
   END IF
-
-  print*,'>>',first_shell(1,:)
-  print*,'>>',dist_first_shell(1,:)
-  print*,'>>',first_shell(786,:)
-  print*,'>>',dist_first_shell(786,:)
-  print*,'>>',first_shell(173,:)
-  print*,'>>',dist_first_shell(173,:)
-
 
   DO kk=1,num_wats
 
@@ -708,5 +699,73 @@ SUBROUTINE DOY_VUELTA_KEY (key,key_aux)
 END SUBROUTINE DOY_VUELTA_KEY
 
 
+SUBROUTINE addbonds (mss,mss_ind,bonds,num_wats,num_bonds)
+
+
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN)::num_wats,num_bonds
+  INTEGER,DIMENSION(num_wats,17),INTENT(INOUT)::mss
+  INTEGER,DIMENSION(num_wats,17),INTENT(INOUT)::mss_ind
+  INTEGER,DIMENSION(num_bonds),INTENT(IN)::bonds
+  
+  INTEGER::ii,jj,kk
+
+  LOGICAL,DIMENSION(num_wats)::dentro
+  LOGICAL,DIMENSION(17)::corrijo
+
+  dentro=.FALSE.
+  DO ii=1,num_bonds
+     dentro(bonds(ii)+1)=.TRUE.
+  END DO
+
+  DO jj=1,num_wats
+     corrijo=.FALSE.
+     DO kk=1,5
+        IF (dentro(mss_ind(jj,kk))==.TRUE.) THEN
+           IF (kk==1) THEN
+              IF (mss_ind(jj,4)==0) THEN
+                 corrijo(4)=.TRUE.
+              ELSE
+                 IF (mss_ind(jj,5)==0) THEN
+                    corrijo(5)=.TRUE.
+                 END IF
+              END IF
+           ELSEIF (kk==2) THEN
+              IF (mss_ind(jj,8)==0) THEN
+                 corrijo(8)=.TRUE.
+              END IF
+           ELSEIF (kk==3) THEN
+              IF (mss_ind(jj,11)==0) THEN
+                 corrijo(11)=.TRUE.
+              END IF
+           ELSEIF (kk==4) THEN
+              IF (mss_ind(jj,13)==0) THEN
+                 corrijo(13)=.TRUE.
+              ELSE
+                 IF (mss_ind(jj,14)==0) THEN
+                    corrijo(14)=.TRUE.
+                 END IF
+              END IF
+           ELSEIF (kk==5) THEN
+              IF (mss_ind(jj,16)==0) THEN
+                 corrijo(16)=.TRUE.
+              ELSE
+                 IF (mss_ind(jj,17)==0) THEN
+                    corrijo(17)=.TRUE.
+                 END IF
+              END IF
+           END IF
+        END IF
+     END DO
+     DO kk=1,17
+        IF (corrijo(kk)==.TRUE.) THEN
+           mss_ind(jj,kk)=-1
+           mss(jj,kk)=-1
+        END IF
+     END DO
+  END DO
+
+END SUBROUTINE addbonds
 
 END MODULE GLOB

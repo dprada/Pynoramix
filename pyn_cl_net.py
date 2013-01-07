@@ -568,7 +568,7 @@ class network():
 
         if format == 'water':
             for ii in range(self.num_nodes):
-                line=ff.readline()
+                line=fff.readline()
                 mss=line.split()[1]+' |'
                 for jj in range(2,6):
                     mss=mss+' '+line.split()[jj]
@@ -981,10 +981,12 @@ class network():
 
         if mode=='pfold':
 
-            A=A+1
-            B=B+1
-            cfep_out,key_cfep1,key_cfep2=f_net.cfep_pfold(A,B,self.T_ind,self.T_wl,self.T_start,num_bins,num_iter,self.num_nodes,self.k_total)
-            return cfep_out,key_cfep1,key_cfep2
+            opt_bins=1
+            if num_bins<1:
+                num_bins=self.num_nodes
+                opt_bins=0
+            cfep_out,key_cfep=f_net.cfep_pfold2(opt_bins,A,B,self.T_ind,self.T_wl,self.T_start,num_bins,num_iter,self.num_nodes,self.k_total)
+            return cfep_out,key_cfep
 
         if mode=='mfpt':
 

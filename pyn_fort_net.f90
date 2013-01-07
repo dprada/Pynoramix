@@ -1273,6 +1273,7 @@ SUBROUTINE cfep_pfold (plot,info_1,info_2,A,B,T_ind,T_tau,T_start,length,num_ite
 
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::Pe
   
+  integer::AA,BB
   integer::i,j,times,jj,g
 
   double precision,dimension(:),allocatable::Pf,Pf2
@@ -1283,11 +1284,12 @@ SUBROUTINE cfep_pfold (plot,info_1,info_2,A,B,T_ind,T_tau,T_start,length,num_ite
   double precision::delta_cut
   double precision::Z,Za,Zab
 
+  AA=A+1
+  BB=B+1
 
   plot=0.0d0
   info_2=0.0d0
   info_1=0
-
 
   ALLOCATE(Pe(N_nodes))
   Pe=0.0d0
@@ -1302,14 +1304,16 @@ SUBROUTINE cfep_pfold (plot,info_1,info_2,A,B,T_ind,T_tau,T_start,length,num_ite
   Pf2=0.0d0
   appear=0.0d0
 
-  Pf2(A)=1.0d0
-  Pf2(B)=0.0d0
+  Pf2(AA)=1.0d0
+  Pf2(BB)=0.0d0
 
 
   DO times=1,num_iter
 
-     Pf2(A)=1.0d0
-     Pf2(B)=0.0d0
+     print*,times
+
+     Pf2(AA)=1.0d0
+     Pf2(BB)=0.0d0
      Pf=Pf2
      Pf2=0.0d0
      DO i=1,N_nodes
@@ -1321,8 +1325,8 @@ SUBROUTINE cfep_pfold (plot,info_1,info_2,A,B,T_ind,T_tau,T_start,length,num_ite
 
   END DO
 
-  Pf2(A)=1.0d0
-  Pf2(B)=0.0d0
+  Pf2(AA)=1.0d0
+  Pf2(BB)=0.0d0
   Pf=Pf2
   
   DEALLOCATE(Pf2)
@@ -1390,6 +1394,175 @@ SUBROUTINE cfep_pfold (plot,info_1,info_2,A,B,T_ind,T_tau,T_start,length,num_ite
 !  PRINT*,COUNT(filtro)
 
 END SUBROUTINE cfep_pfold
+
+
+SUBROUTINE cfep_pfold2 (opt_bins,plot,node_index,A,B,T_ind,T_tau,T_start,length,num_iter,N_nodes,Ktot)
+
+  implicit none
+
+  INTEGER,INTENT(IN)::opt_bins,A,B,N_nodes,Ktot,length,num_iter
+  INTEGER,DIMENSION(Ktot),INTENT(IN)::T_ind
+  DOUBLE PRECISION,DIMENSION(Ktot),INTENT(IN)::T_tau
+  INTEGER,DIMENSION(N_nodes+1),INTENT(IN)::T_start
+
+  DOUBLE PRECISION,DIMENSION(length,3),INTENT(OUT)::plot
+  INTEGER,DIMENSION(N_nodes),INTENT(OUT)::node_index
+
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::Pe
+  
+  integer::AA,BB
+  integer::i,j,times,jj,g,gg,ii,kk
+
+  double precision,dimension(:),allocatable::Pf,Pf2
+
+  INTEGER,dimension(:),allocatable::orderpf
+  
+  logical,dimension(:),allocatable::filtro,filtro2
+  double precision::cut
+  double precision::delta_cut
+  double precision::Z,Za,Zab
+
+  AA=A+1
+  BB=B+1
+
+  plot=0.0d0
+  node_index=0
+
+  ALLOCATE(Pe(N_nodes))
+  Pe=0.0d0
+  DO i=1,N_nodes
+     DO j=T_start(i),T_start(i+1)
+        Pe(i)=Pe(i)+T_tau(j)
+     END DO
+  END DO
+
+  ALLOCATE(Pf(N_nodes),Pf2(N_nodes))
+  Pf=0.0d0
+  Pf2=0.0d0
+
+  Pf2(AA)=1.0d0
+  Pf2(BB)=0.0d0
+
+
+  DO times=1,num_iter
+
+     Pf2(AA)=1.0d0
+     Pf2(BB)=0.0d0
+     Pf=Pf2
+     Pf2=0.0d0
+     DO i=1,N_nodes
+        DO j=T_start(i)+1,T_start(i+1)
+           jj=T_ind(j)
+           Pf2(i)=Pf2(i)+(T_tau(j)*Pf(jj))/Pe(i)
+        END DO
+     END DO
+
+  END DO
+
+  Pf2(AA)=1.0d0
+  Pf2(BB)=0.0d0
+  Pf=Pf2
+  
+  DEALLOCATE(Pf2)
+
+  IF (opt_bins==1) THEN
+
+     ALLOCATE(filtro(N_nodes),filtro2(N_nodes))
+     
+     filtro2=.false.
+     
+     Z=sum(Pe(:),dim=1)
+     
+     delta_cut=1.0d0/(length*1.0d0)
+     
+     DO g=1,length
+        
+        cut=delta_cut*g
+        
+        Za=0.0d0
+        Zab=0.0d0
+        filtro=.false.
+        
+        DO i=1,N_nodes
+           IF (Pf(i)<cut) THEN 
+              filtro(i)=.true.
+           END IF
+        END DO
+        
+        DO i=1,N_nodes
+           IF (filtro(i).eqv..true.) THEN
+              Za=Za+Pe(i)
+              DO j=T_start(i)+1,T_start(i+1)
+                 jj=T_ind(j)
+                 IF (filtro(jj).eqv..false.) THEN
+                    Zab=Zab+T_tau(j)
+                 END IF
+              END DO
+           END IF
+        END DO
+        
+        
+        !WRITE(154,*) ((Za*1.0d0)/(Z*1.0d0)),-log((Zab*1.0d0)/(Z*1.0d0)),cut
+        plot(g,1)=(Za/Z)
+        plot(g,2)=-log(Zab/Z)
+        plot(g,3)=cut
+        
+        DO i=1,N_nodes
+           IF (filtro(i).eqv..true.) THEN 
+              IF (filtro2(i).eqv..false.) THEN
+                 filtro2(i)=.true.
+                 node_index(i)=g-1
+              END IF
+           END IF
+        END DO
+        
+     END DO
+     
+  ELSE
+
+     Z=sum(Pe(:),dim=1)
+
+     ALLOCATE(filtro(N_nodes),orderpf(N_nodes))
+
+     filtro=.TRUE.
+
+     DO i=1,N_nodes
+        j=MAXLOC(Pf,DIM=1,MASK=filtro)
+        orderpf(i)=j
+        filtro(j)=.FALSE.
+     END DO
+
+     filtro=.false.
+     Za=0.0d0
+
+     DO i=1,N_nodes
+
+        g=orderpf(i)
+        filtro(g)=.true.
+        Za=Za+Pe(g)
+        Zab=0.0d0
+
+        DO j=1,i
+           gg=orderpf(j)
+           DO jj=T_start(gg)+1,T_start(gg+1)
+              kk=T_ind(jj)
+              IF (filtro(kk).eqv..false.) THEN
+                 Zab=Zab+T_tau(jj)
+              END IF
+           END DO
+        END DO
+
+        plot(i,1)=(Za/Z)
+        plot(i,2)=-log(Zab/Z)
+        plot(i,3)=Pf(g)
+        node_index(g)=i
+
+     END DO
+
+  END IF
+
+
+END SUBROUTINE cfep_pfold2
 
 
 
