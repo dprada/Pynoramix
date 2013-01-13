@@ -699,12 +699,12 @@ SUBROUTINE DOY_VUELTA_KEY (key,key_aux)
 END SUBROUTINE DOY_VUELTA_KEY
 
 
-SUBROUTINE addbonds (mss,mss_ind,bonds,num_wats,num_bonds)
+SUBROUTINE addbonds (tipo,mss,mss_ind,bonds,num_wats,num_bonds)
 
 
   IMPLICIT NONE
 
-  INTEGER,INTENT(IN)::num_wats,num_bonds
+  INTEGER,INTENT(IN)::tipo,num_wats,num_bonds
   INTEGER,DIMENSION(num_wats,17),INTENT(INOUT)::mss
   INTEGER,DIMENSION(num_wats,17),INTENT(INOUT)::mss_ind
   INTEGER,DIMENSION(num_bonds),INTENT(IN)::bonds
@@ -719,52 +719,89 @@ SUBROUTINE addbonds (mss,mss_ind,bonds,num_wats,num_bonds)
      dentro(bonds(ii)+1)=.TRUE.
   END DO
 
-  DO jj=1,num_wats
-     corrijo=.FALSE.
-     DO kk=1,5
-        IF (dentro(mss_ind(jj,kk))==.TRUE.) THEN
-           IF (kk==1) THEN
-              IF (mss_ind(jj,4)==0) THEN
-                 corrijo(4)=.TRUE.
-              ELSE
-                 IF (mss_ind(jj,5)==0) THEN
-                    corrijo(5)=.TRUE.
+  SELECT CASE (tipo)
+     CASE (1)
+        DO jj=1,num_wats
+           corrijo=.FALSE.
+           DO kk=1,5
+              IF (dentro(mss_ind(jj,kk))==.TRUE.) THEN
+                 IF (kk==1) THEN
+                    IF (mss_ind(jj,4)==0) THEN
+                       corrijo(4)=.TRUE.
+                    ELSE
+                       IF (mss_ind(jj,5)==0) THEN
+                          corrijo(5)=.TRUE.
+                       END IF
+                    END IF
+                 ELSEIF (kk==2) THEN
+                    IF (mss_ind(jj,8)==0) THEN
+                       corrijo(8)=.TRUE.
+                    END IF
+                 ELSEIF (kk==3) THEN
+                    IF (mss_ind(jj,11)==0) THEN
+                       corrijo(11)=.TRUE.
+                    END IF
+                 ELSEIF (kk==4) THEN
+                    IF (mss_ind(jj,13)==0) THEN
+                       corrijo(13)=.TRUE.
+                    ELSE
+                       IF (mss_ind(jj,14)==0) THEN
+                          corrijo(14)=.TRUE.
+                       END IF
+                    END IF
+                 ELSEIF (kk==5) THEN
+                    IF (mss_ind(jj,16)==0) THEN
+                       corrijo(16)=.TRUE.
+                    ELSE
+                       IF (mss_ind(jj,17)==0) THEN
+                          corrijo(17)=.TRUE.
+                       END IF
+                    END IF
                  END IF
               END IF
-           ELSEIF (kk==2) THEN
-              IF (mss_ind(jj,8)==0) THEN
-                 corrijo(8)=.TRUE.
+           END DO
+           DO kk=1,17
+              IF (corrijo(kk)==.TRUE.) THEN
+                 mss_ind(jj,kk)=-1
+                 mss(jj,kk)=-1
               END IF
-           ELSEIF (kk==3) THEN
-              IF (mss_ind(jj,11)==0) THEN
-                 corrijo(11)=.TRUE.
-              END IF
-           ELSEIF (kk==4) THEN
-              IF (mss_ind(jj,13)==0) THEN
-                 corrijo(13)=.TRUE.
-              ELSE
-                 IF (mss_ind(jj,14)==0) THEN
-                    corrijo(14)=.TRUE.
+           END DO
+        END DO
+
+     CASE (2)
+
+        DO jj=1,num_wats
+           DO kk=1,17
+              ii=mss_ind(jj,kk)
+              IF (ii>0) THEN
+                 IF (dentro(ii)==.TRUE.) THEN
+                    mss(jj,kk)=-mss(jj,kk)
                  END IF
               END IF
-           ELSEIF (kk==5) THEN
-              IF (mss_ind(jj,16)==0) THEN
-                 corrijo(16)=.TRUE.
-              ELSE
-                 IF (mss_ind(jj,17)==0) THEN
-                    corrijo(17)=.TRUE.
+           END DO
+        END DO
+
+
+     CASE (3)
+
+        DO jj=1,num_wats
+           DO kk=1,5
+              ii=mss_ind(jj,kk)
+              IF (ii>0) THEN
+                 IF (dentro(ii)==.TRUE.) THEN
+                    mss(jj,kk)=-mss(jj,kk)
                  END IF
               END IF
-           END IF
-        END IF
-     END DO
-     DO kk=1,17
-        IF (corrijo(kk)==.TRUE.) THEN
-           mss_ind(jj,kk)=-1
-           mss(jj,kk)=-1
-        END IF
-     END DO
-  END DO
+           END DO
+        END DO
+
+
+
+     CASE DEFAULT
+
+        PRINT*,'NO OPTION CHOOSEN'
+
+     END SELECT
 
 END SUBROUTINE addbonds
 

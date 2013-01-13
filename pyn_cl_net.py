@@ -985,7 +985,7 @@ class network():
             if num_bins<1:
                 num_bins=self.num_nodes
                 opt_bins=0
-            cfep_out,key_cfep=f_net.cfep_pfold2(opt_bins,A,B,self.T_ind,self.T_wl,self.T_start,num_bins,num_iter,self.num_nodes,self.k_total)
+            cfep_out,key_cfep=f_net.cfep_pfold3(opt_bins,A,B,self.T_ind,self.T_wl,self.T_start,num_bins,num_iter,self.num_nodes,self.k_total)
             return cfep_out,key_cfep
 
         if mode=='mfpt':
