@@ -2270,6 +2270,253 @@ SUBROUTINE MCL (N_sets,comunidades,granularity,epsilon,iterations,T_start,T_ind,
 
 END SUBROUTINE MCL
 
+
+SUBROUTINE DENDO_TIME (num_steps,N_basins,pertenece_a,T_ind,T_tau,T_start,N_nodes,Ktot)   !!!! Para revisar!!!! T_tau debe ser double precision
+
+
+  IMPLICIT NONE
+  
+
+  INTEGER,INTENT(IN)::num_steps,N_nodes,Ktot,N_basins
+  INTEGER,DIMENSION(Ktot),INTENT(IN)::T_ind
+  DOUBLE PRECISION,DIMENSION(Ktot),INTENT(IN)::T_tau
+  INTEGER,DIMENSION(N_nodes+1),INTENT(IN)::T_start
+  INTEGER,DIMENSION(N_nodes),INTENT(IN)::pertenece_a
+
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::Pe,poblacion,columna,columna2
+  DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::posicion
+  LOGICAL,DIMENSION(:),ALLOCATABLE::filtro,filtro2
+  INTEGER,DIMENSION(:),ALLOCATABLE::representante,salto,vertical,etiqueta
+
+  INTEGER::N,i,j,g,h,ii,jj,gg,hh,veces,dim2,dim
+  INTEGER::factor,candidato
+  DOUBLE PRECISION::aux
+  LOGICAL::inter,bandera,bandera2
+
+  dim=1
+
+  ALLOCATE(representante(N_basins),poblacion(N_basins),Pe(N_nodes))
+  representante=0
+  poblacion=0.0d0
+  Pe=0.0d0
+
+  DO ii=1,N_nodes
+     DO jj=T_start(ii)+1,T_start(ii+1)
+        Pe(ii)=Pe(ii)+T_tau(jj)
+     END DO
+  END DO
+
+  DO ii=1,N_nodes
+     gg=pertenece_a(ii)+1
+     IF (poblacion(gg)<Pe(ii)) THEN
+        representante(gg)=ii
+        poblacion(gg)=Pe(ii)
+     END IF
+  END DO
+
+  N=N_nodes
+  dim2=dim
+
+  ALLOCATE(columna(N),filtro(N),columna2(N),filtro2(N))
+  ALLOCATE(salto(N_basins),vertical(N_basins))
+  salto=0
+  vertical=0
+
+  DO gg=1,N_basins
+
+     print*,'gg',gg
+
+     filtro=.false.
+     columna=0.0d0
+     filtro2=.false.
+     columna2=0.0d0
+
+     g=representante(gg)
+
+     DO i=T_start(g)+1,T_start(g+1)
+        filtro(T_ind(i))=.true.
+        columna(T_ind(i))=T_tau(i)
+     END DO
+
+     DO veces=1,num_steps
+
+        filtro2=.false.
+        columna2=0.0d0
+   
+        DO i=1,N
+           IF (filtro(i)==.true.) THEN
+              
+              DO j=T_start(i)+1,T_start(i+1)
+                 columna2(T_ind(j))=columna2(T_ind(j))+T_tau(j)*columna(i)
+                 filtro2(T_ind(j))=.true.
+              END DO
+              
+           END IF
+        END DO
+
+        filtro=.false.
+        columna=0.0d0
+        filtro=filtro2
+        columna=columna2
+
+        aux=0.0d0
+        aux=sum(columna(:),DIM=1,MASK=filtro)
+        
+        !!print*,veces+1,COUNT(filtro(:),DIM=1),sum(columna(:),DIM=1,MASK=filtro)
+        
+        columna=columna/aux
+
+        !! Detecto basin
+        
+        h=0
+        inter=.false.
+        
+        DO WHILE (h<=dim2)
+           
+           candidato=maxloc(columna(:),DIM=1,MASK=filtro2)
+           
+           IF (Pe(candidato)>Pe(g)) THEN
+              inter=.true.
+              IF (pertenece_a(candidato)==pertenece_a(g)) THEN
+                 print*,'tenemos un problema con representante',g,candidato
+                 stop
+              END IF
+           ELSE
+              filtro2(candidato)=.false.
+              h=h+1
+           END IF
+           
+           IF (inter==.true.) THEN
+              exit
+           END IF
+           
+        END DO
+        
+        IF (inter==.true.) THEN
+           exit
+        END IF
+        
+        
+     END DO
+
+     salto(gg)=veces+1
+     vertical(gg)=pertenece_a(candidato)+1
+     IF (salto(gg)==(num_steps+2)) salto(gg)=num_steps
+
+  END DO
+!!CLOSE(333)
+  
+
+  DEALLOCATE(filtro)
+  ALLOCATE(etiqueta(N_basins),posicion(N_basins,3))
+  ALLOCATE(filtro(N_basins))
+  
+  etiqueta=0
+  filtro=.false.
+  posicion=0.0d0
+  
+  DO i=1,N_basins
+     etiqueta(i)=i
+  END DO
+
+  DO i=1,N_basins
+     IF (salto(i)==num_steps) THEN
+        vertical(i)=i
+        posicion(i,2)=salto(i)
+        posicion(i,3)=1.0d0
+        filtro(i)=.true.
+     END IF
+  END DO
+
+  DO i=1,N_basins
+     IF (filtro(i)==.false.) THEN
+        inter=.true.
+        DO WHILE (inter==.true.)
+           g=vertical(i)
+           IF (salto(i)>salto(g)) THEN
+              !            print*,'ya teniamos un problema'
+              vertical(i)=vertical(g)
+           ELSE
+              inter=.false.
+           END IF
+        END DO
+     END IF
+  END DO
+
+  factor=1
+
+  DO i=num_steps,1,-1
+     
+     bandera=.true.
+     DO WHILE (bandera==.true.)
+        bandera=.false.
+        DO j=1,N_basins
+           IF ((salto(j)==i).and.(filtro(j)==.false.)) THEN
+              bandera2=.false.
+              IF (filtro(vertical(j))==.false.) THEN
+                 print*,'Teniamos un problema',salto(j),salto(vertical(j))
+                 IF (salto(j)==salto(vertical(j))) THEN
+                    bandera=.true.
+                    bandera2=.true.
+                 END IF
+              END IF
+              
+              IF (bandera2==.false.) THEN
+                 factor=factor*(-1)
+                 
+                 !!WRITE(101,*)'#',factor
+                 
+                 posicion(j,2)=i
+                 posicion(j,3)=posicion(vertical(j),3)+factor
+                 !!WRITE(101,*)'#',posicion(j,2)
+                 DO jj=1,N_basins
+                    IF (factor>0) THEN
+                       IF ((filtro(jj)==.true.).and.(posicion(jj,3)>=posicion(j,3))) THEN
+                          posicion(jj,3)=posicion(jj,3)+factor
+                       END IF
+                    END IF
+                    IF (factor<0) THEN
+                       IF ((filtro(jj)==.true.).and.(posicion(jj,3)<=posicion(j,3))) THEN
+                          posicion(jj,3)=posicion(jj,3)+factor
+                       END IF
+                    END IF
+                 END DO
+                 
+                 filtro(j)=.true.
+                 
+              END IF
+           END IF
+        END DO
+     END DO
+     
+  END DO
+  
+  WRITE(666,*)'####'
+  DO i=1,N_basins
+     
+     WRITE(666,*)'#','altura',posicion(i,3),'minimo',etiqueta(i)
+     WRITE(666,*)' '
+     WRITE(666,*)posicion(i,1),posicion(i,3)
+     WRITE(666,*)posicion(i,2),posicion(i,3)
+     WRITE(666,*)' '
+     
+     IF ((vertical(i)/=0).and.(filtro(i)==.true.)) THEN
+        WRITE(666,*)posicion(i,2),posicion(i,3)
+        WRITE(666,*)posicion(i,2),posicion(vertical(i),3)
+        WRITE(666,*)' '
+     END IF
+     
+  END DO
+
+  DEALLOCATE(representante,poblacion,Pe)
+  DEALLOCATE(columna,filtro,columna2,filtro2)
+  DEALLOCATE(salto,vertical)
+  DEALLOCATE(etiqueta,posicion)
+
+  
+END SUBROUTINE DENDO_TIME
+
+
 END MODULE GLOB
 
 

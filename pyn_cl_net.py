@@ -922,9 +922,7 @@ class network():
 
         self.num_clusters,pfff=f_net.grad(self.T_ind,self.T_wl,self.T_start,self.num_nodes,self.k_total)
 
-
         Clust={}
-
         for ii in range(self.num_nodes):
             try:
                 Clust[pfff[ii]].append(ii)
@@ -933,18 +931,31 @@ class network():
                 Clust[pfff[ii]].append(ii)
 
 
-        a=0
-        for ii in Clust.keys():
+        aux=numpy.array(Clust.keys(),dtype=int)
+        weight_clusts=numpy.zeros((self.num_clusters),dtype=float)
+        for ii in range(aux.shape[0]):
+            for jj in Clust[aux[ii]]:
+                weight_clusts[ii]+=self.node[jj].weight
+
+        tosort=weight_clusts.argsort(kind="mergesort")
+
+        self.cluster=[]
+
+        aa=0
+        for ii in range(tosort.shape[0]-1,-1,-1):
+            kk=tosort[ii]
+            jj=aux[kk]
             temp=cl_cluster()
-            temp.label=self.node[int(ii)].label
-            temp.nodes=Clust[ii]
+            temp.label=self.node[jj].label
+            temp.nodes=Clust[jj]
             temp.num_nodes=len(temp.nodes)
-            temp.weight=0
-            for jj in temp.nodes:
-                self.node[jj].cluster=a
-                temp.weight+=self.node[jj].weight
+            temp.weight=weight_clusts[kk]
+            for ll in temp.nodes:
+                self.node[ll].cluster=aa
             self.cluster.append(temp)
-            a+=1
+            aa+=1
+
+        del(aux,weight_clusts,tosort,aa)
 
 
         # Output: self.clust_info, self.representants, self.node_belongs2, self.cluster_weight, self.num_clusters
@@ -971,7 +982,24 @@ class network():
                 except:
                     self.cluster[c_a].link[c_b]=ww
 
+    def dendo_time(self,steps=1000,verbose=True):
 
+        if self.Ts==False:
+
+            self.build_Ts()
+
+        if self.num_clusters==0:
+            return '# Clusters are needed by the algorithm.'
+
+        belongsto=numpy.empty(shape=(self.num_nodes),dtype=int,order='Fortran')
+        for ii in range(self.num_nodes):
+            belongsto[ii]=self.node[ii].cluster
+
+        f_net.dendo_time(steps,self.num_clusters,belongsto,self.T_ind,self.T_wl,self.T_start,self.num_nodes,self.k_total)
+
+        del(belongsto)
+        print '# Done'
+        return
 
     def cfep(self,mode='pfold',A=0,B=0,num_bins=100000,num_iter=200000):
 
