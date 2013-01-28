@@ -393,7 +393,7 @@ class network():
         self.__init_Ts__()
         pass
 
-    def merge_net(self,net=None,verbose=True):
+    def merge_net(self,net=None,traj=None,verbose=True):
          
         # merging the labels and weights of nodes
          
@@ -416,6 +416,10 @@ class network():
                 self.add_link(no2,nf2,weight=wf,index_origin=True,index_final=True)
 
         self.info(update=True,verbose=verbose)
+
+        if traj!=None:
+            f_kin_anal.trans_traj_nodes(net_to_total,traj,net.num_nodes,traj.shape[0],traj.shape[1],traj.shape[2])
+
         del(net_to_total); del(labels_aux)
 
         pass
@@ -849,7 +853,7 @@ class network():
 
         return vect_out
 
-    def symmetrize(self,new=True,verbose=True):
+    def symmetrize(self,new=False,verbose=True):
 
         if self.Ts==False :
             self.build_Ts()
@@ -918,7 +922,6 @@ class network():
         if self.Ts==False :
 
             self.build_Ts()
-
 
         self.num_clusters,pfff=f_net.grad(self.T_ind,self.T_wl,self.T_start,self.num_nodes,self.k_total)
 
@@ -1241,6 +1244,51 @@ class network():
 
         pass
 
+    def giant_component(self,verbose=True):
+
+        if self.Ts==False :
+            self.build_Ts()
+        self.num_components,pfff=f_net.components(self.T_start,self.T_ind,self.T_wl,self.num_nodes,self.k_total)
+
+        Comp={}
+
+        for ii in range(self.num_nodes):
+            try:
+                Comp[pfff[ii]].append(ii)
+            except:
+                Comp[pfff[ii]]=[]
+                Comp[pfff[ii]].append(ii)
+
+
+        a=0
+        gc_num_nodes=0
+        gc_nodes=0
+        self.component=[]
+        for ii in Comp.keys():
+            temp=cl_cluster()
+            temp.label=a
+            temp.nodes=Comp[ii]
+            temp.num_nodes=len(temp.nodes)
+            temp.weight=0
+            for jj in temp.nodes:
+                self.node[jj].component=a
+                temp.weight+=self.node[jj].weight
+            self.component.append(temp)
+            a+=1
+            if gc_num_nodes<temp.num_nodes:
+                gc_num_nodes=temp.num_nodes
+                gc_nodes=Comp[ii]
+
+        del(Comp)
+
+        if verbose:
+            print '# Nodes in the giant component: ', gc_num_nodes
+
+        return gc_nodes
+
+        pass
+
+
 #### External Functions
 
 #def traj2net(filename=None,num_particles=0,num_frames=0,output=None):
@@ -1311,6 +1359,7 @@ def kinetic_network(traj=None,ranges=None,bins=None,traj_out=False,labels=True,v
     opt_labels=0
     if labels:
         opt_labels=1
+
 
     if bins!=None:
         if type(bins) in [int]:

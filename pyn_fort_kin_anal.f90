@@ -126,7 +126,6 @@ MODULE BINDATA
   END SUBROUTINE check_float_length
 
 
-
 END MODULE BINDATA
 
 MODULE GLOB
@@ -174,7 +173,7 @@ CONTAINS
     INTEGER,DIMENSION(num_frames,num_parts,dimensions),INTENT(IN)::traj_full
     INTEGER,DIMENSION(dimensions,2),INTENT(IN)::ranges
     INTEGER,DIMENSION(num_frames,num_parts),INTENT(OUT)::tray
-    
+
     INTEGER::N_nodes,Ktot,len_str
     INTEGER::index
     INTEGER::ii,jj,gg,kk,ll,hh,hhh,aa,bb
@@ -2572,5 +2571,46 @@ subroutine ctt_dist (opt_norm,opt_noreturn,opt_states,opt_segments, &
 
 
 end subroutine ctt_dist
+
+subroutine trajnodes2file(file_name,opt_binary,traj,num_frames,num_parts,num_dims)
+
+  CHARACTER*80,INTENT(IN)::file_name
+  INTEGER,INTENT(IN)::opt_binary,num_frames,num_parts,num_dims
+  INTEGER,DIMENSION(num_frames,num_parts,num_dims),INTENT(IN)::traj
+
+  INTEGER::ii,jj
+
+  IF (opt_binary) THEN
+     OPEN(unit=21,FILE=TRIM(file_name),action='WRITE',form='unformatted',access='stream',POSITION='APPEND')
+     DO ii=1,num_frames
+        WRITE(21) traj(ii,:,1)
+     END DO
+     CLOSE(21)
+  ELSE
+     OPEN(unit=21,FILE=TRIM(file_name),action='WRITE',form='formatted',POSITION='APPEND')
+     DO ii=1,num_frames
+        WRITE(21,*) traj(ii,:,1)
+     END DO
+     CLOSE(21)
+  END IF
+
+END subroutine trajnodes2file
+
+subroutine trans_traj_nodes(net2total,traj,num_nodes,num_frames,num_parts,num_dims)
+
+  INTEGER,INTENT(IN)::num_frames,num_parts,num_dims
+  INTEGER,DIMENSION(num_nodes),INTENT(IN)::net2total
+  INTEGER,DIMENSION(num_frames,num_parts,num_dims),INTENT(INOUT)::traj
+
+  INTEGER::ii,jj
+
+  DO ii=1,num_frames
+     DO jj=1,num_parts
+        traj(ii,jj,1)=net2total(traj(ii,jj,1)+1)
+     END DO
+  END DO
+
+END subroutine trans_traj_nodes
+
 
 END MODULE GLOB

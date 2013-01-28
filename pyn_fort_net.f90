@@ -554,7 +554,6 @@ SUBROUTINE GRAD (N_sets,comunidades,T_ind,T_tau,T_start,N_nodes,Ktot)   !!!! Par
      END DO
   END DO
 
-
   dim=1
   dim2=dim
 
@@ -2323,8 +2322,6 @@ SUBROUTINE DENDO_TIME (num_steps,N_basins,pertenece_a,T_ind,T_tau,T_start,N_node
   vertical=0
 
   DO gg=1,N_basins
-
-     print*,'gg',gg
 
      filtro=.false.
      columna=0.0d0
