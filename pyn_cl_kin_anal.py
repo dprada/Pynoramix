@@ -29,6 +29,8 @@ class pyn_traj_file():
         if self.name.endswith('.bin'):
             self.binary=True
 
+        self.open()
+
         if verbose:
             self.info()
 
@@ -50,11 +52,9 @@ class pyn_traj_file():
     def open(self):
 
         if self.dtype==int:
-            print 'entra'
             self.unit=len(pyn_math.pyn_f90units)+100
             pyn_math.pyn_f90units.append(self.unit)
             libbin.fopen_read(self.unit,self.name)
-            print self.unit
         else:
             self.file=open(self.name,self.opt)
 
@@ -86,10 +86,10 @@ class pyn_traj_file():
 
     def read_frame(self,frame=0):
 
-        if self.coor_int:
-            return libbin.read_int_frame(self.unit,frame,self.particles,self.dimensions)
+        if self.dtype==int:
+            return libbin.read_int_frame(self.binary,self.unit,frame,self.particles,self.dimensions)
         else:
-            return libbin.read_float_frame(self.unit,frame,self.particles,self.dimensions)
+            return libbin.read_float_frame(self.binary,self.unit,frame,self.particles,self.dimensions)
 
     def read_coor(self,frame=0,particle=0,dimension=0):
 
@@ -100,10 +100,10 @@ class pyn_traj_file():
 
     def check_length (self):
 
-        if self.coor_int:
-            return libbin.check_int_length(self.unit,self.particles,self.dimensions)
+        if self.dtype==int:
+            return libbin.check_int_length(self.binary,self.unit,self.particles,self.dimensions)
         else:
-            return libbin.check_float_length(self.unit,self.particles,self.dimensions)
+            return libbin.check_float_length(self.binary,self.unit,self.particles,self.dimensions)
 
 
 class kinetic_analysis():
@@ -272,7 +272,13 @@ class kinetic_analysis():
 
         print '#',self.frames,'frames,',self.particles,'particles,',self.dimensions,'dimensions.'
 
-    def write2file(self,traj=None,filename=None,verbose=False):
+    def write2file(self,traj=None,filename=None,frame='ALL',begin=None,end=None,verbose=False):
+
+        if (frame in ['ALL','all','All']) and (end==None):
+            end=self.frames-1
+
+        if begin==None:
+            begin=0
 
         if not filename:
             print '# filename needed.'
@@ -283,7 +289,7 @@ class kinetic_analysis():
             opt_binary=1
 
         if traj=='nodes':
-            f_kin_anal.trajnodes2file(filename,opt_binary,self.traj_nodes,self.frames,self.particles,1)
+            f_kin_anal.trajnodes2file(filename,opt_binary,begin,end,self.traj_nodes,self.frames,self.particles,1)
 
     def histogram(self,dimension=None,node=None,cluster=None,bins=20,segment=None,delta=None,select_dim=0,norm=False,cumul=False):
 

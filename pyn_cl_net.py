@@ -1004,6 +1004,25 @@ class network():
         print '# Done'
         return
 
+    def dendo_bottom_up(self,verbose=True):
+
+        if self.Ts==False:
+            self.build_Ts()
+
+        if self.num_clusters==0:
+            return '# Clusters are needed by the algorithm.'
+
+        belongsto=numpy.empty(shape=(self.num_nodes),dtype=int,order='Fortran')
+        for ii in range(self.num_nodes):
+            belongsto[ii]=self.node[ii].cluster
+
+        f_net.dendo_bottom_up(self.num_clusters,belongsto,self.T_ind,self.T_wl,self.T_start,self.num_nodes,self.k_total)
+
+        del(belongsto)
+        print '# Done'
+        return
+
+
     def cfep(self,mode='pfold',A=0,B=0,num_bins=100000,num_iter=200000):
 
         if self.Ts==False:
