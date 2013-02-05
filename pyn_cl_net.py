@@ -916,6 +916,55 @@ class network():
         else:
             pass
 
+    def gradient_clusters_2(self,dim=1,verbose=True):
+
+        if self.Ts==False :
+
+            self.build_Ts()
+
+        self.num_clusters,pfff=f_net.grad_2(dim,self.T_ind,self.T_wl,self.T_start,self.num_nodes,self.k_total)
+
+        Clust={}
+        for ii in range(self.num_nodes):
+            try:
+                Clust[pfff[ii]].append(ii)
+            except:
+                Clust[pfff[ii]]=[]
+                Clust[pfff[ii]].append(ii)
+
+
+        aux=numpy.array(Clust.keys(),dtype=int)
+        weight_clusts=numpy.zeros((self.num_clusters),dtype=float)
+        for ii in range(aux.shape[0]):
+            for jj in Clust[aux[ii]]:
+                weight_clusts[ii]+=self.node[jj].weight
+
+        tosort=weight_clusts.argsort(kind="mergesort")
+
+        self.cluster=[]
+
+        aa=0
+        for ii in range(tosort.shape[0]-1,-1,-1):
+            kk=tosort[ii]
+            jj=aux[kk]
+            temp=cl_cluster()
+            temp.label=self.node[jj].label
+            temp.nodes=Clust[jj]
+            temp.num_nodes=len(temp.nodes)
+            temp.weight=weight_clusts[kk]
+            for ll in temp.nodes:
+                self.node[ll].cluster=aa
+            self.cluster.append(temp)
+            aa+=1
+
+        del(aux,weight_clusts,tosort,aa)
+
+
+        # Output: self.clust_info, self.representants, self.node_belongs2, self.cluster_weight, self.num_clusters
+        if verbose:
+            print '# Number of clusters: ',self.num_clusters
+
+
 
     def gradient_clusters(self,verbose=True):
 
