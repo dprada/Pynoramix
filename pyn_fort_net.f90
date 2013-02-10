@@ -2745,6 +2745,70 @@ SUBROUTINE DENDO_TIME (num_steps,N_basins,pertenece_a,T_ind,T_tau,T_start,N_node
 END SUBROUTINE DENDO_TIME
 
 
+SUBROUTINE DENDO_BY_NODES (N_basins,pertenece_a,T_ind,T_tau,T_start,N_nodes,Ktot)
+
+  IMPLICIT NONE
+
+  TYPE int_pointer
+     INTEGER,DIMENSION(:),POINTER::ip
+  END TYPE int_pointer
+  
+  TYPE double_pointer
+     DOUBLE PRECISION,DIMENSION(:),POINTER::dp
+  END TYPE double_pointer
+
+  INTEGER,INTENT(IN)::N_nodes,Ktot,N_basins
+  INTEGER,DIMENSION(Ktot),INTENT(IN)::T_ind
+  DOUBLE PRECISION,DIMENSION(Ktot),INTENT(IN)::T_tau
+  INTEGER,DIMENSION(N_nodes+1),INTENT(IN)::T_start
+  INTEGER,DIMENSION(N_nodes),INTENT(IN)::pertenece_a
+
+  INTEGER::gg,hh,ii,jj,kk,ll
+  INTEGER,DIMENSION(:),ALLOCATABLE::aux_vect_int
+
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::Pe,Pe_basin
+  INTEGER,DIMENSION(:),ALLOCATABLE::Popul_basin
+  TYPE(int_pointer),DIMENSION(:),POINTER::basin
+
+  
+
+  ALLOCATE(Pe(N_nodes),Pe_basin(N_basins),Popul_basin(N_basins))
+
+  Pe=0.0d0
+  Pe_basin=0.0d0
+  Popul_basin=0
+
+  DO ii=1,N_nodes
+     DO jj=T_start(ii)+1,T_start(ii+1)
+        Pe(ii)=Pe(ii)+T_tau(jj)
+     END DO
+     kk=pertenece_a(ii)
+     Pe_basin(kk)=Pe_basin(kk)+Pe(ii)
+     Popul_basin(kk)=Popul_basin(kk)+1
+  END DO
+
+  ALLOCATE(basin(N_basins))
+  DO ii=1,N_basins
+     ALLOCATE(basin(ii)%ip(Popul_basin(ii)))
+     basin(ii)%ip(:)=0
+  END DO
+
+  ALLOCATE(aux_vect_int(N_basins))
+  aux_vect_int=0
+  DO ii=1,N_nodes
+     kk=pertenece_a(ii)
+     gg=aux_vect_int(kk)+1
+     basin(kk)%ip(gg)=ii
+     aux_vect_int(kk)=gg
+  END DO
+
+  !! Tiros con el resto de basins
+
+  
+
+
+
+
 SUBROUTINE DENDO_BOTTOM_UP (N_basins,pertenece_a,T_ind,T_tau,T_start,N_nodes,Ktot)   !!!! Para revisar!!!! T_tau debe ser double precision
 
 
