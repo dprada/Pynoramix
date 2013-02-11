@@ -230,13 +230,14 @@ SUBROUTINE ind_wat_limit_4_nosim (mss,aux,hbs,hbdists,num_wats,num_atoms,num_hbs
 
 END SUBROUTINE ind_wat_limit_4_nosim
 
-SUBROUTINE ind_wat_limit_4_nosim_prot (mss,aux,hbs,hbdists,num_wats,num_atoms,num_hbs)
+SUBROUTINE ind_wat_limit_4_nosim_prot (mss,aux,filt_water,hbs,hbdists,num_wats,num_atoms,num_hbs)
 
 
   IMPLICIT NONE
 
   INTEGER,INTENT(IN)::num_atoms,num_wats,num_hbs
   INTEGER,DIMENSION(num_atoms,3),INTENT(IN)::aux
+  LOGICAL,DIMENSION(num_atoms),INTENT(IN)::filt_water
   INTEGER,DIMENSION(num_hbs,3),INTENT(IN)::hbs
   DOUBLE PRECISION,DIMENSION(num_hbs),INTENT(IN)::hbdists
   INTEGER,DIMENSION(num_wats,17),INTENT(OUT)::mss
@@ -249,6 +250,8 @@ SUBROUTINE ind_wat_limit_4_nosim_prot (mss,aux,hbs,hbdists,num_wats,num_atoms,nu
   INTEGER::ii,jj,kk,bb,gg
   INTEGER::ind_oh,hi,ind_o
   
+  LOGICAL::interr_oh,interr_o
+
   mss=0
   ALLOCATE(dist_first_shell(num_wats,4),first_shell(num_wats,4),bonds_o(num_wats))
   ALLOCATE(microstate(17))
@@ -260,45 +263,61 @@ SUBROUTINE ind_wat_limit_4_nosim_prot (mss,aux,hbs,hbdists,num_wats,num_atoms,nu
 
   IF (ANY((/2,3/)==definition_hbs)) THEN
      DO ii=1,num_hbs
-        ind_oh=aux(hbs(ii,1)+1,1)+1
-        hi=aux(hbs(ii,2)+1,2)
-        ind_o=aux(hbs(ii,3)+1,1)+1
-        IF (first_shell(ind_oh,hi)==0) THEN
-           first_shell(ind_oh,hi)=ind_o
-           dist_first_shell(ind_oh,hi)=hbdists(ii)
+        interr_oh=.FALSE.
+        interr_o=.FALSE.
+        IF (filt_water(hbs(ii,1)+1)) THEN
+           interr_oh=.TRUE.
+           ind_oh=aux(hbs(ii,1)+1,1)+1
+           hi=aux(hbs(ii,2)+1,2)
         ELSE
-           IF (dist_first_shell(ind_oh,hi)>hbdists(ii)) THEN
+           ind_oh=-(hbs(ii,2)+1)
+        END IF
+        IF (filt_water(hbs(ii,3)+1)) THEN
+           interr_o=.TRUE.
+           ind_o=aux(hbs(ii,3)+1,1)+1
+        ELSE
+           ind_o=-(hbs(ii,3)+1)
+        END IF
+        IF (interr_oh==.TRUE.) THEN
+           IF (first_shell(ind_oh,hi)==0) THEN
               first_shell(ind_oh,hi)=ind_o
               dist_first_shell(ind_oh,hi)=hbdists(ii)
+           ELSE
+              IF (dist_first_shell(ind_oh,hi)>hbdists(ii)) THEN
+                 first_shell(ind_oh,hi)=ind_o
+                 dist_first_shell(ind_oh,hi)=hbdists(ii)
+              END IF
            END IF
         END IF
-        IF (bonds_o(ind_o)==0) THEN
-           first_shell(ind_o,3)=ind_oh
-           dist_first_shell(ind_o,3)=hbdists(ii)
-           bonds_o(ind_o)=1
-        ELSE
-           IF (bonds_o(ind_o)==1) THEN
-              IF (dist_first_shell(ind_o,3)<hbdists(ii)) THEN
-                 first_shell(ind_o,4)=ind_oh
-                 dist_first_shell(ind_o,4)=hbdists(ii)
-              ELSE
-                 first_shell(ind_o,4)=first_shell(ind_o,3)
-                 dist_first_shell(ind_o,4)=dist_first_shell(ind_o,3)
-                 first_shell(ind_o,3)=ind_oh
-                 dist_first_shell(ind_o,3)=hbdists(ii)
-              END IF
-              bonds_o(ind_o)=2
+        IF (interr_o==.TRUE.) THEN
+           IF (bonds_o(ind_o)==0) THEN
+              first_shell(ind_o,3)=ind_oh
+              dist_first_shell(ind_o,3)=hbdists(ii)
+              bonds_o(ind_o)=1
            ELSE
-              IF (bonds_o(ind_o)==2) THEN
-                 IF (dist_first_shell(ind_o,3)>hbdists(ii)) THEN
+              IF (bonds_o(ind_o)==1) THEN
+                 IF (dist_first_shell(ind_o,3)<hbdists(ii)) THEN
+                    first_shell(ind_o,4)=ind_oh
+                    dist_first_shell(ind_o,4)=hbdists(ii)
+                 ELSE
                     first_shell(ind_o,4)=first_shell(ind_o,3)
                     dist_first_shell(ind_o,4)=dist_first_shell(ind_o,3)
                     first_shell(ind_o,3)=ind_oh
                     dist_first_shell(ind_o,3)=hbdists(ii)
-                 ELSE
-                    IF (dist_first_shell(ind_o,4)>hbdists(ii)) THEN
-                       first_shell(ind_o,4)=ind_oh
-                       dist_first_shell(ind_o,4)=hbdists(ii)
+                 END IF
+                 bonds_o(ind_o)=2
+              ELSE
+                 IF (bonds_o(ind_o)==2) THEN
+                    IF (dist_first_shell(ind_o,3)>hbdists(ii)) THEN
+                       first_shell(ind_o,4)=first_shell(ind_o,3)
+                       dist_first_shell(ind_o,4)=dist_first_shell(ind_o,3)
+                       first_shell(ind_o,3)=ind_oh
+                       dist_first_shell(ind_o,3)=hbdists(ii)
+                    ELSE
+                       IF (dist_first_shell(ind_o,4)>hbdists(ii)) THEN
+                          first_shell(ind_o,4)=ind_oh
+                          dist_first_shell(ind_o,4)=hbdists(ii)
+                       END IF
                     END IF
                  END IF
               END IF
@@ -307,45 +326,61 @@ SUBROUTINE ind_wat_limit_4_nosim_prot (mss,aux,hbs,hbdists,num_wats,num_atoms,nu
      END DO
   ELSE IF (ANY((/1/)==definition_hbs)) THEN
      DO ii=1,num_hbs
-        ind_oh=aux(hbs(ii,1)+1,1)+1
-        hi=aux(hbs(ii,2)+1,2)
-        ind_o=aux(hbs(ii,3)+1,1)+1
-        IF (first_shell(ind_oh,hi)==0) THEN
-           first_shell(ind_oh,hi)=ind_o
-           dist_first_shell(ind_oh,hi)=hbdists(ii)
+        interr_oh=.FALSE.
+        interr_o=.FALSE.
+        IF (filt_water(hbs(ii,1)+1)) THEN
+           interr_oh=.TRUE.
+           ind_oh=aux(hbs(ii,1)+1,1)+1
+           hi=aux(hbs(ii,2)+1,2)
         ELSE
-           IF (dist_first_shell(ind_oh,hi)<hbdists(ii)) THEN
+           ind_oh=-(hbs(ii,2)+1)
+        END IF
+        IF (filt_water(hbs(ii,3)+1)) THEN
+           interr_o=.TRUE.
+           ind_o=aux(hbs(ii,3)+1,1)+1
+        ELSE
+           ind_o=-(hbs(ii,3)+1)
+        END IF
+        IF (interr_oh==.TRUE.) THEN
+           IF (first_shell(ind_oh,hi)==0) THEN
               first_shell(ind_oh,hi)=ind_o
               dist_first_shell(ind_oh,hi)=hbdists(ii)
+           ELSE
+              IF (dist_first_shell(ind_oh,hi)<hbdists(ii)) THEN
+                 first_shell(ind_oh,hi)=ind_o
+                 dist_first_shell(ind_oh,hi)=hbdists(ii)
+              END IF
            END IF
         END IF
-        IF (bonds_o(ind_o)==0) THEN
-           first_shell(ind_o,3)=ind_oh
-           dist_first_shell(ind_o,3)=hbdists(ii)
-           bonds_o(ind_o)=1
-        ELSE
-           IF (bonds_o(ind_o)==1) THEN
-              IF (dist_first_shell(ind_o,3)>hbdists(ii)) THEN
-                 first_shell(ind_o,4)=ind_oh
-                 dist_first_shell(ind_o,4)=hbdists(ii)
-              ELSE
-                 first_shell(ind_o,4)=first_shell(ind_o,3)
-                 dist_first_shell(ind_o,4)=dist_first_shell(ind_o,3)
-                 first_shell(ind_o,3)=ind_oh
-                 dist_first_shell(ind_o,3)=hbdists(ii)
-              END IF
-              bonds_o(ind_o)=2
+        IF (interr_o==.TRUE.) THEN
+           IF (bonds_o(ind_o)==0) THEN
+              first_shell(ind_o,3)=ind_oh
+              dist_first_shell(ind_o,3)=hbdists(ii)
+              bonds_o(ind_o)=1
            ELSE
-              IF (bonds_o(ind_o)==2) THEN
-                 IF (dist_first_shell(ind_o,3)<hbdists(ii)) THEN
+              IF (bonds_o(ind_o)==1) THEN
+                 IF (dist_first_shell(ind_o,3)>hbdists(ii)) THEN
+                    first_shell(ind_o,4)=ind_oh
+                    dist_first_shell(ind_o,4)=hbdists(ii)
+                 ELSE
                     first_shell(ind_o,4)=first_shell(ind_o,3)
                     dist_first_shell(ind_o,4)=dist_first_shell(ind_o,3)
                     first_shell(ind_o,3)=ind_oh
                     dist_first_shell(ind_o,3)=hbdists(ii)
-                 ELSE
-                    IF (dist_first_shell(ind_o,4)<hbdists(ii)) THEN
-                       first_shell(ind_o,4)=ind_oh
-                       dist_first_shell(ind_o,4)=hbdists(ii)
+                 END IF
+                 bonds_o(ind_o)=2
+              ELSE
+                 IF (bonds_o(ind_o)==2) THEN
+                    IF (dist_first_shell(ind_o,3)<hbdists(ii)) THEN
+                       first_shell(ind_o,4)=first_shell(ind_o,3)
+                       dist_first_shell(ind_o,4)=dist_first_shell(ind_o,3)
+                       first_shell(ind_o,3)=ind_oh
+                       dist_first_shell(ind_o,3)=hbdists(ii)
+                    ELSE
+                       IF (dist_first_shell(ind_o,4)<hbdists(ii)) THEN
+                          first_shell(ind_o,4)=ind_oh
+                          dist_first_shell(ind_o,4)=hbdists(ii)
+                       END IF
                     END IF
                  END IF
               END IF

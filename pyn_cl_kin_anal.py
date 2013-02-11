@@ -1089,6 +1089,17 @@ class kinetic_analysis():
 
             self.__type_clusters__='berezovska2012'
 
+    def build_traj_clusters(self):
+
+        num_nodes=self.network.num_nodes
+        aux_list=numpy.empty(num_nodes,dtype=int,order='F')
+        for ii in range(num_nodes):
+            aux_list[ii]=self.network.node[ii].cluster
+
+        new_num_frames=self.traj_nodes.shape[0]
+        self.traj_clusters=f_kin_anal.trajnodes2trajclusters(aux_list,self.traj_nodes,num_nodes,new_num_frames,self.particles)
+        del(num_nodes,new_num_frames,aux_list)
+
 
     def pca(self,num_eigenvs='ALL',verbose=True):
 

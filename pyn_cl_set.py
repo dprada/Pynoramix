@@ -1395,7 +1395,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
                 return mss,mss_ind
 
-    def mss_hbonds_wat_prot(self,definition=1,hbonds=None,bonds=None,verbose=True):
+    def mss_hbonds_wat_prot(self,definition=1,hbonds=None,verbose=True):
         
         mss_funcs.definition_hbs=faux.hbonds.definition
 
@@ -1406,6 +1406,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
         if definition==1:
 
             aux=numpy.zeros((self.num_atoms,3),dtype=int,order='F')
+            filt_water=numpy.zeros(self.num_atoms,dtype=bool,order='F')
 
             for ii in range(len(self.water)):
                 jo=self.water[ii].O.index
@@ -1417,7 +1418,9 @@ class molecule(labels_set):               # The suptra-estructure: System (water
                 aux[jh1,1]=1
                 aux[jh2,0]=ii
                 aux[jh2,1]=2
-
+                filt_water[jo]=True
+                filt_water[jh1]=True
+                filt_water[jh2]=True
 
             #for hbs in hbonds:
             #    print hbs[1]
@@ -1438,7 +1441,7 @@ class molecule(labels_set):               # The suptra-estructure: System (water
 
             else:
                 num_hbs=hbonds[0].shape[0]
-                mss_ind=mss_funcs.ind_wat_limit_4_nosim_prot(aux,hbonds[0],hbonds[1],self.num_waters,self.num_atoms,num_hbs)
+                mss_ind=mss_funcs.ind_wat_limit_4_nosim_prot(aux,filt_water,hbonds[0],hbonds[1],self.num_waters,self.num_atoms,num_hbs)
                 mss=mss_funcs.remove_index_mol(mss_ind,self.num_waters)
                 mss_funcs.remove_permutations_limit_4_nosim(mss,mss_ind,self.num_waters)
 
