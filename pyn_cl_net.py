@@ -853,6 +853,61 @@ class network():
 
         return vect_out
 
+    def weight_core(self,threshold=None,new=False):
+
+        if threshold==None:
+            print '# threshold needed.'
+            return
+
+        if self.Ts==False:
+            self.build_Ts()
+
+        new_k_total,new_N_nodes=f_net.weight_core_new_k_total(threshold,self.T_ind,self.T_wl,self.T_start,self.num_nodes,self.k_total)
+        pfff=f_net.weight_core(new_k_total,new_N_nodes,threshold,self.T_ind,self.T_wl,self.T_start,self.num_nodes,self.k_total)
+
+        labels={}
+        for ii in range(pfff[4]):
+            labels[self.node[pfff[4][ii-1]].label]=ii
+
+        if new:
+            temp             = network(verbose=False)
+        else:
+            temp             = self
+
+        temp.num_nodes = new_N_nodes
+        temp.k_total = new_k_total
+        temp.k_max=pfff[0]
+        temp.T_wl=pfff[1]
+        temp.T_ind=pfff[2]
+        temp.T_start=pfff[3]
+        temp.Ts=True
+        temp.weight=0
+        temp.labels={}
+        temp.node=[]
+
+        for ii in range(temp.num_nodes):
+            node=cl_node()
+            for jj in range(temp.T_start[ii],temp.T_start[ii+1]):
+                neigh=temp.T_ind[jj]
+                node.link[neigh-1]=temp.T_wl[jj]
+            node.k_out=temp.T_start[ii+1]-temp.T_start[ii]
+            node.weight=sum(node.link.values())
+            temp.weight+=node.weight
+            temp.node.append(node)
+
+        for kk,vv in labels.iteritems():
+            temp.node[vv].label=kk
+
+        temp.labels=labels
+
+        del(pfff)
+        del(labels)
+
+        if new:
+            return temp
+        else:
+            pass
+
     def symmetrize(self,new=False,verbose=True):
 
         if self.Ts==False :

@@ -338,6 +338,116 @@ SUBROUTINE DETAILED_BALANCE_DISTANCE(db_dist,p,T_start,T_ind,T_tau,N_nodes,Ktot)
 
 END SUBROUTINE DETAILED_BALANCE_DISTANCE
 
+SUBROUTINE WEIGHT_CORE_NEW_K_TOTAL(newKtot,newNnodes,threshold,T_ind,T_tau,T_start,N_nodes,Ktot)
+
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN)::N_nodes,Ktot,threshold
+  INTEGER,DIMENSION(Ktot),INTENT(IN)::T_ind
+  DOUBLE PRECISION,DIMENSION(Ktot),INTENT(IN)::T_tau
+  INTEGER,DIMENSION(N_nodes+1),INTENT(IN)::T_start
+
+  INTEGER,INTENT(OUT)::newKtot,newNnodes
+
+  INTEGER::i,j
+  LOGICAL,DIMENSION(:),ALLOCATABLE::filtro
+  DOUBLE PRECISION::Pe
+
+  ALLOCATE(filtro(N_nodes))
+
+  filtro=.TRUE.
+
+  DO i=1,N_nodes
+     Pe=0.0d0
+     DO j=T_start(i)+1,T_start(i+1)
+        Pe=Pe+T_tau(j)
+     END DO
+     IF (Pe<=threshold) filtro=.FALSE.
+  END DO
+
+  newKtot=0
+  DO i=1,N_nodes
+     IF (filtro(i)==.TRUE.) THEN
+        DO j=T_start(i)+1,T_start(i+1)
+           IF (filtro(T_ind(j))==.TRUE.) THEN
+              newKtot=newKtot+1
+           END IF
+        END DO
+     END IF
+  END DO
+
+  newNnodes=COUNT(filtro,DIM=1)
+
+  DEALLOCATE(filtro)
+
+END SUBROUTINE WEIGHT_CORE_NEW_K_TOTAL
+
+SUBROUTINE WEIGHT_CORE(newKmax,TT_tau,TT_ind,TT_start,trad,newKtot,newNnodes,threshold,T_ind,T_tau,T_start,N_nodes,Ktot)
+
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN)::N_nodes,Ktot,threshold,newKtot,newNnodes
+  INTEGER,DIMENSION(Ktot),INTENT(IN)::T_ind
+  DOUBLE PRECISION,DIMENSION(Ktot),INTENT(IN)::T_tau
+  INTEGER,DIMENSION(N_nodes+1),INTENT(IN)::T_start
+
+  INTEGER,DIMENSION(newNnodes+1),INTENT(OUT)::TT_start
+  INTEGER,DIMENSION(newKtot),INTENT(OUT)::TT_ind
+  INTEGER,DIMENSION(newNnodes),INTENT(OUT)::trad
+  DOUBLE PRECISION,DIMENSION(newKtot),INTENT(OUT)::TT_tau
+  INTEGER,INTENT(OUT)::newKmax
+
+  INTEGER::i,j,gg,hh
+  LOGICAL,DIMENSION(:),ALLOCATABLE::filtro
+  INTEGER,DIMENSION(:),ALLOCATABLE::inv_trad
+  DOUBLE PRECISION::Pe
+
+  ALLOCATE(filtro(N_nodes),inv_trad(N_nodes))
+  filtro=.TRUE.
+  trad=0
+  inv_trad=0
+  newKmax=0
+
+  gg=0
+  DO i=1,N_nodes
+     Pe=0.0d0
+     DO j=T_start(i)+1,T_start(i+1)
+        Pe=Pe+T_tau(j)
+     END DO
+     IF (Pe<=threshold) THEN
+        filtro=.FALSE.
+        gg=gg+1
+        trad(gg)=i
+        inv_trad(i)=gg
+     END IF
+  END DO
+
+  gg=0
+  hh=0
+  DO i=1,N_nodes
+     IF (filtro(i)==.TRUE.) THEN
+        hh=0
+        TT_start(inv_trad(i))=gg
+        DO j=T_start(i)+1,T_start(i+1)
+           IF (filtro(T_ind(j))==.TRUE.) THEN
+              gg=gg+1
+              hh=hh+1
+              TT_tau(gg)=T_tau(j)
+              TT_ind(gg)=inv_trad(T_ind(j))
+           END IF
+        END DO
+        IF (newKmax<hh) newKmax=hh
+     END IF
+  END DO
+  TT_start(newNnodes+1)=gg
+
+  DEALLOCATE(filtro,inv_trad)
+
+END SUBROUTINE WEIGHT_CORE
+
+  
+
+
 SUBROUTINE SYMMETRIZE_NET(newKmax,TT_tau,TT_ind,TT_start,Pe,newKtot,T_ind,T_tau,T_start,N_nodes,Ktot)
 
   IMPLICIT NONE
