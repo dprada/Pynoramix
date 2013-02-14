@@ -425,28 +425,63 @@ class network():
         pass
 
     def extract_net(self,nodes=None,verbose=True):
-         
-        # extracting the labels and weights of nodes
         
-        aux=[-2 for ii in range(self.num_nodes)]
-        temp_net=network(directed=self.directed,kinetic=self.kinetic,verbose=False)
-        for ii in nodes:
-            aux[ii]=temp_net.add_node(self.node[ii].label,self.node[ii].weight,iout=True)
-        for ii in nodes:
-            aa=aux[ii]
-            for jj,kk in self.node[ii].link.iteritems():
-                bb=aux[jj]
-                if bb>-1:
-                    temp_net.add_link(aa,bb,weight=kk,index_origin=True,index_final=True)
+        nodes=numpy.array(nodes,dtype=int)
+        
+        if self.Ts==False:
+            self.build_Ts()
 
-        del(aux)
-        if temp_net.kinetic:
-            for ii in temp_net.node:
-                ii.weight=sum(ii.link.values())
+        new_N_nodes=nodes.shape[0]
 
-        temp_net.info(update=True,verbose=verbose)
-        return temp_net
-         
+        new_k_total=f_net.extract_net_new_k_total(nodes,self.T_ind,self.T_wl,self.T_start,new_N_nodes,self.num_nodes,self.k_total)
+        pfff=f_net.extract_net(new_k_total,nodes,self.T_ind,self.T_wl,self.T_start,self.num_nodes,self.k_total,new_N_nodes)
+
+        labels={}
+        for ii in range(len(nodes)):
+            labels[self.node[nodes[ii]].label]=ii
+
+
+        temp = network(verbose=False,)
+        temp.num_nodes = new_N_nodes
+        temp.k_total = new_k_total
+        temp.k_max=pfff[0]
+        temp.T_wl=pfff[1]
+        temp.T_ind=pfff[2]
+        temp.T_start=pfff[3]
+        temp.Ts=True
+        temp.weight=0
+        temp.labels={}
+        temp.node=[]
+
+        for ii in range(temp.num_nodes):
+            node=cl_node()
+            for jj in range(temp.T_start[ii],temp.T_start[ii+1]):
+                neigh=temp.T_ind[jj]
+                node.link[neigh-1]=temp.T_wl[jj]
+            node.k_out=temp.T_start[ii+1]-temp.T_start[ii]
+            node.weight=sum(node.link.values())
+            temp.weight+=node.weight
+            temp.node.append(node)
+
+        if self.kinetic:
+            temp.kinetic=True
+
+        if self.directed:
+            temp.directed=True
+
+        temp.info(update=True,verbose=verbose)
+
+        for kk,vv in labels.iteritems():
+            temp.node[vv].label=kk
+
+        temp.labels=labels
+
+        del(pfff)
+        del(labels)
+
+        return temp
+
+
     def load_net(self,name_file,format='text',verbose=True):
         """format:['text','native']"""
 
@@ -864,10 +899,9 @@ class network():
 
         new_k_total,new_N_nodes=f_net.weight_core_new_k_total(threshold,self.T_ind,self.T_wl,self.T_start,self.num_nodes,self.k_total)
         pfff=f_net.weight_core(new_k_total,new_N_nodes,threshold,self.T_ind,self.T_wl,self.T_start,self.num_nodes,self.k_total)
-
         labels={}
-        for ii in range(pfff[4]):
-            labels[self.node[pfff[4][ii-1]].label]=ii
+        for ii in range(len(pfff[4])):
+            labels[self.node[pfff[4][ii]-1].label]=ii
 
         if new:
             temp             = network(verbose=False)
@@ -897,6 +931,12 @@ class network():
 
         for kk,vv in labels.iteritems():
             temp.node[vv].label=kk
+
+        if self.kinetic:
+            temp.kinetic=True
+
+        if self.directed:
+            temp.directed=True
 
         temp.labels=labels
 
@@ -1364,21 +1404,43 @@ class network():
                 Comp[pfff[ii]]=[]
                 Comp[pfff[ii]].append(ii)
 
+        aux=numpy.array(Comp.keys(),dtype=int)
+        weight_comps=numpy.zeros((self.num_components),dtype=float)
+        for ii in range(aux.shape[0]):
+            for jj in Comp[aux[ii]]:
+                weight_comps[ii]+=self.node[jj].weight
 
-        a=0
-        for ii in Comp.keys():
+        tosort=weight_comps.argsort(kind="mergesort")
+
+        self.component=[]
+        aa=0
+        bb=0.0
+        bb_ind=0
+        gc_num_nodes=0
+        gc_nodes=0
+        for ii in range(tosort.shape[0]-1,-1,-1):
+            kk=tosort[ii]
+            jj=aux[kk]
             temp=cl_cluster()
-            temp.label=a
-            temp.nodes=Comp[ii]
+            temp.nodes=Comp[jj]
             temp.num_nodes=len(temp.nodes)
-            temp.weight=0
-            for jj in temp.nodes:
-                self.node[jj].component=a
-                temp.weight+=self.node[jj].weight
+            temp.weight=weight_comps[kk]
+            bb=0.0
+            for ll in temp.nodes:
+                self.node[ll].component=aa
+                if (self.node[ll].weight>bb):
+                    bb=self.node[ll].weight
+                    bb_ind=ll
+            temp.label=self.node[bb_ind].label
             self.component.append(temp)
-            a+=1
+            aa+=1
+            if gc_num_nodes<temp.num_nodes:
+                gc_num_nodes=temp.num_nodes
+                gc_nodes=Comp[jj]
 
+        del(aux,weight_comps,tosort,aa)
         del(Comp)
+
 
         if verbose:
             print '# Number of components: ',self.num_components
@@ -1400,26 +1462,34 @@ class network():
                 Comp[pfff[ii]]=[]
                 Comp[pfff[ii]].append(ii)
 
+        aux=numpy.array(Comp.keys(),dtype=int)
+        weight_comps=numpy.zeros((self.num_components),dtype=float)
+        for ii in range(aux.shape[0]):
+            for jj in Comp[aux[ii]]:
+                weight_comps[ii]+=self.node[jj].weight
 
-        a=0
+        tosort=weight_comps.argsort(kind="mergesort")
+
+        self.component=[]
+        aa=0
         gc_num_nodes=0
         gc_nodes=0
-        self.component=[]
-        for ii in Comp.keys():
+        for ii in range(tosort.shape[0]-1,-1,-1):
+            kk=tosort[ii]
+            jj=aux[kk]
             temp=cl_cluster()
-            temp.label=a
-            temp.nodes=Comp[ii]
+            temp.nodes=Comp[jj]
             temp.num_nodes=len(temp.nodes)
-            temp.weight=0
-            for jj in temp.nodes:
-                self.node[jj].component=a
-                temp.weight+=self.node[jj].weight
+            temp.weight=weight_comps[kk]
+            for ll in temp.nodes:
+                self.node[ll].component=aa
             self.component.append(temp)
-            a+=1
+            aa+=1
             if gc_num_nodes<temp.num_nodes:
                 gc_num_nodes=temp.num_nodes
-                gc_nodes=Comp[ii]
+                gc_nodes=Comp[jj]
 
+        del(aux,weight_comps,tosort,aa)
         del(Comp)
 
         if verbose:

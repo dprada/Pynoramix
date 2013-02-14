@@ -342,7 +342,8 @@ SUBROUTINE WEIGHT_CORE_NEW_K_TOTAL(newKtot,newNnodes,threshold,T_ind,T_tau,T_sta
 
   IMPLICIT NONE
 
-  INTEGER,INTENT(IN)::N_nodes,Ktot,threshold
+  INTEGER,INTENT(IN)::N_nodes,Ktot
+  DOUBLE PRECISION,INTENT(IN)::threshold
   INTEGER,DIMENSION(Ktot),INTENT(IN)::T_ind
   DOUBLE PRECISION,DIMENSION(Ktot),INTENT(IN)::T_tau
   INTEGER,DIMENSION(N_nodes+1),INTENT(IN)::T_start
@@ -362,7 +363,7 @@ SUBROUTINE WEIGHT_CORE_NEW_K_TOTAL(newKtot,newNnodes,threshold,T_ind,T_tau,T_sta
      DO j=T_start(i)+1,T_start(i+1)
         Pe=Pe+T_tau(j)
      END DO
-     IF (Pe<=threshold) filtro=.FALSE.
+     IF (Pe<=threshold) filtro(i)=.FALSE.
   END DO
 
   newKtot=0
@@ -382,11 +383,102 @@ SUBROUTINE WEIGHT_CORE_NEW_K_TOTAL(newKtot,newNnodes,threshold,T_ind,T_tau,T_sta
 
 END SUBROUTINE WEIGHT_CORE_NEW_K_TOTAL
 
+SUBROUTINE EXTRACT_NET_NEW_K_TOTAL(newKtot,list_nodes,T_ind,T_tau,T_start,newNnodes,N_nodes,Ktot)
+
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN)::N_nodes,Ktot,newNnodes
+  INTEGER,DIMENSION(Ktot),INTENT(IN)::T_ind
+  DOUBLE PRECISION,DIMENSION(Ktot),INTENT(IN)::T_tau
+  INTEGER,DIMENSION(N_nodes+1),INTENT(IN)::T_start
+  INTEGER,DIMENSION(newNnodes),INTENT(IN)::list_nodes
+
+  INTEGER,INTENT(OUT)::newKtot
+
+  INTEGER::i,j,tt
+  LOGICAL,DIMENSION(:),ALLOCATABLE::filtro
+
+  ALLOCATE(filtro(N_nodes))
+
+  filtro=.FALSE.
+
+  DO i=1,newNnodes
+     filtro(list_nodes(i)+1)=.TRUE.
+  END DO
+
+  newKtot=0
+  DO i=1,newNnodes
+     tt=list_nodes(i)+1
+     DO j=T_start(tt)+1,T_start(tt+1)
+        IF (filtro(T_ind(j))==.TRUE.) THEN
+           newKtot=newKtot+1
+        END IF
+     END DO
+  END DO
+
+  DEALLOCATE(filtro)
+
+END SUBROUTINE EXTRACT_NET_NEW_K_TOTAL
+
+SUBROUTINE EXTRACT_NET(newKmax,TT_tau,TT_ind,TT_start,newKtot,list_nodes,T_ind,T_tau,T_start,N_nodes,Ktot,newNnodes)
+
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN)::N_nodes,Ktot,newKtot,newNnodes
+  INTEGER,DIMENSION(Ktot),INTENT(IN)::T_ind
+  DOUBLE PRECISION,DIMENSION(Ktot),INTENT(IN)::T_tau
+  INTEGER,DIMENSION(N_nodes+1),INTENT(IN)::T_start
+  INTEGER,DIMENSION(newNnodes),INTENT(IN)::list_nodes
+
+  INTEGER,DIMENSION(newNnodes+1),INTENT(OUT)::TT_start
+  INTEGER,DIMENSION(newKtot),INTENT(OUT)::TT_ind
+  DOUBLE PRECISION,DIMENSION(newKtot),INTENT(OUT)::TT_tau
+  INTEGER,INTENT(OUT)::newKmax
+
+  INTEGER::i,j,gg,hh,tt
+  LOGICAL,DIMENSION(:),ALLOCATABLE::filtro
+  INTEGER,DIMENSION(:),ALLOCATABLE::inv_trad
+
+  ALLOCATE(filtro(N_nodes))
+  ALLOCATE(inv_trad(N_nodes))
+
+  filtro=.FALSE.
+  inv_trad=0
+
+  DO i=1,newNnodes
+     filtro(list_nodes(i)+1)=.TRUE.
+     inv_trad(list_nodes(i)+1)=i
+  END DO
+
+  gg=0
+  hh=0
+  DO tt=1,newNnodes
+     i=list_nodes(tt)+1
+     hh=0
+     TT_start(inv_trad(i))=gg
+     DO j=T_start(i)+1,T_start(i+1)
+        IF (filtro(T_ind(j))==.TRUE.) THEN
+           gg=gg+1
+           hh=hh+1
+           TT_tau(gg)=T_tau(j)
+           TT_ind(gg)=inv_trad(T_ind(j))
+        END IF
+     END DO
+     IF (newKmax<hh) newKmax=hh
+  END DO
+  TT_start(newNnodes+1)=gg
+
+  DEALLOCATE(filtro,inv_trad)
+
+END SUBROUTINE EXTRACT_NET
+
+
 SUBROUTINE WEIGHT_CORE(newKmax,TT_tau,TT_ind,TT_start,trad,newKtot,newNnodes,threshold,T_ind,T_tau,T_start,N_nodes,Ktot)
 
   IMPLICIT NONE
 
-  INTEGER,INTENT(IN)::N_nodes,Ktot,threshold,newKtot,newNnodes
+  INTEGER,INTENT(IN)::N_nodes,Ktot,newKtot,newNnodes
+  DOUBLE PRECISION::threshold
   INTEGER,DIMENSION(Ktot),INTENT(IN)::T_ind
   DOUBLE PRECISION,DIMENSION(Ktot),INTENT(IN)::T_tau
   INTEGER,DIMENSION(N_nodes+1),INTENT(IN)::T_start
@@ -415,7 +507,8 @@ SUBROUTINE WEIGHT_CORE(newKmax,TT_tau,TT_ind,TT_start,trad,newKtot,newNnodes,thr
         Pe=Pe+T_tau(j)
      END DO
      IF (Pe<=threshold) THEN
-        filtro=.FALSE.
+        filtro(i)=.FALSE.
+     ELSE
         gg=gg+1
         trad(gg)=i
         inv_trad(i)=gg
