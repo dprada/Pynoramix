@@ -2001,6 +2001,11 @@ SUBROUTINE cfep_pfold3 (opt_bins,plot,node_index,A,B,T_ind,T_tau,T_start,length,
 
   implicit none
 
+  TYPE int_pointer
+     INTEGER,DIMENSION(:),POINTER::ip
+  END TYPE int_pointer
+  
+
   INTEGER,INTENT(IN)::opt_bins,A,B,N_nodes,Ktot,length,num_iter
   INTEGER,DIMENSION(Ktot),INTENT(IN)::T_ind
   DOUBLE PRECISION,DIMENSION(Ktot),INTENT(IN)::T_tau
@@ -2012,7 +2017,7 @@ SUBROUTINE cfep_pfold3 (opt_bins,plot,node_index,A,B,T_ind,T_tau,T_start,length,
   DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::Pe
   
   integer::AA,BB
-  integer::i,j,times,jj,g,gg,ii,kk
+  integer::i,j,times,jj,g,gg,ii,kk,hh,tt
 
   double precision,dimension(:),allocatable::Pf,Pf2
 
@@ -2022,6 +2027,14 @@ SUBROUTINE cfep_pfold3 (opt_bins,plot,node_index,A,B,T_ind,T_tau,T_start,length,
   double precision::cut
   double precision::delta_cut
   double precision::Z,Za,Zab
+
+  !Para ordenar
+  integer::dim_buckets,num_occ_buckets
+  logical::interr
+  TYPE(int_pointer),DIMENSION(:),POINTER::buckets
+  INTEGER,DIMENSION(:),ALLOCATABLE::occup_buckets,orden
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::valores
+  double precision::lim_top,val_aux
 
   AA=A+1
   BB=B+1
@@ -2121,18 +2134,141 @@ SUBROUTINE cfep_pfold3 (opt_bins,plot,node_index,A,B,T_ind,T_tau,T_start,length,
      
   ELSE
 
-     print*,'entra'
      Z=sum(Pe(:),dim=1)
+     print*,'entra'
 
-     ALLOCATE(filtro(N_nodes),orderpf(N_nodes))
+!!$     ALLOCATE(filtro(N_nodes),orderpf(N_nodes))
+!!$
+!!$     filtro=.TRUE.
+!!$
+!!$     DO i=1,N_nodes
+!!$        print*,i
+!!$        j=MAXLOC(Pf,DIM=1,MASK=filtro)
+!!$        orderpf(i)=j
+!!$        filtro(j)=.FALSE.
+!!$     END DO
+!!$
+!!$     filtro=.false.
+!!$     print*,'ahi va'
+!!$     DO i=1,N_nodes
+!!$
+!!$        g=orderpf(i)
+!!$        cut=Pf(g)
+!!$
+!!$        Za=0.0d0
+!!$        Zab=0.0d0
+!!$
+!!$        DO j=1,N_nodes
+!!$           IF (Pf(j)>cut) THEN
+!!$              Za=Za+Pe(j)
+!!$           END IF
+!!$
+!!$           DO jj=T_start(j)+1,T_start(j+1)
+!!$              kk=T_ind(jj)
+!!$              IF (((Pf(j)>cut).and.(Pf(kk)<=cut)).or.((Pf(j)<=cut).and.(Pf(kk)>cut))) THEN
+!!$                 Zab=Zab+T_tau(jj)
+!!$              END IF
+!!$           END DO
+!!$        END DO
+!!$
+!!$        plot(i,1)=(Za/Z)
+!!$        plot(i,2)=-300.0d0*0.0020d0*log(Zab/Z)
+!!$        plot(i,3)=Pf(g)
+!!$        node_index(i)=g-1
+!!$
+!!$     END DO
 
-     filtro=.TRUE.
-
+     ! with 10000
+     dim_buckets=10000
+     num_occ_buckets=0
+     ALLOCATE(orderpf(N_nodes),occup_buckets(dim_buckets+1))
+     occup_buckets=0
      DO i=1,N_nodes
-        j=MAXLOC(Pf,DIM=1,MASK=filtro)
-        orderpf(i)=j
-        filtro(j)=.FALSE.
+        tt=int(Pf(i)*dim_buckets)+1
+        orderpf(i)=tt
+        occup_buckets(tt)=occup_buckets(tt)+1
      END DO
+
+     ALLOCATE(buckets(dim_buckets+1))
+     DO i=1,dim_buckets+1
+        IF (occup_buckets(i)>0) THEN
+           ALLOCATE(buckets(i)%ip(occup_buckets(i)))
+           num_occ_buckets=num_occ_buckets+1
+           print*,i,occup_buckets(i)
+        END IF
+     END DO
+     occup_buckets=0
+     DO i=1,N_nodes
+        tt=orderpf(i)
+        gg=occup_buckets(tt)+1
+        occup_buckets(tt)=gg
+        buckets(tt)%ip(gg)=i
+     END DO
+     
+     print*,'listillo',num_occ_buckets
+
+     stop
+
+     orderpf=0
+     kk=0
+     DO i=1,dim_buckets+1
+        lim_top=-1.0d0
+        IF (occup_buckets(i)>0) THEN
+           print*,i,occup_buckets(i)
+           hh=occup_buckets(i)
+           ALLOCATE(orden(hh),valores(hh))
+           orden=0
+           valores=0.0d0
+           DO j=1,hh
+              gg=buckets(i)%ip(j)
+              val_aux=Pf(gg)
+              IF (val_aux>=lim_top) THEN
+                 lim_top=val_aux
+                 orden(j)=gg
+                 valores(j)=val_aux
+              ELSE
+                 interr=.TRUE.
+                 tt=0
+                 DO WHILE(interr)
+                    tt=tt+1
+                    IF (valores(tt)>val_aux) interr=.FALSE.
+                 END DO
+                 DO ii=j-1,tt,-1
+                    valores(ii+1)=valores(ii)
+                    orden(ii+1)=orden(ii)
+                 END DO
+                 valores(tt)=val_aux
+                 orden(tt)=gg
+              END IF
+           END DO
+           DO j=1,hh
+              kk=kk+1
+              orderpf(kk)=orden(j)
+           END DO
+           DEALLOCATE(orden,valores)
+           DEALLOCATE(buckets(i)%ip)
+        END IF
+     END DO
+     DEALLOCATE(buckets,occup_buckets)
+
+     !##
+     print*,'compruebo'
+     interr=.FALSE.
+     DO i=1,N_nodes-1
+        IF (Pf(orderpf(i+1))<Pf(orderpf(i))) THEN
+           interr=.TRUE.
+        END IF
+     END DO
+     IF (interr) THEN
+        print*,'CAGADA'
+        !DO i=1,N_nodes
+        !   print*,Pf(orderpf(i))
+        !END DO
+     END IF
+
+
+     print*,'listo'
+     ALLOCATE(filtro(N_nodes))
 
      filtro=.false.
      print*,'ahi va'
@@ -2163,6 +2299,8 @@ SUBROUTINE cfep_pfold3 (opt_bins,plot,node_index,A,B,T_ind,T_tau,T_start,length,
         node_index(i)=g-1
 
      END DO
+
+
 
   END IF
 
@@ -3823,6 +3961,36 @@ SUBROUTINE DENDO_BOTTOM_UP (N_basins,pertenece_a,T_ind,T_tau,T_start,N_nodes,Kto
 
 
 END SUBROUTINE DENDO_BOTTOM_UP
+
+SUBROUTINE sort_by_buckets (order,lim_inf,lim_sup,max_popul,valores,N_vals)
+
+  IMPLICIT NONE
+
+  INTEGER,INTENT(IN)::N_vals,max_popul
+  DOUBLE PRECISION,INTENT(IN)::lim_inf,lim_sup
+  DOUBLE PRECISION,DIMENSION(N_vals),INTENT(IN)::valores
+  INTEGER,DIMENSION(N_vals),INTENT(OUT)::order
+
+  INTEGER,DIMENSION(:),ALLOCATABLE::occup_buckets
+
+  dim_buckets=10000
+  num_occ_buckets=0
+
+  ALLOCATE(occup_buckets(dim_buckets+1))
+
+  DO i=1,N_vals
+     tt=int(((valores(i)-lim_inf)/lim_sup)*dim_bickets)+1
+     order(i)=tt
+     occup_buckets(tt)=occup_buckets(tt)+1
+  END DO
+  DO i=1,dim_buckets+1
+     IF (occup_buckets(i)>0) THEN
+        num_occ_buckets=num_occ_buckets+1
+
+
+
+END SUBROUTINE sort_in_buckets
+
 
 END MODULE GLOB
 
