@@ -2179,126 +2179,58 @@ SUBROUTINE cfep_pfold3 (opt_bins,plot,node_index,A,B,T_ind,T_tau,T_start,length,
 !!$     END DO
 
      ! with 10000
-     dim_buckets=10000
-     num_occ_buckets=0
-     ALLOCATE(orderpf(N_nodes),occup_buckets(dim_buckets+1))
-     occup_buckets=0
-     DO i=1,N_nodes
-        tt=int(Pf(i)*dim_buckets)+1
-        orderpf(i)=tt
-        occup_buckets(tt)=occup_buckets(tt)+1
-     END DO
-
-     ALLOCATE(buckets(dim_buckets+1))
-     DO i=1,dim_buckets+1
-        IF (occup_buckets(i)>0) THEN
-           ALLOCATE(buckets(i)%ip(occup_buckets(i)))
-           num_occ_buckets=num_occ_buckets+1
-           print*,i,occup_buckets(i)
-        END IF
-     END DO
-     occup_buckets=0
-     DO i=1,N_nodes
-        tt=orderpf(i)
-        gg=occup_buckets(tt)+1
-        occup_buckets(tt)=gg
-        buckets(tt)%ip(gg)=i
-     END DO
-     
-     print*,'listillo',num_occ_buckets
-
-     stop
-
-     orderpf=0
-     kk=0
-     DO i=1,dim_buckets+1
-        lim_top=-1.0d0
-        IF (occup_buckets(i)>0) THEN
-           print*,i,occup_buckets(i)
-           hh=occup_buckets(i)
-           ALLOCATE(orden(hh),valores(hh))
-           orden=0
-           valores=0.0d0
-           DO j=1,hh
-              gg=buckets(i)%ip(j)
-              val_aux=Pf(gg)
-              IF (val_aux>=lim_top) THEN
-                 lim_top=val_aux
-                 orden(j)=gg
-                 valores(j)=val_aux
-              ELSE
-                 interr=.TRUE.
-                 tt=0
-                 DO WHILE(interr)
-                    tt=tt+1
-                    IF (valores(tt)>val_aux) interr=.FALSE.
-                 END DO
-                 DO ii=j-1,tt,-1
-                    valores(ii+1)=valores(ii)
-                    orden(ii+1)=orden(ii)
-                 END DO
-                 valores(tt)=val_aux
-                 orden(tt)=gg
-              END IF
-           END DO
-           DO j=1,hh
-              kk=kk+1
-              orderpf(kk)=orden(j)
-           END DO
-           DEALLOCATE(orden,valores)
-           DEALLOCATE(buckets(i)%ip)
-        END IF
-     END DO
-     DEALLOCATE(buckets,occup_buckets)
+     ALLOCATE(orderpf(N_nodes))
+     CALL sort_by_buckets (orderpf,0.0d0,1.0d0,100,2500,Pf,N_nodes)
 
      !##
-     print*,'compruebo'
-     interr=.FALSE.
-     DO i=1,N_nodes-1
-        IF (Pf(orderpf(i+1))<Pf(orderpf(i))) THEN
-           interr=.TRUE.
-        END IF
-     END DO
-     IF (interr) THEN
-        print*,'CAGADA'
-        !DO i=1,N_nodes
-        !   print*,Pf(orderpf(i))
-        !END DO
-     END IF
-
+     !print*,'compruebo'
+     !interr=.FALSE.
+     !DO i=1,N_nodes-1
+     !   IF (Pf(orderpf(i+1))<Pf(orderpf(i))) THEN
+     !      interr=.TRUE.
+     !   END IF
+     !END DO
+     !IF (interr) THEN
+     !   print*,'CAGADA'
+     !   !DO i=1,N_nodes
+     !   !   print*,Pf(orderpf(i))
+     !   !END DO
+     !END IF
 
      print*,'listo'
      ALLOCATE(filtro(N_nodes))
 
      filtro=.false.
      print*,'ahi va'
-     DO i=1,N_nodes
+   !  DO i=1,N_nodes
+   ! 
+   !     g=orderpf(i)
+   !     cut=Pf(g)
+   ! 
+   !     Za=0.0d0
+   !     Zab=0.0d0
+   ! 
+   !     DO j=1,N_nodes
+   !        IF (Pf(j)>cut) THEN
+   !           Za=Za+Pe(j)
+   !        END IF
+   ! 
+   !        DO jj=T_start(j)+1,T_start(j+1)
+   !           kk=T_ind(jj)
+   !           IF (((Pf(j)>cut).and.(Pf(kk)<=cut)).or.((Pf(j)<=cut).and.(Pf(kk)>cut))) THEN
+   !              Zab=Zab+T_tau(jj)
+   !           END IF
+   !        END DO
+   !     END DO
+   ! 
+   !     plot(i,1)=(Za/Z)
+   !     plot(i,2)=-300.0d0*0.0020d0*log(Zab/Z)
+   !     plot(i,3)=Pf(g)
+   !     node_index(i)=g-1
+   ! 
+   !  END DO
 
-        g=orderpf(i)
-        cut=Pf(g)
-
-        Za=0.0d0
-        Zab=0.0d0
-
-        DO j=1,N_nodes
-           IF (Pf(j)>cut) THEN
-              Za=Za+Pe(j)
-           END IF
-
-           DO jj=T_start(j)+1,T_start(j+1)
-              kk=T_ind(jj)
-              IF (((Pf(j)>cut).and.(Pf(kk)<=cut)).or.((Pf(j)<=cut).and.(Pf(kk)>cut))) THEN
-                 Zab=Zab+T_tau(jj)
-              END IF
-           END DO
-        END DO
-
-        plot(i,1)=(Za/Z)
-        plot(i,2)=-300.0d0*0.0020d0*log(Zab/Z)
-        plot(i,3)=Pf(g)
-        node_index(i)=g-1
-
-     END DO
+     
 
 
 
@@ -3962,34 +3894,174 @@ SUBROUTINE DENDO_BOTTOM_UP (N_basins,pertenece_a,T_ind,T_tau,T_start,N_nodes,Kto
 
 END SUBROUTINE DENDO_BOTTOM_UP
 
-SUBROUTINE sort_by_buckets (order,lim_inf,lim_sup,max_popul,valores,N_vals)
+SUBROUTINE SORT_BY_BUCKETS (order,lim_inf,lim_sup,dim_boxes,max_popul,valores,N_vals)
 
   IMPLICIT NONE
 
-  INTEGER,INTENT(IN)::N_vals,max_popul
+  TYPE int_pointer
+     INTEGER,DIMENSION(:),POINTER::ip
+  END TYPE int_pointer
+
+  INTEGER,INTENT(IN)::N_vals,max_popul,dim_boxes
   DOUBLE PRECISION,INTENT(IN)::lim_inf,lim_sup
   DOUBLE PRECISION,DIMENSION(N_vals),INTENT(IN)::valores
   INTEGER,DIMENSION(N_vals),INTENT(OUT)::order
 
-  INTEGER,DIMENSION(:),ALLOCATABLE::occup_buckets
+  INTEGER::ii,jj,kk,hh,gg,tt,entra,iii
+  INTEGER::num_buckets,num_occ_buckets,prox,topprox,num_occ_boxes
+  INTEGER,DIMENSION(:),ALLOCATABLE::occ_buckets,reord,occ_boxes
+  DOUBLE PRECISION,DIMENSION(:,:),ALLOCATABLE::lims_buckets,aux_lims,vect_aux
+  DOUBLE PRECISION,DIMENSION(:),ALLOCATABLE::vals_aux
+  DOUBLE PRECISION::linf,lsup
+  TYPE(int_pointer),DIMENSION(:),POINTER::buckets
+  LOGICAL::interr
+  LOGICAL,DIMENSION(:),ALLOCATABLE::filtro
 
-  dim_buckets=10000
-  num_occ_buckets=0
-
-  ALLOCATE(occup_buckets(dim_buckets+1))
-
-  DO i=1,N_vals
-     tt=int(((valores(i)-lim_inf)/lim_sup)*dim_bickets)+1
-     order(i)=tt
-     occup_buckets(tt)=occup_buckets(tt)+1
+  num_occ_buckets=1
+  num_buckets=1
+  ALLOCATE(occ_buckets(1),buckets(1),lims_buckets(2,1))
+  occ_buckets(1)=N_vals
+  ALLOCATE(buckets(1)%ip(N_vals))
+  DO ii=1,N_vals
+     buckets(1)%ip(ii)=ii
   END DO
-  DO i=1,dim_buckets+1
-     IF (occup_buckets(i)>0) THEN
-        num_occ_buckets=num_occ_buckets+1
+  lims_buckets(1,1)=lim_inf
+  lims_buckets(2,1)=lim_sup
+  
+  ALLOCATE(occ_boxes(dim_boxes+1),reord(dim_boxes+1))
+  ALLOCATE(aux_lims(2,10))
+  topprox=10
 
+  interr=.FALSE.
+  IF (N_vals>max_popul) interr=.TRUE.
+  DO WHILE (interr==.TRUE.)
+     interr=.FALSE.
+     prox=0
+     gg=0
+     entra=0
+     DO ii=1,num_buckets
+        IF (occ_buckets(ii)>max_popul) THEN
+           num_occ_boxes=0
+           occ_boxes=0
+           entra=entra+1
+           linf=lims_buckets(1,entra)
+           lsup=lims_buckets(2,entra)
+           IF (linf<lsup) THEN
+              DO jj=1,occ_buckets(ii)
+                 hh=buckets(ii)%ip(jj)
+                 tt=int(((valores(hh)-linf)/(lsup-linf))*dim_boxes)+1
+                 order(hh)=tt
+                 occ_boxes(tt)=occ_boxes(tt)+1
+              END DO
+              kk=0
+              DO jj=1,dim_boxes+1
+                 IF (occ_boxes(jj)>0) THEN
+                    num_occ_boxes=num_occ_boxes+1
+                    kk=kk+1
+                    reord(jj)=kk
+                    IF (occ_boxes(jj)>max_popul) THEN
+                       interr=.TRUE.
+                       prox=prox+1
+                       IF (prox>topprox) THEN
+                          ALLOCATE(vect_aux(2,topprox))
+                          vect_aux(:,:)=aux_lims(:,:)
+                          DEALLOCATE(aux_lims)
+                          ALLOCATE(aux_lims(2,topprox+10))
+                          aux_lims(:,1:topprox)=vect_aux(:,:)
+                          DEALLOCATE(vect_aux)
+                          topprox=topprox+10
+                       END IF
+                       aux_lims(1,prox)=(jj-1)*((lsup-linf)/dim_boxes)+linf
+                       aux_lims(2,prox)=jj*((lsup-linf)/dim_boxes)+linf
+                    END IF
+                 END IF
+              END DO
+              DO jj=1,occ_buckets(ii)
+                 hh=buckets(ii)%ip(jj)
+                 tt=order(hh)
+                 order(hh)=reord(tt)+gg
+              END DO
+              gg=gg+num_occ_boxes
+           ELSE
+              gg=gg+1
+              DO jj=1,occ_buckets(ii)
+                 hh=buckets(ii)%ip(jj)
+                 order(hh)=gg
+              END DO
+              prox=prox+1
+              IF (prox>topprox) THEN
+                 ALLOCATE(vect_aux(2,topprox))
+                 vect_aux(:,:)=aux_lims(:,:)
+                 DEALLOCATE(aux_lims)
+                 ALLOCATE(aux_lims(2,topprox+10))
+                 aux_lims(:,1:topprox)=vect_aux(:,:)
+                 DEALLOCATE(vect_aux)
+                 topprox=topprox+10
+              END IF
+              aux_lims(1,prox)=linf
+              aux_lims(2,prox)=lsup
+           END IF
+        ELSE
+           gg=gg+1
+           DO jj=1,occ_buckets(ii)
+              hh=buckets(ii)%ip(jj)
+              order(hh)=gg
+           END DO
+        END IF
+        DEALLOCATE(buckets(ii)%ip)
+     END DO
 
+     DEALLOCATE(lims_buckets)
+     ALLOCATE(lims_buckets(2,prox))
+     lims_buckets(:,:)=aux_lims(:,1:prox)
 
-END SUBROUTINE sort_in_buckets
+     DEALLOCATE(buckets,occ_buckets)
+     num_buckets=gg
+     ALLOCATE(buckets(num_buckets),occ_buckets(num_buckets))
+     occ_buckets=0
+     DO ii=1,N_vals
+        tt=order(ii)
+        occ_buckets(tt)=occ_buckets(tt)+1
+     END DO
+     DO ii=1,num_buckets
+        ALLOCATE(buckets(ii)%ip(occ_buckets(ii)))
+        occ_buckets(ii)=0
+     END DO
+     DO ii=1,N_vals
+        tt=order(ii)
+        gg=occ_buckets(tt)+1
+        buckets(tt)%ip(gg)=ii
+        occ_buckets(tt)=gg
+     END DO
+
+  END DO
+
+  DEALLOCATE(aux_lims,lims_buckets)
+  DEALLOCATE(occ_boxes,reord)
+
+  gg=0
+  DO ii=1,num_buckets
+     tt=occ_buckets(ii)
+     ALLOCATE(vals_aux(tt),filtro(tt))
+     filtro=.TRUE.
+     DO jj=1,tt
+        hh=buckets(ii)%ip(jj)
+        vals_aux(jj)=valores(hh)
+     END DO
+     DO jj=1,tt
+        gg=gg+1
+        hh=MINLOC(vals_aux,DIM=1,MASK=filtro)
+        filtro(hh)=.FALSE.
+        hh=buckets(ii)%ip(hh)
+        order(gg)=hh
+     END DO
+     DEALLOCATE(vals_aux,filtro)
+     DEALLOCATE(buckets(ii)%ip)
+  END DO
+  DEALLOCATE(buckets)
+  DEALLOCATE(occ_buckets)
+
+END SUBROUTINE SORT_BY_BUCKETS
 
 
 END MODULE GLOB
