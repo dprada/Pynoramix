@@ -2026,7 +2026,7 @@ SUBROUTINE cfep_pfold3 (opt_bins,plot,node_index,A,B,T_ind,T_tau,T_start,length,
   logical,dimension(:),allocatable::filtro,filtro2
   double precision::cut
   double precision::delta_cut
-  double precision::Z,Za,Zab
+  double precision::Z,Za,Zab,aux,aux_de_pf,aux_a_pf,aux_trans
 
   !Para ordenar
   integer::dim_buckets,num_occ_buckets
@@ -2059,7 +2059,7 @@ SUBROUTINE cfep_pfold3 (opt_bins,plot,node_index,A,B,T_ind,T_tau,T_start,length,
 
 
   DO times=1,num_iter
-     print*,'times',times
+     print*,times
      Pf2(AA)=1.0d0
      Pf2(BB)=0.0d0
      Pf=Pf2
@@ -2137,19 +2137,11 @@ SUBROUTINE cfep_pfold3 (opt_bins,plot,node_index,A,B,T_ind,T_tau,T_start,length,
      Z=sum(Pe(:),dim=1)
      print*,'entra'
 
-!!$     ALLOCATE(filtro(N_nodes),orderpf(N_nodes))
+     ALLOCATE(orderpf(N_nodes))
+     CALL sort_by_buckets (orderpf,0.0d0,1.0d0,100,2500,Pf,N_nodes)
+
+!!$     print*,'ahi va viejo'
 !!$
-!!$     filtro=.TRUE.
-!!$
-!!$     DO i=1,N_nodes
-!!$        print*,i
-!!$        j=MAXLOC(Pf,DIM=1,MASK=filtro)
-!!$        orderpf(i)=j
-!!$        filtro(j)=.FALSE.
-!!$     END DO
-!!$
-!!$     filtro=.false.
-!!$     print*,'ahi va'
 !!$     DO i=1,N_nodes
 !!$
 !!$        g=orderpf(i)
@@ -2178,61 +2170,74 @@ SUBROUTINE cfep_pfold3 (opt_bins,plot,node_index,A,B,T_ind,T_tau,T_start,length,
 !!$
 !!$     END DO
 
-     ! with 10000
-     ALLOCATE(orderpf(N_nodes))
-     CALL sort_by_buckets (orderpf,0.0d0,1.0d0,100,2500,Pf,N_nodes)
+     print*,'ahi va nuevo'
 
-     !##
-     !print*,'compruebo'
-     !interr=.FALSE.
-     !DO i=1,N_nodes-1
-     !   IF (Pf(orderpf(i+1))<Pf(orderpf(i))) THEN
-     !      interr=.TRUE.
-     !   END IF
-     !END DO
-     !IF (interr) THEN
-     !   print*,'CAGADA'
-     !   !DO i=1,N_nodes
-     !   !   print*,Pf(orderpf(i))
-     !   !END DO
-     !END IF
+     aux=0.0d0
+     plot(N_nodes,1)=aux
+     DO i=N_nodes-1,1,-1
+        g=orderpf(i+1)
+        aux=aux+Pe(g)
+        IF (Pf(orderpf(i))<Pf(g)) THEN
+           plot(i,1)=aux
+        ELSE
+           plot(i,1)=plot(i+1,1)
+        END IF
+     END DO
 
-     print*,'listo'
-     ALLOCATE(filtro(N_nodes))
+     DO i=1,N_nodes
+        print*,i
+        g=orderpf(i)
+        aux_de_pf=Pf(g)
+        DO j=T_start(g)+1,T_start(g+1)
+           kk=T_ind(j)
+           aux_a_pf=Pf(kk)
+           aux_trans=T_tau(j)
+           IF (aux_a_pf>aux_de_pf) THEN
+              DO jj=i,1,-1
+                 gg=orderpf(jj)
+                 IF (Pf(gg)<aux_de_pf) THEN
+                    EXIT
+                 ELSE
+                    plot(jj,2)=plot(jj,2)+aux_trans
+                 END IF
+              END DO
+              DO jj=i+1,N_nodes
+                 gg=orderpf(jj)
+                 IF (Pf(gg)>=aux_a_pf) THEN
+                    EXIT
+                 ELSE
+                    plot(jj,2)=plot(jj,2)+aux_trans
+                 END IF
+              END DO
+           ELSE IF (aux_a_pf<aux_de_pf) THEN
+              !DO jj=i+1,N_nodes
+              !   gg=orderpf(jj)
+              !   IF (Pf(gg)>aux_de_pf) THEN
+              !      EXIT
+              !   ELSE
+              !      plot(jj,2)=plot(jj,2)+aux_trans
+              !   END IF
+              !END DO
+              DO jj=i,1,-1
+                 gg=orderpf(jj)
+                 IF (Pf(gg)<aux_de_pf) THEN
+                    IF (Pf(gg)<aux_a_pf) THEN
+                       EXIT
+                    ELSE
+                       plot(jj,2)=plot(jj,2)+aux_trans
+                    END IF
+                 END IF
+              END DO
+           END IF
+        END DO
+        plot(i,3)=aux_de_pf
+        node_index(i)=g-1
+     END DO
 
-     filtro=.false.
-     print*,'ahi va'
-   !  DO i=1,N_nodes
-   ! 
-   !     g=orderpf(i)
-   !     cut=Pf(g)
-   ! 
-   !     Za=0.0d0
-   !     Zab=0.0d0
-   ! 
-   !     DO j=1,N_nodes
-   !        IF (Pf(j)>cut) THEN
-   !           Za=Za+Pe(j)
-   !        END IF
-   ! 
-   !        DO jj=T_start(j)+1,T_start(j+1)
-   !           kk=T_ind(jj)
-   !           IF (((Pf(j)>cut).and.(Pf(kk)<=cut)).or.((Pf(j)<=cut).and.(Pf(kk)>cut))) THEN
-   !              Zab=Zab+T_tau(jj)
-   !           END IF
-   !        END DO
-   !     END DO
-   ! 
-   !     plot(i,1)=(Za/Z)
-   !     plot(i,2)=-300.0d0*0.0020d0*log(Zab/Z)
-   !     plot(i,3)=Pf(g)
-   !     node_index(i)=g-1
-   ! 
-   !  END DO
-
-     
-
-
+     DO i=1,N_nodes
+        plot(i,1)=plot(i,1)/Z
+        plot(i,2)=-300.0d0*0.0020d0*log(plot(i,2)/Z)
+     END DO
 
   END IF
 
